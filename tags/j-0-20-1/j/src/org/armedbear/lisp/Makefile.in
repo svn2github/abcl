@@ -1,0 +1,126 @@
+# Makefile.in
+
+# Copyright (C) 2003 Peter Graves
+# $Id: Makefile.in,v 1.33 2003-06-24 01:24:24 piso Exp $
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+JAVAC = @JAVAC@
+JAVACFLAGS = @JAVACFLAGS@
+COMPILER_CLASSPATH = @COMPILER_CLASSPATH@
+
+CLASSFILES =	AbstractArray.class \
+		AbstractVector.class \
+		Array.class \
+		ArrayType.class \
+		Autoload.class \
+		Bignum.class \
+		BinaryInputStream.class \
+		BinaryOutputStream.class \
+		Binding.class \
+		BitVector.class \
+		Block.class \
+		CharacterFunctions.class \
+		CharacterInputStream.class \
+		CharacterOutputStream.class \
+		Closure.class \
+		CompiledFunction.class \
+		Condition.class \
+		Cons.class \
+		Debug.class \
+		EndOfFileException.class \
+		Environment.class \
+		Exports.class \
+		Extensions.class \
+		Fixnum.class \
+		Function.class \
+		Functional.class \
+		Go.class \
+		HashTable.class \
+		Interpreter.class \
+		Java.class \
+		JavaClassLoader.class \
+		JavaObject.class \
+		Keyword.class \
+		Lisp.class \
+		LispCharacter.class \
+		LispClass.class \
+		LispError.class \
+		LispFloat.class \
+		LispObject.class \
+		LispStream.class \
+		LispString.class \
+		LispThread.class \
+		Load.class \
+		MacroObject.class \
+		Main.class \
+		Module.class \
+		Nil.class \
+		Package.class \
+		PackageError.class \
+		PackageFunctions.class \
+		Packages.class \
+		Primitive.class \
+		Primitive0.class \
+		Primitive1.class \
+		Primitive2.class \
+		Primitive3.class \
+		Primitives.class \
+		ProgramError.class \
+		Ratio.class \
+		Readtable.class \
+		Return.class \
+		SimpleCondition.class \
+		SimpleError.class \
+		SpecialOperator.class \
+		StreamError.class \
+		StringFunctions.class \
+		StringInputStream.class \
+		StringOutputStream.class \
+		Symbol.class \
+		ThreadDestroyed.class \
+		Throw.class \
+		Time.class \
+		Type.class \
+		TypeError.class \
+		TwoWayStream.class \
+		UnboundVariableException.class \
+		UndefinedFunctionError.class \
+		Utilities.class \
+		Vector.class \
+		Version.class \
+		WrongNumberOfArgumentsException.class \
+		coerce.class \
+		cxr.class \
+		describe.class \
+		room.class
+
+SOURCEFILES = $(patsubst %.class,%.java,$(CLASSFILES))
+
+%.class : %.java
+	$(JAVAC) -classpath "$(COMPILER_CLASSPATH)" $(JAVACFLAGS) $<
+	date > build
+	touch ../../../../classes.stamp
+
+classes: $(CLASSFILES)
+
+lisp: $(CLASSFILES)
+	gcj -O2 $(SOURCEFILES) --main=org.armedbear.lisp.Main -o lisp
+
+clean:
+	-rm -f *.class build
+
+Makefile: Makefile.in ../../../../config.status
+	cd ../../../.. && $(SHELL) ./config.status
