@@ -63,15 +63,18 @@
 
 <p>
 <font face="sans-serif" size="4">
-  <b>CVS</b>
+  <b>Repository</b>
 </font>
 <dl>
   <dd>
-      The project's SourceForge.net CVS repository can be checked out through
-      anonymous (pserver) CVS with the following command:
-      <pre>
-      cvs -d:cvs -z3 -d:pserver:anonymous@armedbear-j.cvs.sourceforge.net:/cvsroot/armedbear-j co j
+      The project's Common-Lisp.net Subversion repository can be checked
+      out through anonymous access with the following command:
+      <pre style="background-color:#99d">
+
+      $ svn co svn://common-lisp.net/project/armedbear/svn/trunk/j j
       </pre>
+      <p>Please note that the minimum required JDK version for development
+     versions of ABCL has been raised to 1.5.</p>
   </dd>
 </dl>
 
@@ -85,6 +88,8 @@
         are certain to encounter bugs.
         <p>
         ABCL 0.0.10 fails 67 out of 21696 tests in the GCL ANSI test suite.
+        Recent development snapshots perform considerably better, failing only
+        55 tests.
         <p>
         ABCL's CLOS is intolerably slow and does not handle on-the-fly
         redefinition of classes correctly. There is no support for the long
@@ -123,5 +128,6 @@
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
+<div style="float:right">$Id$</div>
 </body>
 </html>
