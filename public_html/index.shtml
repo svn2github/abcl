@@ -53,10 +53,10 @@
 </font>
 <dl>
   <dd>
-      <a href="http://armedbear.org/abcl-0.0.10.tar.gz">abcl-0.0.10.tar.gz</a>
+      <a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335">abcl-0.0.10.tar.gz</a>
       (source, 632987 bytes)
       <p>
-      <a href="http://armedbear.org/abcl-0.0.10.zip">abcl-0.0.10.zip</a>
+      <a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335">abcl-0.0.10.zip</a>
       (source, 1012345 bytes)
   </dd>
 </dl>
@@ -128,6 +128,6 @@
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
-<div style="float:right">$Id$</div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </body>
 </html>
