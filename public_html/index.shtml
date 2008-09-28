@@ -71,10 +71,10 @@
       out through anonymous access with the following command:
       <pre style="background-color:#99d">
 
-      $ svn co svn://common-lisp.net/project/armedbear/svn/trunk/j j
+      <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/j j</b>
       </pre>
-      <p>Please note that the minimum required JDK version for development
-     versions of ABCL has been raised to 1.5.</p>
+      <p><em>Please note that the minimum required JDK version for development
+     versions of ABCL has been raised to 1.5.</em></p>
   </dd>
 </dl>
 
@@ -114,12 +114,15 @@
     The README file in the root directory of the source distribution contains
     instructions for building ABCL.
     <p>
-    Java 1.4 or later is required.
+    Java 1.4 or later is required - see the note above on recent development
+    versions -
     <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
     is recommended. There are
     <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
     unresolved performance issues</a> with Java 1.6. To build ABCL, you'll need
-    the full JDK; the JRE is not enough. </dd>
+    the full JDK; the JRE is not enough. <br />
+    <em>Recent performance tests have shown Java 1.6 Update 10 - a Release
+    Candidate as of this writing - to be as fast as Java 1.5.</em> </dd>
 </dl>
 
  <hr>
