@@ -93,7 +93,15 @@
         well as runtime bugs.
         <br /><br />
         Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
-        (you must be subscribed to post).
+        (you must be subscribed to post).<br /><br />
+    </dd>
+    <dd>The project is using several ways to test standards compliance as well
+        as practical applicability of ABCL by using these projects' test suites
+        as 'compliance' indicators:
+        <ul>
+          <li>ANSI Common Lisp compliance tests</li>
+          <li>Maxima - Computer algebra system</li>
+        </ul>
     </dd>
 </dl>
 
