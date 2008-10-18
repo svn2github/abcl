@@ -32,14 +32,15 @@
       License</a>, with a special linking exception. If you link ABCL with your
       own program, then you do not need to release the source code for that
       program. However, any changes that you make to ABCL itself must be
-      released in accordance with the terms of the GPL.
+      released in accordance with the terms of the GPL.  The license is the
+      same as used by GNU Classpath and J2SE (Java).
       <br /><br />
-      ABCL runs on platforms that support Java 1.4 (or later), including Linux,
+      ABCL runs on platforms that support Java 1.5 (or later), including Linux,
       Windows, and Mac OS X.
       <br /><br />
       ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
       <br /><br />
-      The latest version is 0.0.10, released March 6, 2007.
+      The latest version is 0.0.11, released October 18, 2008.
   </dd>
 </dl>
 <p>
@@ -48,10 +49,10 @@
 <dl>
   <dd>
 
-      <a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335">abcl-0.0.10.tar.gz</a>
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.0.11.tar.gz?use_mirror=">abcl-0.0.10.tar.gz</a>
       (source, 632987 bytes)
       <br /><br />
-      <a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335">abcl-0.0.10.zip</a>
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.0.11.zip?use_mirror=">abcl-0.0.10.zip</a>
       (source, 1012345 bytes)
   </dd>
 </dl>
@@ -66,8 +67,6 @@
 
       <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/j j</b>
       </pre>
-      <em>Please note that the minimum required JDK version for development
-     versions of ABCL has been raised to 1.5.</em>
   </dd>
 
 </dl>
@@ -76,12 +75,16 @@
 </p>
 <dl>
     <dd>
-        ABCL is a young implementation (particularly by Lisp standards). You
-        are certain to encounter bugs.
+        ABCL is a young implementation (particularly by Lisp standards).
+        Even though a lot of energy is spent resolving issues, you may
+        well encounter bugs. A number of people have testified to the
+        quality of ABCL being good enough for their needs though. See
+        the testimonials page.
         <br /><br />
-        ABCL 0.0.10 fails 67 out of 21696 tests in the GCL ANSI test suite.
-        Recent development snapshots perform considerably better, failing only
-        55 tests.
+        ABCL 0.0.11 fails 47 out of 21702 tests in the GCL ANSI test suite.
+        Most notable recent fixes relate to special variables handling
+        and making sure the correct environments are used with for example
+        LET/LET* and FLET/LABELS.
         <br /><br />
         ABCL's CLOS is intolerably slow and does not handle on-the-fly
         redefinition of classes correctly. There is no support for the long
@@ -113,13 +116,12 @@
     The README file in the root directory of the source distribution contains
     instructions for building ABCL.
     <br /><br />
-    Java 1.4 or later is required - see the note above on recent development
-    versions -
+    Java 1.5 or higher is required;
     <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
     is recommended. There are
     <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
 
-    unresolved performance issues</a> with Java 1.6. To build ABCL, you'll need
+    performance issues</a> with early versions of Java 1.6. To build ABCL, you'll need
     the full JDK; the JRE is not enough. <br />
     <em>Recent performance tests have shown Java 1.6 Update 10 - a Release
     Candidate as of this writing - to be as fast as Java 1.5.</em> </dd>
