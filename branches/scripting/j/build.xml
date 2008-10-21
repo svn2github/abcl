@@ -100,6 +100,8 @@
 
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
+      <include name="org/armedbear/lisp/scripting/*.java"/>
+      <include name="org/armedbear/lisp/scripting/util/*.java"/>
       <include name="org/armedbear/Main.java"/>
     </patternset>
     
@@ -108,6 +110,7 @@
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <include name="org/armedbear/lisp/java/awt/*.lisp"/>
       <include name="org/armedbear/lisp/java/awt/*.java"/>
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
     </patternset>
 
     <!-- Lisp files required at runtime -->
@@ -115,12 +118,15 @@
       <include name="org/armedbear/lisp/boot.lisp"/>
       <include name="org/armedbear/lisp/top-level.lisp"/>
       <include name="org/armedbear/lisp/*.lisp"/> 
+	  <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
     </patternset>
 
     <patternset id="abcl.objects">
       <include name="org/armedbear/lisp/*.class"/>
       <include name="org/armedbear/lisp/*.cls"/> 
       <include name="org/armedbear/lisp/*.abcl"/>
+      <include name="org/armedbear/lisp/scripting/*.class"/>
+      <include name="org/armedbear/lisp/scripting/util/*.class"/>
       <patternset refid="abcl.source.lisp.dist"/>
     </patternset>
     
@@ -298,6 +304,8 @@
 		       value="${build}"/>
 	  </section>
 	</manifest>
+      	<metainf dir="${src.dir}/META-INF">
+      	</metainf>
       </jar>
     </target>
     
