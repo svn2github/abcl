@@ -63,6 +63,45 @@
         (push method-name method-names-and-defs)))
     (apply #'%jnew-proxy interface method-names-and-defs)))
 
+(defun jimplement-interface (interface &rest method-names-and-defs)
+  "Creates and returns an implementation of a Java interface with
+   methods calling Lisp closures as given in METHOD-NAMES-AND-DEFS.
+
+   INTERFACE is either a Java interface or a string naming one.
+
+   METHOD-NAMES-AND-DEFS is an alternating list of method names
+   (strings) and method definitions (closures).
+
+   For missing methods, a dummy implementation is provided that
+   returns nothing or null depending on whether the return type is
+   void or not. This is for convenience only, and a warning is issued
+   for each undefined method."
+  (let ((interface (jclass interface))
+        (implemented-methods
+         (loop for m in method-names-and-defs
+           for i from 0
+           if (evenp i)
+           do (assert (stringp m) (m) "Method names must be strings: ~s" m) and collect m
+           else
+           do (assert (or (symbolp m) (functionp m)) (m) "Methods must be function designators: ~s" m)))
+        (null (make-immediate-object nil :ref)))
+    (loop for method across
+      (jclass-methods interface :declared nil :public t)
+      for method-name = (jmethod-name method)
+      when (not (member method-name implemented-methods :test #'string=))
+      do
+      (let* ((void-p (string= (jclass-name (jmethod-return-type method)) "void"))
+             (arglist '(&rest ignore))
+             (def `(lambda
+                     ,arglist
+                     ,(when arglist '(declare (ignore ignore)))
+                     ,(if void-p '(values) null))))
+        (warn "Implementing dummy method ~a for interface ~a"
+              method-name (jclass-name interface))
+        (push (coerce def 'function) method-names-and-defs)
+        (push method-name method-names-and-defs)))
+    (apply #'%jimplement-interface interface method-names-and-defs)))
+
 (defun jobject-class (obj)
   "Returns the Java class that OBJ belongs to"
   (jcall (jmethod "java.lang.Object" "getClass") obj))

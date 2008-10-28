@@ -36,7 +36,6 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-import org.armedbear.lisp.AbstractString;
 import org.armedbear.lisp.Bignum;
 import org.armedbear.lisp.ConditionThrowable;
 import org.armedbear.lisp.Cons;
@@ -51,6 +50,7 @@ import org.armedbear.lisp.LispCharacter;
 import org.armedbear.lisp.LispObject;
 import org.armedbear.lisp.LispThread;
 import org.armedbear.lisp.SimpleString;
+import org.armedbear.lisp.SimpleVector;
 import org.armedbear.lisp.SingleFloat;
 import org.armedbear.lisp.Stream;
 import org.armedbear.lisp.Symbol;
@@ -336,7 +336,45 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 	}
 	
 	public static LispObject toLisp(Object javaObject) {
-		if(javaObject instanceof LispObject) {
+		if(javaObject == null) {
+            return Lisp.NIL;
+		} else if(javaObject instanceof Boolean) {
+            return ((Boolean)javaObject).booleanValue() ? Lisp.T : Lisp.NIL;
+		} else if(javaObject instanceof Byte) {
+            return new Fixnum(((Byte)javaObject).intValue());
+		} else if(javaObject instanceof Integer) {
+            return new Fixnum(((Integer)javaObject).intValue());
+		} else if(javaObject instanceof Short) {
+            return new Fixnum(((Short)javaObject).shortValue());
+		} else if(javaObject instanceof Long) {
+            return new Bignum((Long)javaObject);
+		} else if(javaObject instanceof BigInteger) {
+			return new Bignum((BigInteger) javaObject);
+		} else if(javaObject instanceof Float) {
+            return new SingleFloat(((Float)javaObject).floatValue());
+		} else if(javaObject instanceof Double) {
+            return new DoubleFloat(((Double)javaObject).doubleValue());
+		} else if(javaObject instanceof String) {
+            return new SimpleString((String)javaObject);
+		} else if(javaObject instanceof Character) {
+            return LispCharacter.getInstance((Character)javaObject);
+		} else if(javaObject instanceof Object[]) {
+            Object[] array = (Object[]) javaObject;
+            SimpleVector v = new SimpleVector(array.length);
+            for(int i = array.length; i > 0; --i) {
+            	try {
+					v.aset(i, new JavaObject(array[i]));
+				} catch (ConditionThrowable e) {
+					throw new Error("Can't set simplevector index " + i, e);
+				}
+            }
+            return v;
+        } else if(javaObject instanceof LispObject) {
+            return (LispObject) javaObject;
+        } else {
+        	return new JavaObject(javaObject);
+        }
+		/*if(javaObject instanceof LispObject) {
 			return (LispObject) javaObject;
 		} else if(javaObject instanceof Float) {
 			return new SingleFloat((Float) javaObject);
@@ -354,32 +392,26 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			return new SimpleString((String) javaObject);
 		} else {
 			return new JavaObject(javaObject);
-		}
+		}*/
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getInterface(Class<T> clasz) {
-		try {
-			Symbol s = findSymbol("find-java-interface-implementation", "abcl-script");
-			Object obj = s.getSymbolFunction().execute(new JavaObject(clasz));
-			if(obj instanceof JavaObject) {
-				return (T) ((JavaObject) obj).getObject();
-			} else {
-				return null;
-			}
-		} catch (ConditionThrowable e) {
-			throw new Error(e);
-		}
+		return getInterface(Lisp.NIL, clasz);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getInterface(Object thiz, Class<T> clasz) {
 		try {
-			Symbol s = findSymbol("implement-java-interface", "abcl-script");
-			Object obj = s.getSymbolFunction().execute(new JavaObject(clasz), (LispObject) thiz);
-			return (T) ((JavaObject) obj).getObject();
+			Symbol s = findSymbol("find-java-interface-implementation", "abcl-script");
+			Object obj = s.getSymbolFunction().execute(new JavaObject(clasz));
+			if(obj instanceof Function) {
+				return (T) ((JavaObject) ((Function) obj).execute((LispObject) thiz)).getObject();
+			} else {
+				return null;
+			}
 		} catch (ConditionThrowable e) {
 			throw new Error(e);
 		}

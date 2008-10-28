@@ -97,6 +97,6 @@
 	   *java-interface-implementations*))
 
 (defun implement-java-interface (interface implementation)
-  (apply #'jinterface-implementation
+  (apply #'jimplement-interface
 	 `(,interface
 	   ,@(java-interface-implementation-method-definitions implementation))))

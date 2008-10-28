@@ -187,6 +187,8 @@
 (autoload 'jregister-handler "java")
 (export 'jinterface-implementation "JAVA")
 (autoload 'jinterface-implementation "java")
+(export 'jimplement-interface "JAVA")
+(autoload 'jimplement-interface "java")
 (export 'jobject-class "JAVA")
 (autoload 'jobject-class "java")
 (export 'jclass-superclass "JAVA")
