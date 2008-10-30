@@ -277,11 +277,16 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 		try {
 			in = new ReaderInputStream(ctx.getReader());
 			out = new WriterOutputStream(ctx.getWriter());
+			Stream outStream = new Stream(out, Symbol.CHARACTER);
 			retVal = evalScript.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
 										makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
 										new Stream(in, Symbol.CHARACTER),
-										new Stream(out, Symbol.CHARACTER),
+										outStream,
 										new SimpleString(code), new JavaObject(ctx));
+			outStream._finishOutput();
+			out.flush();
+			in.close();
+			out.close();
 			return toJava(retVal);
 		} catch (ConditionThrowable e) {
 			throw new ScriptException(new Exception(e));

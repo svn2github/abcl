@@ -102,6 +102,15 @@
         (push method-name method-names-and-defs)))
     (apply #'%jimplement-interface interface method-names-and-defs)))
 
+(defun jmake-invocation-handler (function)
+  (%jmake-invocation-handler function))
+
+(defun jmake-proxy (interface invocation-handler)
+  (let ((handler (if (functionp invocation-handler)
+		     (jmake-invocation-handler invocation-handler)
+		     invocation-handler)))
+    (%jmake-proxy (jclass interface) handler)))
+
 (defun jobject-class (obj)
   "Returns the Java class that OBJ belongs to"
   (jcall (jmethod "java.lang.Object" "getClass") obj))
