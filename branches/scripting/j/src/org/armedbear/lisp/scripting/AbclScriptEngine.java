@@ -285,7 +285,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 										new SimpleString(code), new JavaObject(ctx));
 			outStream._finishOutput();
 			out.flush();
-			in.close();
+			//in.close();
 			out.close();
 			return toJava(retVal);
 		} catch (ConditionThrowable e) {
@@ -320,7 +320,9 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 		return jvar.toUpperCase();
 	}
 
-	private static Object toJava(LispObject lispObject) {
+	private static Object toJava(LispObject lispObject) throws ConditionThrowable {
+		return lispObject.javaInstance();
+		/*
 		if(lispObject instanceof JavaObject) {
 			return ((JavaObject) lispObject).getObject();
 		} else if(lispObject instanceof SingleFloat) {
@@ -337,7 +339,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			return ((SimpleString) lispObject).javaInstance();
 		} else {
 			return lispObject;
-		}
+		}*/
 	}
 	
 	public static LispObject toLisp(Object javaObject) {
@@ -379,44 +381,22 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
         } else {
         	return new JavaObject(javaObject);
         }
-		/*if(javaObject instanceof LispObject) {
-			return (LispObject) javaObject;
-		} else if(javaObject instanceof Float) {
-			return new SingleFloat((Float) javaObject);
-		} else if(javaObject instanceof Double) {
-			return new DoubleFloat((Double) javaObject);
-		} else if(javaObject instanceof Character) {
-			return LispCharacter.getInstance((Character) javaObject);
-		} else if(javaObject instanceof Long) {
-			return new Bignum((Long) javaObject);
-		} else if(javaObject instanceof BigInteger) {
-			return new Bignum((BigInteger) javaObject);
-		} else if(javaObject instanceof Integer) {
-			return new Fixnum((Integer) javaObject);
-		} else if(javaObject instanceof String) {
-			return new SimpleString((String) javaObject);
-		} else {
-			return new JavaObject(javaObject);
-		}*/
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getInterface(Class<T> clasz) {
-		return getInterface(Lisp.NIL, clasz);
+		//return getInterface(Lisp.NIL, clasz);
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getInterface(Object thiz, Class<T> clasz) {
 		try {
-			Symbol s = findSymbol("find-java-interface-implementation", "abcl-script");
-			Object obj = s.getSymbolFunction().execute(new JavaObject(clasz));
-			if(obj instanceof Function) {
-				return (T) ((JavaObject) ((Function) obj).execute((LispObject) thiz)).getObject();
-			} else {
-				return null;
-			}
+			Symbol s = findSymbol("jmake-proxy", "JAVA");
+			LispObject f = s.getSymbolFunction();
+			JavaObject iface = new JavaObject(clasz);
+			return (T) ((JavaObject) f.execute(iface, (LispObject) thiz)).javaInstance();
 		} catch (ConditionThrowable e) {
 			throw new Error(e);
 		}

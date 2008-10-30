@@ -157,6 +157,9 @@ public final class JProxy extends Lisp
 	    		return proxy.toString();
 	    	}
 	    	
+	    	if(args == null) {
+	    		args = new Object[0];
+	    	}
 			LispObject[] lispArgs = new LispObject[args.length + 2];
 			lispArgs[0] = toLispObject(proxy);
 			lispArgs[1] = new JavaObject(method);
