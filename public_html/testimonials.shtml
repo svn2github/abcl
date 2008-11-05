@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title><!--#include virtual="project-name" -->: Testimonials</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+
+<h1>Testimonials</h1>
+
+
+<dl>
+<dt>Hunter Monroe
+</dt>
+<dd>"Maxima algebraic computation software compiles with ABCL. The test suite
+runs fairly quickly on Windows XP and, after work by Robert Dodier, 86
+percent of the test suite is passed successfully, although some individual
+tests crash the suite. If you want to compile Maxima with ABCL lisp, check
+out the Maxima source code and following the instructions in INSTALL.lisp."
+</dd>
+
+<dt>Alex Mizhari
+</dt>
+<dd>
+
+I'm using ABCL for various web projects since aproximately 2004. None of them have gone public (so far), so i can't give a link.
+I released sort of framework for building web apps with ABCL was released into
+open source: <a href="http://abcl-web.sourceforge.net/">abcl-web</a>.
+Another thing probably worth mentioning -- bindings to Jena2 RDF/SPARQL library:
+http://abcl-web.sourceforge.net/rdf.html (it's sort of incomplete but usable, i think).
+<br />
+What i like in ABCL is that it has reasonably stable multithreading, does
+not crash unpredictably (unlike some other implementations) and can be
+fixed in more-or-less easy way if something goes bad, and access to Java
+libs, of course. I had some problems with it, though, to name some:
+<ul>
+<li>SLIME being botched (i suspect due to CLOS invoking compiler which is not
+reentrant),</li>
+<li>CLOS not thread safe,</li>
+<li>compiler producing wrong code.</li>
+</ul>
+That certainly made experience with ABCL less pleasant that it could be,
+but in general it was more-or-less good.
+</dd>
+
+<dt>Alessio Stalla
+</dt>
+<dd>I'm currently integrating ABCL in a small, unreleased open source
+project. It's a sort of graphical object browser for Java (but its GUI
+sucks badly for now...). It can be run locally or as a client-server
+application. I'm adding scripting support so you can access some
+functionality from Lisp (or in principle any other Java Scripting API
+compatible script engine, though I'm focusing on ABCL).
+</dd>
+
+<dt>Ted Kosan
+</dt>
+<dd>I am in the process of integrating ABCL with <a href="http://mathrider.org">MathRider</a> in preparation for when Maxima is able to run on it.
+</dd>
+
+</dl>
+
+</body>
+</html>
