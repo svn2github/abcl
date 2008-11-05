@@ -187,8 +187,6 @@
 (autoload 'jregister-handler "java")
 (export 'jinterface-implementation "JAVA")
 (autoload 'jinterface-implementation "java")
-(export 'jimplement-interface "JAVA")
-(autoload 'jimplement-interface "java")
 (export 'jmake-invocation-handler "JAVA")
 (autoload 'jmake-invocation-handler "java")
 (export 'jmake-proxy "JAVA")

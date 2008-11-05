@@ -72,31 +72,3 @@
 		     engine-bindings 
 		     actual-engine-bindings
 		     (jcall +get-bindings+ script-context +engine-scope+)))))))))
-
-(defstruct (java-interface-implementation (:type list))
-  (method-definitions (list) :type list))
-
-(defun define-java-interface-implementation (interface &rest method-definitions)
-  (register-java-interface-implementation
-   (canonicalize-interface interface)
-   (make-java-interface-implementation :method-definitions method-definitions)))
-
-(defun canonicalize-interface (interface)
-  (cond
-    ((stringp interface) interface)
-    ((jclass-interface-p interface) (jclass-name interface))
-    (t (error "not an interface: ~A" interface))))
-
-(defun register-java-interface-implementation (interface implementation)
-  (setf (gethash (canonicalize-interface interface)
-		 *java-interface-implementations*)
-	(implement-java-interface interface implementation)))
-
-(defun find-java-interface-implementation (interface)
-  (gethash (canonicalize-interface interface)
-	   *java-interface-implementations*))
-
-(defun implement-java-interface (interface implementation)
-  (apply #'jimplement-interface
-	 `(,interface
-	   ,@(java-interface-implementation-method-definitions implementation))))

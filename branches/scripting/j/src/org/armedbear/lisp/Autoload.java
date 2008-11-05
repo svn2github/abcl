@@ -488,7 +488,6 @@ public class Autoload extends Function
         autoload(PACKAGE_EXT, "thread-lock", "ThreadLock", true);
         autoload(PACKAGE_EXT, "thread-unlock", "ThreadLock", true);
         autoload(PACKAGE_JAVA, "%jnew-proxy", "JProxy");
-        autoload(PACKAGE_JAVA, "%jimplement-interface", "JProxy");
         autoload(PACKAGE_JAVA, "%find-java-class", "JavaClass");
         autoload(PACKAGE_JAVA, "%jmake-invocation-handler", "JProxy");
         autoload(PACKAGE_JAVA, "%jmake-proxy", "JProxy");
