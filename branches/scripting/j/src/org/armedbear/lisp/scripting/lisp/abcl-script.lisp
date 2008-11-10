@@ -18,8 +18,6 @@
 
 (in-package :abcl-script)
 
-(defvar *java-interface-implementations* (make-hash-table :test #'equal))
-
 (defconstant +global-scope+
   (jfield "javax.script.ScriptContext" "GLOBAL_SCOPE"))
 

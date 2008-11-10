@@ -278,15 +278,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			in = new ReaderInputStream(ctx.getReader());
 			out = new WriterOutputStream(ctx.getWriter());
 			Stream outStream = new Stream(out, Symbol.CHARACTER);
+			Stream inStream  = new Stream(in,  Symbol.CHARACTER);
 			retVal = evalScript.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
 										makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
-										new Stream(in, Symbol.CHARACTER),
-										outStream,
+										inStream, outStream,
 										new SimpleString(code), new JavaObject(ctx));
-			outStream._finishOutput();
-			out.flush();
-			//in.close();
-			out.close();
 			return toJava(retVal);
 		} catch (ConditionThrowable e) {
 			throw new ScriptException(new Exception(e));
@@ -322,24 +318,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 
 	private static Object toJava(LispObject lispObject) throws ConditionThrowable {
 		return lispObject.javaInstance();
-		/*
-		if(lispObject instanceof JavaObject) {
-			return ((JavaObject) lispObject).getObject();
-		} else if(lispObject instanceof SingleFloat) {
-			return ((SingleFloat) lispObject).value;
-		} else if(lispObject instanceof DoubleFloat) {
-			return ((DoubleFloat) lispObject).value;
-		} else if(lispObject instanceof LispCharacter) {
-			return ((LispCharacter) lispObject).value;
-		} else if(lispObject instanceof Bignum) {
-			return ((Bignum) lispObject).value;
-		} else if(lispObject instanceof Fixnum) {
-			return ((Fixnum) lispObject).value;
-		} else if(lispObject instanceof SimpleString) {
-			return ((SimpleString) lispObject).javaInstance();
-		} else {
-			return lispObject;
-		}*/
 	}
 	
 	public static LispObject toLisp(Object javaObject) {
@@ -385,8 +363,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 	
 	@Override
 	public <T> T getInterface(Class<T> clasz) {
-		//return getInterface(Lisp.NIL, clasz);
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			return getInterface(eval("(cl:find-package '#:ABCL-SCRIPT-USER)"), clasz);
+		} catch (ScriptException e) {
+			throw new Error(e);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -394,9 +375,8 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 	public <T> T getInterface(Object thiz, Class<T> clasz) {
 		try {
 			Symbol s = findSymbol("jmake-proxy", "JAVA");
-			LispObject f = s.getSymbolFunction();
 			JavaObject iface = new JavaObject(clasz);
-			return (T) ((JavaObject) f.execute(iface, (LispObject) thiz)).javaInstance();
+			return (T) ((JavaObject) s.execute(iface, (LispObject) thiz)).javaInstance();
 		} catch (ConditionThrowable e) {
 			throw new Error(e);
 		}
