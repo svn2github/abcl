@@ -19,6 +19,8 @@
 (defpackage :abcl-script
   (:use :cl :java)
   (:export #:eval-script
+	   #:compile-script
+	   #:eval-compiled-script
 	   #:define-java-interface-implementation
 	   #:find-java-interface-implementation
 	   #:implement-java-interface))

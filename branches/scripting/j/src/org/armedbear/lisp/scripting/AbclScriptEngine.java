@@ -30,8 +30,11 @@ import java.util.Map;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
@@ -58,13 +61,16 @@ import org.armedbear.lisp.scripting.util.ReaderInputStream;
 import org.armedbear.lisp.scripting.util.WriterOutputStream;
 
 
-public class AbclScriptEngine extends AbstractScriptEngine implements Invocable {
+public class AbclScriptEngine extends AbstractScriptEngine implements Invocable, Compilable {
 
 	private Interpreter interpreter;
 	private LispObject nonThrowingDebugHook;
 	private Function evalScript;
+	private Function compileScript;
+	private Function evalCompiledScript;
 
 	public AbclScriptEngine(Interpreter interpreter, boolean enableThrowingDebugger) {
+		
 		this.interpreter = interpreter;
 		Interpreter.initializeLisp();
 		final LispThread thread = LispThread.currentThread();
@@ -80,8 +86,10 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/packages.lisp");
 			loadFromClasspath("/org/armedbear/lisp/scripting/lisp/abcl-script.lisp");
 			evalScript = (Function) this.findSymbol("EVAL-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+			compileScript = (Function) this.findSymbol("COMPILE-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
+			evalCompiledScript = (Function) this.findSymbol("EVAL-COMPILED-SCRIPT", "ABCL-SCRIPT").getSymbolFunction();
 		} catch (ConditionThrowable e) {
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -269,8 +277,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 		return super.getContext();
 	}
 
-	@Override
-	public Object eval(String code, ScriptContext ctx) throws ScriptException {
+	private Object eval(Function evaluator, LispObject code, ScriptContext ctx) throws ScriptException {
 		ReaderInputStream in = null;
 		WriterOutputStream out = null;
 		LispObject retVal = null;
@@ -279,10 +286,10 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			out = new WriterOutputStream(ctx.getWriter());
 			Stream outStream = new Stream(out, Symbol.CHARACTER);
 			Stream inStream  = new Stream(in,  Symbol.CHARACTER);
-			retVal = evalScript.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
-										makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
-										inStream, outStream,
-										new SimpleString(code), new JavaObject(ctx));
+			retVal = evaluator.execute(makeBindings(ctx.getBindings(ScriptContext.GLOBAL_SCOPE)),
+									   makeBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)),
+									   inStream, outStream,
+									   code, new JavaObject(ctx));
 			return toJava(retVal);
 		} catch (ConditionThrowable e) {
 			throw new ScriptException(new Exception(e));
@@ -290,18 +297,27 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 			throw new ScriptException(e);
 		}
 	}
-
+	
 	@Override
-	public Object eval(Reader code, ScriptContext ctx) throws ScriptException {
+	public Object eval(String code, ScriptContext ctx) throws ScriptException {
+		return eval(evalScript, new SimpleString(code), ctx);
+	}
+
+	private static String toString(Reader reader) throws IOException {
 		StringWriter w = new StringWriter();
 		int i;
+		i = reader.read();
+		while (i != -1) {
+			w.write(i);
+			i = reader.read();
+		}
+		return w.toString();
+	}
+	
+	@Override
+	public Object eval(Reader code, ScriptContext ctx) throws ScriptException {
 		try {
-			i = code.read();
-			while (i != -1) {
-				w.write(i);
-				i = code.read();
-			}
-			return eval(w.toString(), ctx);
+			return eval(toString(code), ctx);
 		} catch (IOException e) {
 			return new ScriptException(e);
 		}
@@ -350,7 +366,7 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
             	try {
 					v.aset(i, new JavaObject(array[i]));
 				} catch (ConditionThrowable e) {
-					throw new Error("Can't set simplevector index " + i, e);
+					throw new Error("Can't set SimpleVector index " + i, e);
 				}
             }
             return v;
@@ -429,6 +445,48 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable 
 	@Override
 	public Object invokeMethod(Object thiz, String name, Object... args) throws ScriptException, NoSuchMethodException {
 		throw new UnsupportedOperationException("Common Lisp does not have methods in the Java sense.");
+	}
+
+	public class AbclCompiledScript extends CompiledScript {
+
+		private LispObject function;
+		
+		public AbclCompiledScript(LispObject function) {
+			this.function = function;
+		}
+		
+		@Override
+		public Object eval(ScriptContext context) throws ScriptException {
+			return AbclScriptEngine.this.eval(evalCompiledScript, function, context);
+		}
+
+		@Override
+		public ScriptEngine getEngine() {
+			return AbclScriptEngine.this;
+		}
+
+	}
+
+	
+	@Override
+	public CompiledScript compile(String script) throws ScriptException {
+		try {
+			Function f = (Function) compileScript.execute(new SimpleString(script));
+			return new AbclCompiledScript(f);
+		} catch (ConditionThrowable e) {
+			throw new ScriptException(new Exception(e));
+		} catch(ClassCastException e) {
+			throw new ScriptException(e);
+		}
+	}
+
+	@Override
+	public CompiledScript compile(Reader script) throws ScriptException {
+		try {
+			return compile(toString(script));
+		} catch (IOException e) {
+			throw new ScriptException(e);
+		}
 	}
 
 }

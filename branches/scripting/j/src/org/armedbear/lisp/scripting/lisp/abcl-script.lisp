@@ -45,28 +45,45 @@
 	:collect `(jcall +put-binding+
 		   ,java-bindings ,(car jbinding) ,(car binding))))
 
+(defmacro with-script-context ((global-bindings engine-bindings stdin stdout script-context)
+			       body)
+  (let ((actual-global-bindings (gensym))
+	(actual-engine-bindings (gensym)))
+    `(let ((*package* (find-package :abcl-script-user))
+	   (*standard-input* ,stdin)
+	   (*standard-output* ,stdout)
+	   (,actual-global-bindings (generate-bindings ,global-bindings))
+	   (,actual-engine-bindings (generate-bindings ,engine-bindings)))
+      (eval `(let ((*standard-input* ,,stdin)
+		   (*standard-output* ,,stdout)
+		   (*package* (find-package :abcl-script-user)))
+	      (let (,@,actual-global-bindings)
+		(let (,@,actual-engine-bindings)
+		  (prog1
+		      (progn ,@,body)
+		    (finish-output *standard-output*)
+		    ,@(generate-java-bindings
+		       ,global-bindings 
+		       ,actual-global-bindings
+		       (jcall +get-bindings+ ,script-context +global-scope+))
+		    ,@(generate-java-bindings
+		       ,engine-bindings 
+		       ,actual-engine-bindings
+		       (jcall +get-bindings+ ,script-context +engine-scope+))))))))))
+  
 (defun eval-script (global-bindings engine-bindings stdin stdout
 		    code-string script-context)
-  (let ((*package* (find-package :abcl-script-user))
-	(*standard-input* stdin)
-	(*standard-output* stdout)
-	(actual-global-bindings (generate-bindings global-bindings))
-	(actual-engine-bindings (generate-bindings engine-bindings)))
-    (eval `(let ((*standard-input* ,stdin)
-		 (*standard-output* ,stdout)
-		 (*package* (find-package :abcl-script-user)))
-	    (let (,@actual-global-bindings)
-	      (let (,@actual-engine-bindings)
-		(prog1
-		    (progn
-		      ,@(read-from-string
-			 (concatenate 'string "(" code-string ")")))
-		  (finish-output *standard-output*)
-		  ,@(generate-java-bindings
-		     global-bindings 
-		     actual-global-bindings
-		     (jcall +get-bindings+ script-context +global-scope+))
-		  ,@(generate-java-bindings
-		     engine-bindings 
-		     actual-engine-bindings
-		     (jcall +get-bindings+ script-context +engine-scope+)))))))))
+  (with-script-context (global-bindings engine-bindings stdin stdout script-context)
+    (read-from-string
+     (concatenate 'string "(" code-string ")"))))
+
+(defun eval-compiled-script (global-bindings engine-bindings stdin stdout
+			     function script-context)
+  (with-script-context (global-bindings engine-bindings stdin stdout script-context)
+    `((funcall ,function))))
+
+(defun compile-script (code-string)
+  (let ((*package* (find-package :abcl-script-user)))
+    (eval `(compile nil
+	    (lambda ()
+	      ,@(read-from-string (concatenate 'string "(" code-string ")")))))))
