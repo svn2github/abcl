@@ -292,8 +292,9 @@ public final class FileStream extends Stream
             } else {
                 for (int i = start; i < end; i++) {
                     char c = chars[i];
-                    out.getWriter().write((byte)c);
                     if (c == '\n') {
+                        if (eolStyle == EolStyle.CRLF)
+                            out.getWriter().write((byte)'\r');
                         out.getWriter().write((byte)eolChar);
                         charPos = 0;
                     } else {
