@@ -2,6 +2,7 @@
  * FileStream.java
  *
  * Copyright (C) 2004-2006 Peter Graves
+ * Copyright (C) 2008 Hideo at Yokohama
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -34,6 +35,10 @@
 package org.armedbear.lisp;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -42,10 +47,12 @@ import org.armedbear.lisp.util.RandomAccessCharacterFile;
 public final class FileStream extends Stream
 {
     private final RandomAccessCharacterFile racf;
-    private final RandomAccessCharacterFile in;
-    private final RandomAccessCharacterFile out;
     private final Pathname pathname;
     private final int bytesPerUnit;
+    private InputStream inst;
+    private OutputStream outst;
+    private Reader reader;
+    private Writer writer;
 
     public enum EolStyle {
         CR,
@@ -94,9 +101,7 @@ public final class FileStream extends Stream
         
         Debug.assertTrue(mode != null);
         RandomAccessFile raf = new RandomAccessFile(file, mode);
-        racf = new RandomAccessCharacterFile(raf, encoding);
-        in = isInputStream ? racf : null;
-        out = isOutputStream ? racf : null;
+	
         // ifExists is ignored unless we have an output stream.
         if (isOutputStream) {
             final long length = file.isFile() ? file.length() : 0;
@@ -109,11 +114,21 @@ public final class FileStream extends Stream
                     raf.setLength(0);
             }
         }
+	// don't touch raf directly after passing it to racf.
+	// the state will become inconsistent if you do that.
+        racf = new RandomAccessCharacterFile(raf, encoding);
+
         this.pathname = pathname;
         this.elementType = elementType;
         if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR) {
             isCharacterStream = true;
             bytesPerUnit = 1;
+	    if (isInputStream) {
+		reader = racf.getReader();
+	    }
+	    if (isOutputStream) {
+		writer = racf.getWriter();
+	    }
         } else {
             isBinaryStream = true;
             int width;
@@ -124,6 +139,12 @@ public final class FileStream extends Stream
                 width = 8;
             }
             bytesPerUnit = width / 8;
+	    if (isInputStream) {
+		inst = racf.getInputStream();
+	    }
+	    if (isOutputStream) {
+		outst = racf.getOutputStream();
+	    }
         }
         eolChar = (eol == EolStyle.CR) ? '\r' : '\n';
     }
@@ -159,12 +180,13 @@ public final class FileStream extends Stream
     public LispObject listen() throws ConditionThrowable
     {
         try {
-            return in.dataIsAvailableForRead() ? T : NIL;
+	    if (isInputStream) {
+		return (racf.position() < racf.length()) ? T : NIL;
+	    } else {
+		streamNotInputStream();
+	    }
         }
-        catch (NullPointerException e) {
-            streamNotInputStream();
-        }
-        catch (IOException e) {
+	catch (IOException e) {
             error(new StreamError(this, e));
         }
         // Not reached.
@@ -204,27 +226,28 @@ public final class FileStream extends Stream
     protected int _readChar() throws ConditionThrowable
     {
         try {
-            int c = in.getReader().read();
+            int c = reader.read();
             if (eolStyle == EolStyle.CRLF) {
                 if (c == '\r') {
-                    long mark = in.position();
-                    int c2 = in.getReader().read();
+                    int c2 = reader.read();
                     if (c2 == '\n') {
                         ++lineNumber;
                         return c2;
-                    }
-                    // '\r' was not followed by '\n'
-                    // we cannot depend on characters to contain 1 byte only
-                    // so we need to revert to the last known position.
-                    in.position(mark);
+                    } else {
+			// '\r' was not followed by '\n'
+			// we cannot depend on characters to contain 1 byte only
+			// so we need to revert to the last known position.
+			// The classical use case for unreadChar
+			racf.unreadChar((char)c2);
+		    }
                 }
                 return c;
-            }
-            if (c == eolChar) {
+            } else if (c == eolChar) {
                 ++lineNumber;
                 return c;
-            }
-            return c;
+            } else {
+		return c;
+	    }
         }
         catch (NullPointerException e) {
             streamNotInputStream();
@@ -240,7 +263,7 @@ public final class FileStream extends Stream
     protected void _unreadChar(int n) throws ConditionThrowable
     {
         try {
-            in.unreadChar((char)n);
+            racf.unreadChar((char)n);
         }
         catch (IOException e) {
             error(new StreamError(this, e));
@@ -259,11 +282,11 @@ public final class FileStream extends Stream
         try {
             if (c == '\n') {
                 if (eolStyle == EolStyle.CRLF)
-                    out.getWriter().write((byte)'\r');
-                out.getWriter().write((byte)eolChar);
+                    writer.write('\r');
+                writer.write(eolChar);
                 charPos = 0;
             } else {
-                out.getWriter().write((byte)c);
+                writer.write(c);
                 ++charPos;
             }
         }
@@ -272,20 +295,41 @@ public final class FileStream extends Stream
         }
     }
 
-    @Override
+
     public void _writeChars(char[] chars, int start, int end)
+        throws ConditionThrowable {
+	_writeChars(chars, start, end, true);
+    }
+
+    public void _writeChars(char[] chars, int start, int end, boolean maintainCharPos)
         throws ConditionThrowable
     {
         try {
-            if (eolStyle == EolStyle.CRLF) {
+	    if (eolStyle == EolStyle.LF) {
+		/* we can do a little bit better in this special case */
+		writer.write(chars, start, end);
+		if (maintainCharPos) {
+		    int lastlfpos = -1;
+		    for (int i = start; i < end; i++) {
+			if (chars[i] == '\n') {
+			    lastlfpos = i;
+			}
+		    }
+		    if (lastlfpos == -1) {
+			charPos += end - start;
+		    } else {
+			charPos = end - lastlfpos;
+		    }
+		}
+	    } else if (eolStyle == EolStyle.CRLF) {
                 for (int i = start; i < end; i++) {
                     char c = chars[i];
                     if (c == '\n') {
-                        out.getWriter().write((byte)'\r');
-                        out.getWriter().write((byte)'\n');
+                        writer.write('\r');
+                        writer.write('\n');
                         charPos = 0;
                     } else {
-                        out.getWriter().write((byte)c);
+                        writer.write(c);
                         ++charPos;
                     }
                 }
@@ -293,10 +337,10 @@ public final class FileStream extends Stream
                 for (int i = start; i < end; i++) {
                     char c = chars[i];
                     if (c == '\n') {
-                        out.getWriter().write((byte)eolChar);
+                        writer.write(eolChar);
                         charPos = 0;
                     } else {
-                        out.getWriter().write((byte)c);
+                        writer.write(c);
                         ++charPos;
                     }
                 }
@@ -310,13 +354,13 @@ public final class FileStream extends Stream
     @Override
     public void _writeString(String s) throws ConditionThrowable
     {
-        _writeChars(s.toCharArray(), 0, s.length());
+        _writeChars(s.toCharArray(), 0, s.length(), true);
     }
 
     @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
-        _writeString(s);
+	_writeChars(s.toCharArray(), 0, s.length(), false);
         if (eolStyle == EolStyle.CRLF)
             _writeChar('\r');
         _writeChar(eolChar);
@@ -328,7 +372,7 @@ public final class FileStream extends Stream
     public int _readByte() throws ConditionThrowable
     {
         try {
-            return in.getInputStream().read(); // Reads an 8-bit byte.
+            return inst.read(); // Reads an 8-bit byte.
         }
         catch (NullPointerException e) {
             streamNotInputStream();
@@ -345,7 +389,7 @@ public final class FileStream extends Stream
     public void _writeByte(int n) throws ConditionThrowable
     {
         try {
-            out.getOutputStream().write(n); // Writes an 8-bit byte.
+            outst.write(n); // Writes an 8-bit byte.
         }
         catch (NullPointerException e) {
             streamNotOutputStream();
@@ -359,10 +403,11 @@ public final class FileStream extends Stream
     public void _clearInput() throws ConditionThrowable
     {
         try {
-            in.position(in.length());
-        }
-        catch (NullPointerException e) {
-            streamNotInputStream();
+	    if (isInputStream) {
+		racf.position(racf.length());
+	    } else {
+		streamNotInputStream();
+	    }
         }
         catch (IOException e) {
             error(new StreamError(this, e));
@@ -422,7 +467,7 @@ public final class FileStream extends Stream
         return unreadableString(Symbol.FILE_STREAM);
     }
 
-    // ### make-file-stream pathname namestring element-type direction if-exists => stream
+    // ### make-file-stream pathname namestring element-type direction if-exists external-format => stream
     private static final Primitive MAKE_FILE_STREAM =
         new Primitive("make-file-stream", PACKAGE_SYS, true,
                       "pathname namestring element-type direction if-exists external-format")
@@ -454,16 +499,20 @@ public final class FileStream extends Stream
             
             String encoding = "ISO-8859-1";
             if (externalFormat != NIL) {
-                Symbol enc = (Symbol)externalFormat.car(); //FIXME: class cast exception to be caught
-                if (enc != NIL) {
-                    if (enc != keywordCodePage) {
-                        encoding = enc.getName();
-                    }
-                    //FIXME: the else for the keywordCodePage to be filled in
-                }
-                //FIXME: the else for the == NIL to be filled in: raise an error...
+		if (externalFormat instanceof Symbol) {
+		    Symbol enc = (Symbol)externalFormat; //FIXME: class cast exception to be caught
+		    if (enc != NIL) {
+			if (enc != keywordCodePage) {
+			    encoding = enc.getName();
+			}
+			//FIXME: the else for the keywordCodePage to be filled in
+		    }
+		    //FIXME: the else for the == NIL to be filled in: raise an error...
+		} else if (externalFormat instanceof AbstractString) {
+		    AbstractString encName = (AbstractString) externalFormat;
+		    encoding = encName.getStringValue();
+		}
             }
-        
             
             
             if (direction != Keyword.INPUT && direction != Keyword.OUTPUT &&
