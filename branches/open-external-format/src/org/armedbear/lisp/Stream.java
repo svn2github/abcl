@@ -1760,13 +1760,19 @@ public class Stream extends LispObject
       {
         int n = reader.read();
         ++offset;
-        if (n == '\r')
-          {
-            if (interactive && Utilities.isPlatformWindows)
-              return _readChar();
-          }
-        if (n == '\n')
+        if (eolStyle == EolStyle.CRLF && n == '\r') {
+            n = _readChar();
+            if (n != '\n') {
+                _unreadChar(n);
+                return '\r';
+            }
+        }
+
+        if (n == eolChar) {
           ++lineNumber;
+          return '\n';
+        }
+
         return n;
       }
     catch (NullPointerException e)
@@ -1793,7 +1799,7 @@ public class Stream extends LispObject
       {
         reader.unread(n);
         --offset;
-        if (n == '\n')
+        if (n == eolChar)
           --lineNumber;
       }
     catch (NullPointerException e)
@@ -1841,14 +1847,16 @@ public class Stream extends LispObject
   {
     try
       {
-        writer.write(c);
-        if (c == '\n')
-          {
-            writer.flush();
-            charPos = 0;
-          }
-        else
+        if (c == '\n') {
+          if (eolStyle == EolStyle.CRLF)
+              writer.write('\r');
+          writer.write(eolChar);
+          writer.flush();
+          charPos = 0;
+        } else {
+          writer.write(c);
           ++charPos;
+        }
       }
     catch (NullPointerException e)
       {
@@ -1874,6 +1882,13 @@ public class Stream extends LispObject
   {
     try
       {
+        if (eolStyle != EolStyle.RAW) {
+          for (int i = start; i++ < end;)
+            //###FIXME: the number of writes can be greatly reduced by
+            // writing the space between newlines as chunks.
+            _writeChar(chars[i]);
+        }
+        
         writer.write(chars, start, end - start);
         int index = -1;
         for (int i = end; i-- > start;)
@@ -1918,15 +1933,10 @@ public class Stream extends LispObject
   {
     try
       {
-        writer.write(s);
-        int index = s.lastIndexOf('\n');
-        if (index < 0)
-          charPos += s.length();
-        else
-          {
-            charPos = s.length() - (index + 1);
-            writer.flush();
-          }
+        for (int i = 0; i++ < s.length();)
+          //###FIXME: the number of writes can be greatly reduced by
+          // writing the space between newlines as chunks.
+          _writeChar(s.charAt(i));
       }
     catch (NullPointerException e)
       {
@@ -1934,10 +1944,6 @@ public class Stream extends LispObject
           streamNotCharacterOutputStream();
         else
           throw e;
-      }
-    catch (IOException e)
-      {
-        error(new StreamError(this, e));
       }
   }
 
@@ -1951,19 +1957,13 @@ public class Stream extends LispObject
   {
     try
       {
-        writer.write(s);
-        writer.write('\n');
-        writer.flush();
-        charPos = 0;
+        _writeString(s);
+        _writeChar('\n');
       }
     catch (NullPointerException e)
       {
         // writer is null
         streamNotCharacterOutputStream();
-      }
-    catch (IOException e)
-      {
-        error(new StreamError(this, e));
       }
   }
 
