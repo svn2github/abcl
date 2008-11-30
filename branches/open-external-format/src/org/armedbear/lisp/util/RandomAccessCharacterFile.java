@@ -173,8 +173,8 @@ public class RandomAccessCharacterFile {
 	fcn = raf.getChannel();
 	fcnpos = fcn.position();
 	fcnsize = fcn.size();
-		
-	cset = Charset.forName(encoding);
+	
+	cset = (encoding == null) ? Charset.defaultCharset() : Charset.forName(encoding);
 	cdec = cset.newDecoder();
 	cenc = cset.newEncoder(); 
 		

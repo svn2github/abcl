@@ -40,19 +40,38 @@ public final class socket_stream extends Primitive
 {
     private socket_stream()
     {
-        super("%socket-stream", PACKAGE_SYS, false, "socket element-type");
+        super("%socket-stream", PACKAGE_SYS, false, "socket element-type external-format");
     }
 
-    public LispObject execute(LispObject first, LispObject second)
+    static final private Symbol keywordCodePage = Packages.internKeyword("CODE-PAGE");
+
+    public LispObject execute(LispObject first, LispObject second, LispObject third)
         throws ConditionThrowable
     {
         Socket socket = (Socket) ((JavaObject)first).getObject();
         LispObject elementType = second; // Checked by caller.
+	LispObject externalFormat = third;
+	String encoding = "ISO-8859-1"; // for default
+	if (externalFormat != NIL) {
+	    if (externalFormat instanceof Symbol) {
+		Symbol enc = (Symbol)externalFormat; //FIXME: class cast exception to be caught
+		if (enc != NIL) {
+		    if (enc != keywordCodePage) {
+			encoding = enc.getName();
+		    }
+		    //FIXME: the else for the keywordCodePage to be filled in
+		}
+		//FIXME: the else for the == NIL to be filled in: raise an error...
+	    } else if (externalFormat instanceof AbstractString) {
+		AbstractString encName = (AbstractString) externalFormat;
+		encoding = encName.getStringValue();
+	    }
+	}
         try {
              Stream in =
-                 new Stream(socket.getInputStream(), elementType);
+                 new Stream(socket.getInputStream(), elementType, encoding);
              Stream out =
-                 new Stream(socket.getOutputStream(), elementType);
+                 new Stream(socket.getOutputStream(), elementType, encoding);
              return new SocketStream(socket, in, out);
         }
         catch (Exception e) {
