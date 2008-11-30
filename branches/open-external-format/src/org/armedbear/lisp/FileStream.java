@@ -54,22 +54,9 @@ public final class FileStream extends Stream
     private Reader reader;
     private Writer writer;
 
-    public enum EolStyle {
-        CR,
-        CRLF,
-        LF
-    }
-    
-    static final private Symbol keywordCodePage = Packages.internKeyword("CODE-PAGE");
-    
-    private final static EolStyle platformEolStyle = Utilities.isPlatformWindows ? EolStyle.CRLF : EolStyle.LF;
-    
-    private EolStyle eolStyle = platformEolStyle;
-    private char eolChar = 0;
-    
     public FileStream(Pathname pathname, String namestring,
                       LispObject elementType, LispObject direction,
-                      LispObject ifExists, String encoding, EolStyle eol)
+                      LispObject ifExists, LispObject format)
         throws IOException
     {
         /* externalFormat is a LispObject of which the first char is a
@@ -114,6 +101,8 @@ public final class FileStream extends Stream
                     raf.setLength(0);
             }
         }
+        setExternalFormat(format);
+        
 	// don't touch raf directly after passing it to racf.
 	// the state will become inconsistent if you do that.
         racf = new RandomAccessCharacterFile(raf, encoding);
@@ -146,7 +135,6 @@ public final class FileStream extends Stream
 		outst = racf.getOutputStream();
 	    }
         }
-        eolChar = (eol == EolStyle.CR) ? '\r' : '\n';
     }
 
     @Override
@@ -295,7 +283,7 @@ public final class FileStream extends Stream
         }
     }
 
-
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable {
 	_writeChars(chars, start, end, true);
@@ -497,31 +485,13 @@ public final class FileStream extends Stream
             LispObject ifExists = fifth;
             LispObject externalFormat = sixth;
             
-            String encoding = "ISO-8859-1";
-            if (externalFormat != NIL) {
-		if (externalFormat instanceof Symbol) {
-		    Symbol enc = (Symbol)externalFormat; //FIXME: class cast exception to be caught
-		    if (enc != NIL) {
-			if (enc != keywordCodePage) {
-			    encoding = enc.getName();
-			}
-			//FIXME: the else for the keywordCodePage to be filled in
-		    }
-		    //FIXME: the else for the == NIL to be filled in: raise an error...
-		} else if (externalFormat instanceof AbstractString) {
-		    AbstractString encName = (AbstractString) externalFormat;
-		    encoding = encName.getStringValue();
-		}
-            }
-            
-            
             if (direction != Keyword.INPUT && direction != Keyword.OUTPUT &&
                 direction != Keyword.IO)
                 error(new LispError("Direction must be :INPUT, :OUTPUT, or :IO."));
             try {
                 return new FileStream(pathname, namestring.getStringValue(),
                                       elementType, direction, ifExists,
-                                      encoding, platformEolStyle);
+                                      externalFormat);
             }
             catch (FileNotFoundException e) {
                 return NIL;

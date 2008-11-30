@@ -80,6 +80,31 @@ public class Stream extends LispObject
    */
   protected int charPos;
   
+  public enum EolStyle {
+    RAW,
+    CR,
+    CRLF,
+    LF
+  }
+
+  static final private Symbol keywordDefault = Packages.internKeyword("DEFAULT");
+  
+  static final private Symbol keywordCodePage = Packages.internKeyword("CODE-PAGE");
+  static final private Symbol keywordID = Packages.internKeyword("ID");
+
+  static final private Symbol keywordEolStyle = Packages.internKeyword("EOL-STYLE");
+  static final private Symbol keywordCR = Packages.internKeyword("CR");
+  static final private Symbol keywordLF = Packages.internKeyword("LF");
+  static final private Symbol keywordCRLF = Packages.internKeyword("CRLF");
+  static final private Symbol keywordRAW = Packages.internKeyword("RAW");
+    
+  public final static EolStyle platformEolStyle = Utilities.isPlatformWindows ? EolStyle.CRLF : EolStyle.LF;
+    
+  protected EolStyle eolStyle = platformEolStyle;
+  protected char eolChar = 0;
+  protected LispObject externalFormat = LispObject.NIL;
+  protected String encoding = null;
+  
   // Binary input.
   private BufferedInputStream in;
 
@@ -215,6 +240,71 @@ public class Stream extends LispObject
     interactive = b;
   }
 
+  public LispObject getExternalFormat() {
+      return externalFormat;
+  }
+  
+  public String getEncoding() {
+      return encoding;
+  }
+  
+  public void setExternalFormat(LispObject format) {
+    if (format == keywordDefault) {
+      encoding = null;
+      eolStyle = platformEolStyle;
+      eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
+      externalFormat = format;
+      
+      return;
+    }
+      
+    try {
+      LispObject enc;
+      boolean encIsCp = false;
+      
+      if (format instanceof Cons) {
+          // meaning a non-empty list
+          enc = format.car();
+
+          if (enc == keywordCodePage) {
+              encIsCp = true;
+
+              enc = LispObject.getf(format.cdr(), keywordID, null);
+          }
+          
+          LispObject eol = LispObject.getf(format.cdr(), keywordEolStyle, keywordRAW);
+          if (eol == keywordCR)
+              eolStyle = EolStyle.CR;
+          else if (eol == keywordLF)
+              eolStyle = EolStyle.LF;
+          else if (eol == keywordCRLF)
+              eolStyle = EolStyle.CRLF;
+          else if (eol != keywordRAW)
+              //###FIXME: raise an error
+              ;
+          
+      } else
+        enc = format;
+      
+      if (enc.numberp())
+          encoding = enc.toString();
+      else if (enc instanceof AbstractString)
+          encoding = enc.getStringValue();
+      else if (enc instanceof Symbol)
+          encoding = ((Symbol)enc).getName();
+      else
+          //###FIXME: raise an error!
+          ;
+      
+      if (encIsCp)
+          encoding = "Cp" + encoding;
+    }
+    catch (ConditionThrowable ct) { }
+    
+    eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
+    externalFormat = format;
+  }
+  
   public boolean isOpen()
   {
     return open;
