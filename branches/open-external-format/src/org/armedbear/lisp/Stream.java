@@ -79,7 +79,7 @@ public class Stream extends LispObject
    * required when calling FRESH-LINE
    */
   protected int charPos;
-
+  
   // Binary input.
   private BufferedInputStream in;
 
@@ -90,8 +90,14 @@ public class Stream extends LispObject
   {
   }
 
-  // Input stream constructors.
   public Stream(InputStream inputStream, LispObject elementType)
+    {
+	this(inputStream, elementType, null);
+    }
+
+
+  // Input stream constructors.
+    public Stream(InputStream inputStream, LispObject elementType, String encoding)
   {
     this.elementType = elementType;
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
@@ -101,7 +107,9 @@ public class Stream extends LispObject
         try
           {
             inputStreamReader =
-              new InputStreamReader(inputStream, "ISO-8859-1");
+                    (encoding == null) ?
+                        new InputStreamReader(inputStream)
+                        : new InputStreamReader(inputStream, encoding);
           }
         catch (java.io.UnsupportedEncodingException e)
           {
@@ -127,8 +135,13 @@ public class Stream extends LispObject
     setInteractive(interactive);
   }
 
-  // Output stream constructors.
   public Stream(OutputStream outputStream, LispObject elementType)
+    {
+	this(outputStream, elementType, null);
+    }
+    
+  // Output stream constructors.
+  public Stream(OutputStream outputStream, LispObject elementType, String encoding)
   {
     this.elementType = elementType;
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
@@ -136,7 +149,9 @@ public class Stream extends LispObject
         isCharacterStream = true;
         try
           {
-            writer = new OutputStreamWriter(outputStream, "ISO-8859-1");
+            writer = (encoding == null) ?
+                new OutputStreamWriter(outputStream)
+                : new OutputStreamWriter(outputStream, encoding);
           }
         catch (java.io.UnsupportedEncodingException e)
           {
