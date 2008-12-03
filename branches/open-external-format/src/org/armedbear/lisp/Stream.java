@@ -101,7 +101,7 @@ public class Stream extends LispObject
   public final static EolStyle platformEolStyle = Utilities.isPlatformWindows ? EolStyle.CRLF : EolStyle.LF;
     
   protected EolStyle eolStyle = platformEolStyle;
-  protected char eolChar = 0;
+  protected char eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
   protected LispObject externalFormat = LispObject.NIL;
   protected String encoding = null;
   
@@ -1883,13 +1883,14 @@ public class Stream extends LispObject
     try
       {
         if (eolStyle != EolStyle.RAW) {
-          for (int i = start; i++ < end;)
+          for (int i = start; i < end; i++)
             //###FIXME: the number of writes can be greatly reduced by
             // writing the space between newlines as chunks.
             _writeChar(chars[i]);
-        }
+          
+        } else
+          writer.write(chars, start, end - start);
         
-        writer.write(chars, start, end - start);
         int index = -1;
         for (int i = end; i-- > start;)
           {
