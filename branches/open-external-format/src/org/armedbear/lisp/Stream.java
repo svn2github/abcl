@@ -1933,7 +1933,7 @@ public class Stream extends LispObject
   {
     try
       {
-        for (int i = 0; i++ < s.length();)
+        for (int i = 0; i < s.length(); i++)
           //###FIXME: the number of writes can be greatly reduced by
           // writing the space between newlines as chunks.
           _writeChar(s.charAt(i));
