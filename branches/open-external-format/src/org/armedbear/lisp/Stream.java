@@ -113,34 +113,21 @@ public class Stream extends LispObject
   // Binary output.
   private OutputStream out;
 
-  // end of line character sequence.
-  private char[] eolseq;
-  
-  private void setEolSeq() {
-    if (eolStyle == EolStyle.CRLF) {
-      eolseq = new char[] { '\r', '\n' };
-    } else if (eolStyle == EolStyle.CR) {
-      eolseq = new char[] { '\r' };
-    } else {
-      eolseq = new char[] { '\n' };
-    }
-  }
-
   protected Stream()
   {
-    setEolSeq();
   }
 
   public Stream(InputStream inputStream, LispObject elementType)
     {
-      this(inputStream, elementType, null);
+      this(inputStream, elementType, keywordDefault);
     }
 
 
   // Input stream constructors.
-    public Stream(InputStream inputStream, LispObject elementType, String encoding)
+    public Stream(InputStream inputStream, LispObject elementType, LispObject format)
   {
     this.elementType = elementType;
+    setExternalFormat(format);
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
         InputStreamReader inputStreamReader;
@@ -167,7 +154,6 @@ public class Stream extends LispObject
         InputStream in = new BufferedInputStream(inputStream);
 	initAsBinaryInputStream(in);
       }
-    setEolSeq();
   }
 
   public Stream(InputStream inputStream, LispObject elementType, boolean interactive)
@@ -178,13 +164,14 @@ public class Stream extends LispObject
 
   public Stream(OutputStream outputStream, LispObject elementType)
     {
-      this(outputStream, elementType, null);
+      this(outputStream, elementType, keywordDefault);
     }
     
   // Output stream constructors.
-  public Stream(OutputStream outputStream, LispObject elementType, String encoding)
+  public Stream(OutputStream outputStream, LispObject elementType, LispObject format)
   {
     this.elementType = elementType;
+    setExternalFormat(format);
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
 	Writer writer;
@@ -206,7 +193,6 @@ public class Stream extends LispObject
         OutputStream out = new BufferedOutputStream(outputStream);
 	initAsBinaryOutputStream(out);
       }
-    setEolSeq();
   }
 
   public Stream(OutputStream outputStream, LispObject elementType,
@@ -295,7 +281,6 @@ public class Stream extends LispObject
       eolStyle = platformEolStyle;
       eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
       externalFormat = format;
-      setEolSeq();
       return;
     }
       
@@ -1890,7 +1875,7 @@ public class Stream extends LispObject
       {
         if (c == '\n') {
 	  writer.write(eolseq);
-          writer.flush();
+            writer.flush();
           charPos = 0;
         } else {
           writer.write(c);
@@ -1928,7 +1913,7 @@ public class Stream extends LispObject
             _writeChar(chars[i]);
           
         } else
-          writer.write(chars, start, end - start);
+        writer.write(chars, start, end - start);
         
         int index = -1;
         for (int i = end; i-- > start;)
@@ -1947,7 +1932,7 @@ public class Stream extends LispObject
         else
           {
             charPos = end - (index + 1);
-            writer.flush();
+              writer.flush();
 	    }
 	  }
     catch (NullPointerException e)
