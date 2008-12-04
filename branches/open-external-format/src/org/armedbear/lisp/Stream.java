@@ -151,8 +151,8 @@ public class Stream extends LispObject
     else
       {
         isBinaryStream = true;
-        InputStream in = new BufferedInputStream(inputStream);
-	initAsBinaryInputStream(in);
+        InputStream stream = new BufferedInputStream(inputStream);
+	initAsBinaryInputStream(stream);
       }
   }
 
@@ -174,24 +174,24 @@ public class Stream extends LispObject
     setExternalFormat(format);
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
-	Writer writer;
+	Writer w;
         try
           {
-            writer = (encoding == null) ?
+            w = (encoding == null) ?
                 new OutputStreamWriter(outputStream)
                 : new OutputStreamWriter(outputStream, encoding);
           }
         catch (java.io.UnsupportedEncodingException e)
           {
             Debug.trace(e);
-            writer = new OutputStreamWriter(outputStream);
+            w = new OutputStreamWriter(outputStream);
           }
-	initAsCharacterOutputStream(writer);
+	initAsCharacterOutputStream(w);
       }
     else
       {
-        OutputStream out = new BufferedOutputStream(outputStream);
-	initAsBinaryOutputStream(out);
+        OutputStream stream = new BufferedOutputStream(outputStream);
+	initAsBinaryOutputStream(stream);
       }
   }
 
