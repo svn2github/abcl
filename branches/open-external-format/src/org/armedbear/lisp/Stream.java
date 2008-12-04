@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.PushbackReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
@@ -66,7 +67,8 @@ public class Stream extends LispObject
   private boolean open = true;
 
   // Character input.
-  private PushbackReader reader;
+  private Reader reader;
+  private PushbackReader pushbackReader;
   protected int offset;
   protected int lineNumber;
 
@@ -106,18 +108,32 @@ public class Stream extends LispObject
   protected String encoding = null;
   
   // Binary input.
-  private BufferedInputStream in;
+  private InputStream in;
 
   // Binary output.
-  private BufferedOutputStream out;
+  private OutputStream out;
+
+  // end of line character sequence.
+  private char[] eolseq;
+  
+  private void setEolSeq() {
+    if (eolStyle == EolStyle.CRLF) {
+      eolseq = new char[] { '\r', '\n' };
+    } else if (eolStyle == EolStyle.CR) {
+      eolseq = new char[] { '\r' };
+    } else {
+      eolseq = new char[] { '\n' };
+    }
+  }
 
   protected Stream()
   {
+    setEolSeq();
   }
 
   public Stream(InputStream inputStream, LispObject elementType)
     {
-	this(inputStream, elementType, null);
+      this(inputStream, elementType, null);
     }
 
 
@@ -127,7 +143,6 @@ public class Stream extends LispObject
     this.elementType = elementType;
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
-        isCharacterStream = true;
         InputStreamReader inputStreamReader;
         try
           {
@@ -142,16 +157,17 @@ public class Stream extends LispObject
             inputStreamReader =
               new InputStreamReader(inputStream);
           }
-        reader = new PushbackReader(new BufferedReader(inputStreamReader),
-                                    2);
+        pushbackReader = new PushbackReader(new BufferedReader(inputStreamReader),
+					    2);
+	initAsCharacterInputStream(pushbackReader);
       }
     else
       {
         isBinaryStream = true;
-        in = new BufferedInputStream(inputStream);
+        InputStream in = new BufferedInputStream(inputStream);
+	initAsBinaryInputStream(in);
       }
-    isInputStream = true;
-    isOutputStream = false;
+    setEolSeq();
   }
 
   public Stream(InputStream inputStream, LispObject elementType, boolean interactive)
@@ -162,7 +178,7 @@ public class Stream extends LispObject
 
   public Stream(OutputStream outputStream, LispObject elementType)
     {
-	this(outputStream, elementType, null);
+      this(outputStream, elementType, null);
     }
     
   // Output stream constructors.
@@ -171,7 +187,7 @@ public class Stream extends LispObject
     this.elementType = elementType;
     if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR)
       {
-        isCharacterStream = true;
+	Writer writer;
         try
           {
             writer = (encoding == null) ?
@@ -183,14 +199,14 @@ public class Stream extends LispObject
             Debug.trace(e);
             writer = new OutputStreamWriter(outputStream);
           }
+	initAsCharacterOutputStream(writer);
       }
     else
       {
-        isBinaryStream = true;
-        out = new BufferedOutputStream(outputStream);
+        OutputStream out = new BufferedOutputStream(outputStream);
+	initAsBinaryOutputStream(out);
       }
-    isInputStream = false;
-    isOutputStream = true;
+    setEolSeq();
   }
 
   public Stream(OutputStream outputStream, LispObject elementType,
@@ -198,6 +214,31 @@ public class Stream extends LispObject
   {
     this(outputStream, elementType);
     setInteractive(interactive);
+  }
+
+  protected void initAsCharacterInputStream(Reader reader)
+  {
+    this.reader = reader;
+    isInputStream = true;
+    isCharacterStream = true;
+  }
+
+  protected void initAsBinaryInputStream(InputStream in) {
+    this.in = in;
+    isInputStream = true;
+    isBinaryStream = true;
+  }
+
+  protected void initAsCharacterOutputStream(Writer writer) {
+    this.writer = writer;
+    isOutputStream = true;
+    isCharacterStream = true;
+  }
+
+  protected void initAsBinaryOutputStream(OutputStream out) {
+    this.out = out;
+    isOutputStream = true;
+    isBinaryStream = true;
   }
 
   public boolean isInputStream() throws ConditionThrowable
@@ -254,7 +295,7 @@ public class Stream extends LispObject
       eolStyle = platformEolStyle;
       eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
       externalFormat = format;
-      
+      setEolSeq();
       return;
     }
       
@@ -1797,7 +1838,7 @@ public class Stream extends LispObject
   {
     try
       {
-        reader.unread(n);
+        pushbackReader.unread(n);
         --offset;
         if (n == eolChar)
           --lineNumber;
@@ -1848,9 +1889,7 @@ public class Stream extends LispObject
     try
       {
         if (c == '\n') {
-          if (eolStyle == EolStyle.CRLF)
-              writer.write('\r');
-          writer.write(eolChar);
+	  writer.write(eolseq);
           writer.flush();
           charPos = 0;
         } else {
@@ -1898,19 +1937,19 @@ public class Stream extends LispObject
               {
                 index = i;
                 break;
-              }
-          }
+	  }
+	}
         if (index < 0)
           {
             // No newline.
             charPos += (end - start);
-          }
+	      }
         else
           {
             charPos = end - (index + 1);
             writer.flush();
-          }
-      }
+	    }
+	  }
     catch (NullPointerException e)
       {
         if (writer == null)
@@ -1934,10 +1973,7 @@ public class Stream extends LispObject
   {
     try
       {
-        for (int i = 0; i < s.length(); i++)
-          //###FIXME: the number of writes can be greatly reduced by
-          // writing the space between newlines as chunks.
-          _writeChar(s.charAt(i));
+	_writeChars(s.toCharArray(), 0, s.length());
       }
     catch (NullPointerException e)
       {

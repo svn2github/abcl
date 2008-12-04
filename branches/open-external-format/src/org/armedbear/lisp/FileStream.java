@@ -49,10 +49,6 @@ public final class FileStream extends Stream
     private final RandomAccessCharacterFile racf;
     private final Pathname pathname;
     private final int bytesPerUnit;
-    private InputStream inst;
-    private OutputStream outst;
-    private Reader reader;
-    private Writer writer;
 
     public FileStream(Pathname pathname, String namestring,
                       LispObject elementType, LispObject direction,
@@ -113,10 +109,10 @@ public final class FileStream extends Stream
             isCharacterStream = true;
             bytesPerUnit = 1;
 	    if (isInputStream) {
-		reader = racf.getReader();
+		initAsCharacterInputStream(racf.getReader());
 	    }
 	    if (isOutputStream) {
-		writer = racf.getWriter();
+		initAsCharacterOutputStream(racf.getWriter());
 	    }
         } else {
             isBinaryStream = true;
@@ -129,10 +125,10 @@ public final class FileStream extends Stream
             }
             bytesPerUnit = width / 8;
 	    if (isInputStream) {
-		inst = racf.getInputStream();
+		initAsBinaryInputStream(racf.getInputStream());
 	    }
 	    if (isOutputStream) {
-		outst = racf.getOutputStream();
+		initAsBinaryOutputStream(racf.getOutputStream());
 	    }
         }
     }
@@ -165,23 +161,6 @@ public final class FileStream extends Stream
     }
 
     @Override
-    public LispObject listen() throws ConditionThrowable
-    {
-        try {
-	    if (isInputStream) {
-		return (racf.position() < racf.length()) ? T : NIL;
-	    } else {
-		streamNotInputStream();
-	    }
-        }
-	catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-        // Not reached.
-        return NIL;
-    }
-
-    @Override
     public LispObject fileLength() throws ConditionThrowable
     {
         final long length;
@@ -209,44 +188,6 @@ public final class FileStream extends Stream
         return number(length / bytesPerUnit);
     }
 
-    // Returns -1 at end of file.
-    @Override
-    protected int _readChar() throws ConditionThrowable
-    {
-        try {
-            int c = reader.read();
-            if (eolStyle == EolStyle.CRLF) {
-                if (c == '\r') {
-                    int c2 = reader.read();
-                    if (c2 == '\n') {
-                        ++lineNumber;
-                        return c2;
-                    } else {
-			// '\r' was not followed by '\n'
-			// we cannot depend on characters to contain 1 byte only
-			// so we need to revert to the last known position.
-			// The classical use case for unreadChar
-			racf.unreadChar((char)c2);
-		    }
-                }
-                return c;
-            } else if (c == eolChar) {
-                ++lineNumber;
-                return c;
-            } else {
-		return c;
-	    }
-        }
-        catch (NullPointerException e) {
-            streamNotInputStream();
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-        // Not reached.
-        return -1;
-    }
-
     @Override
     protected void _unreadChar(int n) throws ConditionThrowable
     {
@@ -262,129 +203,6 @@ public final class FileStream extends Stream
     protected boolean _charReady() throws ConditionThrowable
     {
         return true;
-    }
-
-    @Override
-    public void _writeChar(char c) throws ConditionThrowable
-    {
-        try {
-            if (c == '\n') {
-                if (eolStyle == EolStyle.CRLF)
-                    writer.write('\r');
-                writer.write(eolChar);
-                charPos = 0;
-            } else {
-                writer.write(c);
-                ++charPos;
-            }
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-    }
-
-    @Override
-    public void _writeChars(char[] chars, int start, int end)
-        throws ConditionThrowable {
-	_writeChars(chars, start, end, true);
-    }
-
-    public void _writeChars(char[] chars, int start, int end, boolean maintainCharPos)
-        throws ConditionThrowable
-    {
-        try {
-	    if (eolStyle == EolStyle.LF) {
-		/* we can do a little bit better in this special case */
-		writer.write(chars, start, end);
-		if (maintainCharPos) {
-		    int lastlfpos = -1;
-		    for (int i = start; i < end; i++) {
-			if (chars[i] == '\n') {
-			    lastlfpos = i;
-			}
-		    }
-		    if (lastlfpos == -1) {
-			charPos += end - start;
-		    } else {
-			charPos = end - lastlfpos;
-		    }
-		}
-	    } else if (eolStyle == EolStyle.CRLF) {
-                for (int i = start; i < end; i++) {
-                    char c = chars[i];
-                    if (c == '\n') {
-                        writer.write('\r');
-                        writer.write('\n');
-                        charPos = 0;
-                    } else {
-                        writer.write(c);
-                        ++charPos;
-                    }
-                }
-            } else {
-                for (int i = start; i < end; i++) {
-                    char c = chars[i];
-                    if (c == '\n') {
-                        writer.write(eolChar);
-                        charPos = 0;
-                    } else {
-                        writer.write(c);
-                        ++charPos;
-                    }
-                }
-            }
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-    }
-
-    @Override
-    public void _writeString(String s) throws ConditionThrowable
-    {
-        _writeChars(s.toCharArray(), 0, s.length(), true);
-    }
-
-    @Override
-    public void _writeLine(String s) throws ConditionThrowable
-    {
-	_writeChars(s.toCharArray(), 0, s.length(), false);
-        if (eolStyle == EolStyle.CRLF)
-            _writeChar('\r');
-        _writeChar(eolChar);
-        charPos = 0;
-    }
-
-    // Reads an 8-bit byte.
-    @Override
-    public int _readByte() throws ConditionThrowable
-    {
-        try {
-            return inst.read(); // Reads an 8-bit byte.
-        }
-        catch (NullPointerException e) {
-            streamNotInputStream();
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
-        // Not reached.
-        return -1;
-    }
-
-    // Writes an 8-bit byte.
-    @Override
-    public void _writeByte(int n) throws ConditionThrowable
-    {
-        try {
-            outst.write(n); // Writes an 8-bit byte.
-        }
-        catch (NullPointerException e) {
-            streamNotOutputStream();
-        }
-        catch (IOException e) {
-            error(new StreamError(this, e));
-        }
     }
 
     @Override
