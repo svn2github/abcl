@@ -1874,8 +1874,12 @@ public class Stream extends LispObject
     try
       {
         if (c == '\n') {
-	  writer.write(eolseq);
-            writer.flush();
+	  if (eolStyle == EolStyle.CRLF)
+              writer.write("\r\n");
+          else
+              writer.write(eolChar);
+          
+          writer.flush();
           charPos = 0;
         } else {
           writer.write(c);
