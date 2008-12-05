@@ -67,8 +67,7 @@ public class Stream extends LispObject
   private boolean open = true;
 
   // Character input.
-  private Reader reader;
-  private PushbackReader pushbackReader;
+  private PushbackReader reader;
   protected int offset;
   protected int lineNumber;
 
@@ -89,7 +88,7 @@ public class Stream extends LispObject
     LF
   }
 
-  static final private Symbol keywordDefault = Packages.internKeyword("DEFAULT");
+  static final protected Symbol keywordDefault = Packages.internKeyword("DEFAULT");
   
   static final private Symbol keywordCodePage = Packages.internKeyword("CODE-PAGE");
   static final private Symbol keywordID = Packages.internKeyword("ID");
@@ -106,6 +105,7 @@ public class Stream extends LispObject
   protected char eolChar = (eolStyle == EolStyle.CR) ? '\r' : '\n';
   protected LispObject externalFormat = LispObject.NIL;
   protected String encoding = null;
+  protected char lastChar = 0;
   
   // Binary input.
   private InputStream in;
@@ -144,9 +144,7 @@ public class Stream extends LispObject
             inputStreamReader =
               new InputStreamReader(inputStream);
           }
-        pushbackReader = new PushbackReader(new BufferedReader(inputStreamReader),
-					    2);
-	initAsCharacterInputStream(pushbackReader);
+        initAsCharacterInputStream(new BufferedReader(inputStreamReader));
       }
     else
       {
@@ -204,7 +202,11 @@ public class Stream extends LispObject
 
   protected void initAsCharacterInputStream(Reader reader)
   {
-    this.reader = reader;
+    if (! (reader instanceof PushbackReader))
+        this.reader = new PushbackReader(reader, 2);
+    else
+        this.reader = (PushbackReader)reader;
+    
     isInputStream = true;
     isCharacterStream = true;
   }
@@ -1823,7 +1825,7 @@ public class Stream extends LispObject
   {
     try
       {
-        pushbackReader.unread(n);
+        reader.unread(n);
         --offset;
         if (n == eolChar)
           --lineNumber;
@@ -1874,15 +1876,16 @@ public class Stream extends LispObject
     try
       {
         if (c == '\n') {
-	  if (eolStyle == EolStyle.CRLF)
-              writer.write("\r\n");
-          else
-              writer.write(eolChar);
-          
+	  if (eolStyle == EolStyle.CRLF && lastChar != '\r')
+              writer.write('\r');
+
+          writer.write(eolChar);
+          lastChar = eolChar;
           writer.flush();
           charPos = 0;
         } else {
           writer.write(c);
+          lastChar = c;
           ++charPos;
         }
       }
@@ -1915,10 +1918,11 @@ public class Stream extends LispObject
             //###FIXME: the number of writes can be greatly reduced by
             // writing the space between newlines as chunks.
             _writeChar(chars[i]);
-          
-        } else
-        writer.write(chars, start, end - start);
+          return;
+        }
         
+        writer.write(chars, start, end - start);
+        lastChar = chars[end-1];
         int index = -1;
         for (int i = end; i-- > start;)
           {
@@ -2137,6 +2141,7 @@ public class Stream extends LispObject
       {
         writer.write(sw.toString());
         writer.write('\n');
+        lastChar = '\n';
         writer.flush();
         charPos = 0;
       }
