@@ -62,16 +62,19 @@ public final class StringInputStream extends Stream
         offset = start;
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.STRING_INPUT_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.STRING_INPUT_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.STRING_INPUT_STREAM)
@@ -85,28 +88,32 @@ public final class StringInputStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public LispObject close(LispObject abort) throws ConditionThrowable
     {
         setOpen(false);
         return T;
     }
 
+    @Override
     public LispObject listen()
     {
         return offset < end ? T : NIL;
     }
 
+    @Override
     protected int _readChar()
     {
         if (offset >= end)
             return -1;
         int n = s.charAt(offset);
         ++offset;
-        if (n == '\n')
+            if (n == '\n')
             ++lineNumber;
         return n;
     }
 
+    @Override
     protected void _unreadChar(int n)
     {
         if (offset > start) {
@@ -116,11 +123,13 @@ public final class StringInputStream extends Stream
         }
     }
 
+    @Override
     protected boolean _charReady()
     {
         return true;
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("STRING-INPUT-STREAM");
@@ -131,11 +140,13 @@ public final class StringInputStream extends Stream
     private static final Primitive MAKE_STRING_INPUT_STREAM =
         new Primitive("make-string-input-stream", "string &optional start end")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return new StringInputStream(arg.getStringValue());
         }
 
+        @Override
         public LispObject execute(LispObject first, LispObject second)
             throws ConditionThrowable
         {
@@ -144,6 +155,7 @@ public final class StringInputStream extends Stream
             return new StringInputStream(s, start);
         }
 
+        @Override
         public LispObject execute(LispObject first, LispObject second,
                                   LispObject third)
             throws ConditionThrowable
@@ -161,6 +173,7 @@ public final class StringInputStream extends Stream
     private static final Primitive STRING_INPUT_STREAM_CURRENT =
         new Primitive("string-input-stream-current", PACKAGE_EXT, true, "stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             if (arg instanceof StringInputStream)

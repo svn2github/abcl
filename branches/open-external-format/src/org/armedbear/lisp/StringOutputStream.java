@@ -54,16 +54,19 @@ public final class StringOutputStream extends Stream
         setWriter(stringWriter = new StringWriter());
     }
 
+    @Override
     public LispObject typeOf()
     {
         return Symbol.STRING_OUTPUT_STREAM;
     }
 
+    @Override
     public LispObject classOf()
     {
         return BuiltInClass.STRING_OUTPUT_STREAM;
     }
 
+    @Override
     public LispObject typep(LispObject type) throws ConditionThrowable
     {
         if (type == Symbol.STRING_OUTPUT_STREAM)
@@ -77,6 +80,7 @@ public final class StringOutputStream extends Stream
         return super.typep(type);
     }
 
+    @Override
     public void _writeChar(char c) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -84,6 +88,7 @@ public final class StringOutputStream extends Stream
         super._writeChar(c);
     }
 
+    @Override
     public void _writeChars(char[] chars, int start, int end)
         throws ConditionThrowable
     {
@@ -92,6 +97,7 @@ public final class StringOutputStream extends Stream
         super._writeChars(chars, start, end);
     }
 
+    @Override
     public void _writeString(String s) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -99,6 +105,7 @@ public final class StringOutputStream extends Stream
         super._writeString(s);
     }
 
+    @Override
     public void _writeLine(String s) throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -111,6 +118,7 @@ public final class StringOutputStream extends Stream
         error(new TypeError("Attempt to write to a string output stream of element type NIL."));
     }
 
+    @Override
     protected long _getFilePosition() throws ConditionThrowable
     {
         if (elementType == NIL)
@@ -128,6 +136,7 @@ public final class StringOutputStream extends Stream
         return s;
     }
 
+    @Override
     public String toString()
     {
         return unreadableString("STRING-OUTPUT-STREAM");
@@ -139,6 +148,7 @@ public final class StringOutputStream extends Stream
         new Primitive("%make-string-output-stream", PACKAGE_SYS, false,
                        "element-type")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             return new StringOutputStream(arg);
@@ -150,6 +160,7 @@ public final class StringOutputStream extends Stream
     private static final Primitive GET_OUTPUT_STREAM_STRING =
         new Primitive("get-output-stream-string", "string-output-stream")
     {
+        @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
             try {
