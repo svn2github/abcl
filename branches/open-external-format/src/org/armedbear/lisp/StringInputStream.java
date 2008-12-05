@@ -33,7 +33,6 @@
 
 package org.armedbear.lisp;
 
-import java.io.IOException;
 import java.io.StringReader;
 
 public final class StringInputStream extends Stream
