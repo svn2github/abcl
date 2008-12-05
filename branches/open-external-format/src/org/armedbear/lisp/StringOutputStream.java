@@ -47,11 +47,7 @@ public final class StringOutputStream extends Stream
     private StringOutputStream(LispObject elementType)
     {
         this.elementType = elementType;
-        isInputStream = false;
-        isOutputStream = true;
-        isCharacterStream = true;
-        isBinaryStream = false;
-        setWriter(stringWriter = new StringWriter());
+        initAsCharacterOutputStream(stringWriter = new StringWriter());
     }
 
     @Override
@@ -78,44 +74,6 @@ public final class StringOutputStream extends Stream
         if (type == BuiltInClass.STRING_STREAM)
             return T;
         return super.typep(type);
-    }
-
-    @Override
-    public void _writeChar(char c) throws ConditionThrowable
-    {
-        if (elementType == NIL)
-            writeError();
-        super._writeChar(c);
-    }
-
-    @Override
-    public void _writeChars(char[] chars, int start, int end)
-        throws ConditionThrowable
-    {
-        if (elementType == NIL)
-            writeError();
-        super._writeChars(chars, start, end);
-    }
-
-    @Override
-    public void _writeString(String s) throws ConditionThrowable
-    {
-        if (elementType == NIL)
-            writeError();
-        super._writeString(s);
-    }
-
-    @Override
-    public void _writeLine(String s) throws ConditionThrowable
-    {
-        if (elementType == NIL)
-            writeError();
-        super._writeLine(s);
-    }
-
-    private void writeError() throws ConditionThrowable
-    {
-        error(new TypeError("Attempt to write to a string output stream of element type NIL."));
     }
 
     @Override

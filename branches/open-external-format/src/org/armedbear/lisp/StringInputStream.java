@@ -33,12 +33,17 @@
 
 package org.armedbear.lisp;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 public final class StringInputStream extends Stream
 {
     final String s;
     final int start;
     final int end;
 
+    private final StringReader stringReader;
+    
     public StringInputStream(String s)
     {
         this(s, 0, s.length());
@@ -52,14 +57,13 @@ public final class StringInputStream extends Stream
     public StringInputStream(String s, int start, int end)
     {
         elementType = Symbol.CHARACTER;
-        isInputStream = true;
-        isOutputStream = false;
-        isCharacterStream = true;
-        isBinaryStream = false;
+        setExternalFormat(keywordDefault);
         this.s = s;
         this.start = start;
         this.end = end;
-        offset = start;
+        
+        stringReader = new StringReader(s.substring(start, end));
+        initAsCharacterInputStream(stringReader);
     }
 
     @Override
@@ -86,41 +90,6 @@ public final class StringInputStream extends Stream
         if (type == BuiltInClass.STRING_STREAM)
             return T;
         return super.typep(type);
-    }
-
-    @Override
-    public LispObject close(LispObject abort) throws ConditionThrowable
-    {
-        setOpen(false);
-        return T;
-    }
-
-    @Override
-    public LispObject listen()
-    {
-        return offset < end ? T : NIL;
-    }
-
-    @Override
-    protected int _readChar()
-    {
-        if (offset >= end)
-            return -1;
-        int n = s.charAt(offset);
-        ++offset;
-            if (n == '\n')
-            ++lineNumber;
-        return n;
-    }
-
-    @Override
-    protected void _unreadChar(int n)
-    {
-        if (offset > start) {
-            --offset;
-            if (n == '\n')
-                --lineNumber;
-        }
     }
 
     @Override
