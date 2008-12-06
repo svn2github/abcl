@@ -65,9 +65,9 @@ public class Stream extends LispObject
 
   private boolean interactive;
   private boolean open = true;
-
+  
   // Character input.
-  private PushbackReader reader;
+  protected PushbackReader reader;
   protected int offset;
   protected int lineNumber;
 
@@ -2068,8 +2068,9 @@ public class Stream extends LispObject
   {
     if (reader != null)
       {
-        while (_charReady())
-          _readChar();
+        int c = 0;
+        while (_charReady() && (c >= 0))
+          c = _readChar();
       }
     else if (in != null)
       {
