@@ -1849,6 +1849,7 @@ public class Stream extends LispObject
       {
         reader.unread(n);
         --offset;
+        pastEnd = false;
         if (n == eolChar)
           --lineNumber;
       }
