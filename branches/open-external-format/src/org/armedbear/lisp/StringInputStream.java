@@ -38,6 +38,7 @@ import java.io.StringReader;
 public final class StringInputStream extends Stream
 {
     private final StringReader stringReader;
+    private final int start;
     
     public StringInputStream(String s)
     {
@@ -56,6 +57,8 @@ public final class StringInputStream extends Stream
         //###FIXME: we actually want RAW here
         eolStyle = EolStyle.LF;
 
+        this.start = start;
+        
         stringReader = new StringReader(s.substring(start, end));
         initAsCharacterInputStream(stringReader);
     }
@@ -92,6 +95,11 @@ public final class StringInputStream extends Stream
         return unreadableString("STRING-INPUT-STREAM");
     }
 
+    @Override
+    public int getOffset() {
+        return start + super.getOffset();
+    }
+    
     // ### make-string-input-stream
     // make-string-input-stream string &optional start end => string-stream
     private static final Primitive MAKE_STRING_INPUT_STREAM =
