@@ -63,6 +63,7 @@ public class Stream extends LispObject
   protected boolean isCharacterStream;
   protected boolean isBinaryStream;
 
+  private boolean pastEnd = false;
   private boolean interactive;
   private boolean open = true;
   
@@ -203,7 +204,7 @@ public class Stream extends LispObject
   protected void initAsCharacterInputStream(Reader reader)
   {
     if (! (reader instanceof PushbackReader))
-        this.reader = new PushbackReader(reader, 2);
+        this.reader = new PushbackReader(reader, 5);
     else
         this.reader = (PushbackReader)reader;
     
@@ -1736,7 +1737,19 @@ public class Stream extends LispObject
 
   public LispObject listen() throws ConditionThrowable
   {
-    return _charReady() ? T : NIL;
+    if (pastEnd)
+      return NIL;
+    
+    if (! _charReady())
+      return NIL;
+    
+    int n = _readChar();
+    if (n < 0)
+      return NIL;
+
+    _unreadChar(n);
+    
+    return T;
   }
 
   public LispObject fileLength() throws ConditionThrowable
@@ -1784,12 +1797,17 @@ public class Stream extends LispObject
    */
   protected int _readChar() throws ConditionThrowable
   {
+    if (pastEnd)
+      return -1;
+    
     try
       {
         int n = reader.read();
         
-        if (n < 0)
+        if (n < 0) {
+            pastEnd = true;
             return -1;
+        }
         
         ++offset;
         if (eolStyle == EolStyle.CRLF && n == '\r') {
@@ -2011,7 +2029,11 @@ public class Stream extends LispObject
   {
     try
       {
-        return in.read(); // Reads an 8-bit byte.
+        int n = in.read();
+        if (n < 0)
+          pastEnd = true;
+        
+        return n; // Reads an 8-bit byte.
       }
     catch (IOException e)
       {
@@ -2080,8 +2102,12 @@ public class Stream extends LispObject
       {
         try
           {
+            int n = 0;
             while (in.available() > 0)
-              in.read();
+              n = in.read();
+            
+            if (n < 0)
+              pastEnd = true;
           }
         catch (IOException e)
           {
