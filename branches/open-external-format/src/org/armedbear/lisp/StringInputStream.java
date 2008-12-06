@@ -92,12 +92,6 @@ public final class StringInputStream extends Stream
     }
 
     @Override
-    protected boolean _charReady()
-    {
-        return true;
-    }
-
-    @Override
     public String toString()
     {
         return unreadableString("STRING-INPUT-STREAM");
