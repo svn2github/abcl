@@ -37,10 +37,6 @@ import java.io.StringReader;
 
 public final class StringInputStream extends Stream
 {
-    final String s;
-    final int start;
-    final int end;
-
     private final StringReader stringReader;
     
     public StringInputStream(String s)
@@ -57,9 +53,6 @@ public final class StringInputStream extends Stream
     {
         elementType = Symbol.CHARACTER;
         setExternalFormat(keywordDefault);
-        this.s = s;
-        this.start = start;
-        this.end = end;
         
         stringReader = new StringReader(s.substring(start, end));
         initAsCharacterInputStream(stringReader);
