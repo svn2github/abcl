@@ -1787,6 +1787,10 @@ public class Stream extends LispObject
     try
       {
         int n = reader.read();
+        
+        if (n < 0)
+            return -1;
+        
         ++offset;
         if (eolStyle == EolStyle.CRLF && n == '\r') {
             n = _readChar();
