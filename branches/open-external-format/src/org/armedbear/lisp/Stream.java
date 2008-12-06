@@ -1945,7 +1945,9 @@ public class Stream extends LispObject
         }
         
         writer.write(chars, start, end - start);
-        lastChar = chars[end-1];
+        if (start < end)
+          lastChar = chars[end-1];
+        
         int index = -1;
         for (int i = end; i-- > start;)
           {

@@ -54,8 +54,7 @@ public final class StringInputStream extends Stream
     {
         elementType = Symbol.CHARACTER;
         setExternalFormat(keywordDefault);
-        //###FIXME: we actually want RAW here
-        eolStyle = EolStyle.LF;
+        eolStyle = EolStyle.RAW;
 
         this.start = start;
         

@@ -47,8 +47,7 @@ public final class StringOutputStream extends Stream
     private StringOutputStream(LispObject elementType)
     {
         this.elementType = elementType;
-        //###FIXME we actually want RAW here
-        this.eolStyle = EolStyle.LF;
+        this.eolStyle = EolStyle.RAW;
         initAsCharacterOutputStream(stringWriter = new StringWriter());
     }
 
