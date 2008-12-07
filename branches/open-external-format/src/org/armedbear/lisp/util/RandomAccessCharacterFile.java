@@ -35,10 +35,12 @@
 package org.armedbear.lisp.util;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.PushbackReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -50,19 +52,21 @@ import java.nio.charset.CoderResult;
 
 public class RandomAccessCharacterFile {
 
-    private class RandomAccessInputStream extends InputStream {
+    private class RandomAccessInputStream extends PushbackInputStream {
 
-	private RandomAccessInputStream() {
-	}
-	
-	private byte[] buf = new byte[1];
+        public RandomAccessInputStream() {
+            super(null);
+        }
+        
+	private byte[] read_buf = new byte[1];
 
+        @Override
 	public int read() throws IOException {
-	    int len = read(buf);
+	    int len = read(read_buf);
 	    if (len == 1) {
 		// byte is signed, char is unsigned, int is signed.
 		// buf can hold 0xff, we want it as 0xff in int, not -1.
-		return 0xff & (int) buf[0];
+		return 0xff & (int) read_buf[0];
 	    } else {
 		return -1;
 	    }
@@ -72,6 +76,53 @@ public class RandomAccessCharacterFile {
         public int read(byte[] b, int off, int len) throws IOException {
 	    return RandomAccessCharacterFile.this.read(b, off, len);
 	}
+
+        @Override
+        public void unread(int b) throws IOException {
+            RandomAccessCharacterFile.this.unreadByte((byte)b);
+        }
+
+        @Override
+        public void unread(byte[] b, int off, int len) throws IOException {
+            for (int i = 0; i < len; i++)
+                this.unread(b[off+i]);
+        }
+
+        @Override
+        public void unread(byte[] b) throws IOException {
+            this.unread(b, 0, b.length);
+        }
+
+        @Override
+        public int available() throws IOException {
+            return (int)(RandomAccessCharacterFile.this.length()
+                            - RandomAccessCharacterFile.this.position());
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+        }
+
+        @Override
+        public boolean markSupported() {
+            return false;
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            throw new IOException("Operation not supported");
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            RandomAccessCharacterFile.this.position(RandomAccessCharacterFile.this.position()+n);
+            return n;
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return this.read(b, 0, b.length);
+        }
 
 	@Override
 	public void close() throws IOException {
@@ -105,18 +156,67 @@ public class RandomAccessCharacterFile {
 	    RandomAccessCharacterFile.this.close();
 	}
     }
-
-    private class RandomAccessReader extends Reader {
+    
+    // dummy reader which we need to call the Pushback constructor
+    // because a null value won't work
+    private static Reader staticReader = new StringReader("");
+    
+    private class RandomAccessReader extends PushbackReader {
 
 	private RandomAccessReader() {
+            // because we override all methods of Pushbackreader,
+            // staticReader will never be referenced
+            super(staticReader);
 	}
 
+        @Override
 	public void close() throws IOException {
 	    RandomAccessCharacterFile.this.close();
 	}
+        
+        private char[] read_buf = new char[1];
 
+        @Override
+        public int read() throws IOException {
+            int n = this.read(read_buf);
+            
+            if (n == 1)
+                return read_buf[0];
+            else
+                return -1;
+        }
+
+        @Override
+        public void unread(int c) throws IOException {
+            RandomAccessCharacterFile.this.unreadChar((char)c);
+        }
+
+        @Override
+        public void unread(char[] cbuf, int off, int len) throws IOException {
+            for (int i = 0; i < len; i++)
+                this.unread(cbuf[off+i]);
+        }
+
+        @Override
+        public void unread(char[] cbuf) throws IOException {
+            this.unread(cbuf, 0, cbuf.length);
+        }
+
+        @Override
+        public int read(CharBuffer target) throws IOException {
+            //FIXME: to be implemented
+            throw new IOException("Not implemented");
+        }
+
+        @Override
+        public int read(char[] cbuf) throws IOException {
+            return RandomAccessCharacterFile.this.read(cbuf, 0, cbuf.length);
+        }
+        
+
+        
 	@Override
-	    public int read(char[] cb, int off, int len) throws IOException {
+	public int read(char[] cb, int off, int len) throws IOException {
 	    return RandomAccessCharacterFile.this.read(cb, off, len);
 	}
     }
@@ -198,11 +298,11 @@ public class RandomAccessCharacterFile {
 	return writer;
     }
 	
-    public Reader getReader() {
+    public PushbackReader getReader() {
 	return reader;
     }
 	
-    public InputStream getInputStream() {
+    public PushbackInputStream getInputStream() {
 	return inputStream;
     }
 	
