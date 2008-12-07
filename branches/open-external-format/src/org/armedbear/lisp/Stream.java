@@ -319,6 +319,12 @@ public class Stream extends LispObject
           encoding = enc.toString();
       else if (enc instanceof AbstractString)
           encoding = enc.getStringValue();
+      else if (enc == keywordDefault)
+          // This allows the user to use the encoding determined by
+          // Java to be the default for the current environment
+          // while still being able to set other stream options
+          // (e.g. :EOL-STYLE)
+          encoding = null;
       else if (enc instanceof Symbol)
           encoding = ((Symbol)enc).getName();
       else
