@@ -40,7 +40,7 @@
       <br /><br />
       ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
       <br /><br />
-      The latest version is 0.0.11, released October 18, 2008.
+      The latest version is 0.12.0, released December 14, 2008.
   </dd>
 </dl>
 <p>
@@ -49,11 +49,11 @@
 <dl>
   <dd>
 
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.0.11.tar.gz?use_mirror=">abcl-0.0.11.tar.gz</a>
-      (source, 632987 bytes)
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.12.0.tar.gz?use_mirror=">abcl-0.12.0.tar.gz</a>
+      (source, 656652 bytes)
       <br /><br />
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.0.11.zip?use_mirror=">abcl-0.0.11.zip</a>
-      (source, 1012345 bytes)
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.12.0.zip?use_mirror=">abcl-0.12.0.zip</a>
+      (source, 1130754 bytes)
   </dd>
 </dl>
 <p>
@@ -81,9 +81,11 @@
         quality of ABCL being good enough for their needs though. See
         the testimonials page.
         <br /><br />
-        ABCL 0.0.11 fails 47 out of 21702 tests in the GCL ANSI test suite.
+        ABCL 0.12.0 fails 44 out of 21702 tests in the GCL ANSI test suite
+        in interpreted mode. In compiled mode ABCL 0.12.0 fails 48 tests,
+        coming from ca 65 in the last release.
         Most notable recent fixes relate to special variables handling
-        and making sure the correct environments are used with for example
+        and making sure the compiler uses the correct environments with, e.g.,
         LET/LET* and FLET/LABELS.
         <br /><br />
         ABCL's CLOS is intolerably slow and does not handle on-the-fly
