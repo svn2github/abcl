@@ -150,7 +150,6 @@ public final class JProxy extends Lisp
   			this.function = function;
   		}
   		
-		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 	    	if(hashCodeMethod.equals(method)) {
 	    		return System.identityHashCode(proxy);

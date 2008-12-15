@@ -20,6 +20,10 @@
     <property name="j.jar.path"
 	      value="${dist.dir}/j.jar"/>
 
+    <condition property="abcl.java.version15">
+		<matches string="${java.version}" pattern="1\.5"/>
+    </condition>
+	
     <target name="help">
       <echo>Main Ant targets:
  abcl.compile  
@@ -100,8 +104,8 @@
 
     <patternset id="abcl.source.java">
       <include name="org/armedbear/lisp/*.java"/>
-      <include name="org/armedbear/lisp/scripting/*.java"/>
-      <include name="org/armedbear/lisp/scripting/util/*.java"/>
+      <include name="org/armedbear/lisp/scripting/*.java" unless="abcl.java.version15"/>
+      <include name="org/armedbear/lisp/scripting/util/*.java" unless="abcl.java.version15"/>
       <include name="org/armedbear/Main.java"/>
     </patternset>
     
@@ -110,7 +114,7 @@
       <include name="org/armedbear/lisp/tests/*.lisp"/>
       <include name="org/armedbear/lisp/java/awt/*.lisp"/>
       <include name="org/armedbear/lisp/java/awt/*.java"/>
-      <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
+      <include name="org/armedbear/lisp/scripting/lisp/*.lisp" unless="abcl.java.version15"/>
     </patternset>
 
     <!-- Lisp files required at runtime -->
@@ -118,15 +122,15 @@
       <include name="org/armedbear/lisp/boot.lisp"/>
       <include name="org/armedbear/lisp/top-level.lisp"/>
       <include name="org/armedbear/lisp/*.lisp"/> 
-	  <include name="org/armedbear/lisp/scripting/lisp/*.lisp"/>
+	  <include name="org/armedbear/lisp/scripting/lisp/*.lisp" unless="abcl.java.version15"/>
     </patternset>
 
     <patternset id="abcl.objects">
       <include name="org/armedbear/lisp/*.class"/>
       <include name="org/armedbear/lisp/*.cls"/> 
       <include name="org/armedbear/lisp/*.abcl"/>
-      <include name="org/armedbear/lisp/scripting/*.class"/>
-      <include name="org/armedbear/lisp/scripting/util/*.class"/>
+      <include name="org/armedbear/lisp/scripting/*.class" unless="abcl.java.version15"/>
+      <include name="org/armedbear/lisp/scripting/util/*.class" unless="abcl.java.version15"/>
       <patternset refid="abcl.source.lisp.dist"/>
     </patternset>
     
@@ -198,13 +202,10 @@
 
       <exec executable="hostname" os="Linux" outputproperty="hostname"/>
 
-      <condition property="abcl.java.version">
-	<matches string="${java.version}" pattern="1\.5"/>
-      </condition>
       <echo>java.version: ${java.version}</echo>
     </target>
     
-    <target name="abcl.java.warning" unless="abcl.java.version">
+    <target name="abcl.java.warning" unless="abcl.java.version15">
       <echo>WARNING: Java version ${java.version} not recommended.</echo>
     </target>
 	
