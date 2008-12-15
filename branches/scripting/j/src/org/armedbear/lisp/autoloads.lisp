@@ -191,6 +191,8 @@
 (autoload 'jmake-invocation-handler "java")
 (export 'jmake-proxy "JAVA")
 (autoload 'jmake-proxy "java")
+(export 'jproperty-value "JAVA")
+(autoload 'jproperty-value "java")
 (export 'jobject-class "JAVA")
 (autoload 'jobject-class "java")
 (export 'jclass-superclass "JAVA")

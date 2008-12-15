@@ -278,4 +278,10 @@
      (t
       (error "Unknown load-from for ~A" class-name)))))
 
+(defun jproperty-value (obj prop)
+  (%jget-property-value obj prop))
+
+(defun (setf jproperty-value) (value obj prop)
+  (%jset-property-value obj prop value))
+
 (provide "JAVA-EXTENSIONS")

@@ -23,7 +23,8 @@
 	   #:eval-compiled-script
 	   #:define-java-interface-implementation
 	   #:find-java-interface-implementation
-	   #:implement-java-interface))
+	   #:register-java-interface-implementation
+	   #:remove-java-interface-implementation))
   
 (defpackage :abcl-script-user
   (:use :cl :ext :java :abcl-script))

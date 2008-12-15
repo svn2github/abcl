@@ -78,10 +78,10 @@ public class AbclScriptEngineFactory implements ScriptEngineFactory {
 		sb.append("(jcall \"");
 		sb.append(method);
 		sb.append("\" ");
-		sb.append(AbclScriptEngine.decoratedVariableName(obj));
+		sb.append(obj);
 		for(String arg : args) {
 			sb.append(" ");
-			sb.append(AbclScriptEngine.decoratedVariableName(arg));
+			sb.append(arg);
 		}
 		sb.append(")");
 		return sb.toString();

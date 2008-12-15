@@ -87,3 +87,22 @@
     (eval `(compile nil
 	    (lambda ()
 	      ,@(read-from-string (concatenate 'string "(" code-string ")")))))))
+
+
+;;Java interface implementation
+
+(defvar *interface-implementation-map* (make-hash-table :test #'equal))
+
+(defun find-java-interface-implementation (interface)
+  (gethash interface *interface-implementation-map*))
+
+(defun register-java-interface-implementation (interface impl)
+  (setf (gethash interface *interface-implementation-map*) impl))
+
+(defun remove-java-interface-implementation (interface)
+  (remhash interface *interface-implementation-map*))
+
+(defun define-java-interface-implementation (interface implementation &optional lisp-this)
+  (register-java-interface-implementation
+   interface
+   (jmake-proxy interface implementation lisp-this)))

@@ -124,6 +124,9 @@ public final class JProxy extends Lisp
   
   	//NEW IMPLEMENTATION by Alessio Stalla 
   
+  	/**
+  	 * A weak map associating each proxy instance with a "Lisp-this" object. 
+  	 */
   	private static final Map<Object, LispObject> proxyMap = new WeakHashMap<Object, LispObject>();
   
   	public static class LispInvocationHandler implements InvocationHandler {

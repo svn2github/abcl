@@ -328,10 +328,6 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		return new AbclScriptEngineFactory();
 	}
 
-	public static String decoratedVariableName(String jvar) {
-		return jvar.toUpperCase();
-	}
-
 	private static Object toJava(LispObject lispObject) throws ConditionThrowable {
 		return lispObject.javaInstance();
 	}
