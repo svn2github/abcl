@@ -65,7 +65,7 @@
       out through anonymous access with the following command:
       <pre style="background-color:#99d">
 
-      <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/j j</b>
+      <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/abcl abcl</b>
       </pre>
   </dd>
 
