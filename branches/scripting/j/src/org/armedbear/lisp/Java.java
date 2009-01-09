@@ -706,7 +706,7 @@ public final class Java extends Lisp
 				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
 				return new JavaObject(pd.getReadMethod().invoke(obj));
 			} catch (Exception e) {
-				ConditionThrowable t = new ConditionThrowable("Exception in accessing property");
+				ConditionThrowable t = new ConditionThrowable("Exception reading property");
 				t.initCause(e);
 				throw t;
 			}
@@ -718,16 +718,17 @@ public final class Java extends Lisp
 	                  "java-object property-name value") {
     	
     	public LispObject execute(LispObject javaObject, LispObject propertyName, LispObject value) throws ConditionThrowable {
-			try {
-	            Object obj = javaObject.javaInstance();
-				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-				pd.getWriteMethod().invoke(obj, value.javaInstance());
-				return value;
-			} catch (Exception e) {
-				ConditionThrowable t = new ConditionThrowable("Exception in accessing property");
-				t.initCause(e);
-				throw t;
-			}
+	    Object obj = null;
+	    try {
+		obj = javaObject.javaInstance();
+		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
+		pd.getWriteMethod().invoke(obj, value.javaInstance());
+		return value;
+	    } catch (Exception e) {
+		ConditionThrowable t = new ConditionThrowable("Exception writing property " + propertyName.writeToString() + " in object " + obj + " to " + value.writeToString());
+		t.initCause(e);
+		throw t;
+	    }
         }
     };
     
