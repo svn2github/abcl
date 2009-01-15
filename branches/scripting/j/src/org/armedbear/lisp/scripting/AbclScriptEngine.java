@@ -247,7 +247,11 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 		if(i < 0) { 
 			return findSymbol(name, null);
 		} else {
+		    if((i < name.length() - 1) && (name.charAt(i + 1) == ':')) {
+			return findSymbol(name.substring(i + 2), name.substring(0, i));
+		    } else {
 			return findSymbol(name.substring(i + 1), name.substring(0, i));
+		    }
 		}
 	}
 	
@@ -396,46 +400,51 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	
 	@Override
 	public Object invokeFunction(String name, Object... args) throws ScriptException, NoSuchMethodException {
-		try {
-			Symbol s = findSymbol(name);
-			if(s != null) {
-				LispObject f = s.getSymbolFunction();
-				if(f != null && f instanceof Function) {
-					LispObject[] wrappedArgs = new LispObject[args.length];
-					for(int i = 0; i < args.length; ++i) {
-						wrappedArgs[i] = toLisp(args[i]);
-					}
-					switch(args.length) {
-						case 0:
-							return LispThread.currentThread().execute(f);
-						case 1:
-							return LispThread.currentThread().execute(f, wrappedArgs[0]);
-						case 2:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1]);
-						case 3:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2]);							
-						case 4:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3]);
-						case 5:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4]);
-						case 6:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5]);
-						case 7:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6]);
-						case 8:
-							return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6], wrappedArgs[7]);
-						default:
-							return LispThread.currentThread().execute(f, wrappedArgs);
-					} 
-				} else {
-					throw new NoSuchMethodException(name);
-				}
-			} else {
-				throw new NoSuchMethodException(name);
-			}
-		} catch (ConditionThrowable e) {
-			throw new ScriptException(new RuntimeException(e));
+	    try {
+		Symbol s;
+		if(name.indexOf(':') >= 0) {
+		    s = findSymbol(name);
+		} else {
+		    s = findSymbol(name, "ABCL-SCRIPT-USER");
 		}
+		if(s != null) {
+		    LispObject f = s.getSymbolFunction();
+		    if(f != null && f instanceof Function) {
+			LispObject[] wrappedArgs = new LispObject[args.length];
+			for(int i = 0; i < args.length; ++i) {
+			    wrappedArgs[i] = toLisp(args[i]);
+			}
+			switch(args.length) {
+			case 0:
+			    return LispThread.currentThread().execute(f);
+			case 1:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0]);
+			case 2:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1]);
+			case 3:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2]);							
+			case 4:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3]);
+			case 5:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4]);
+			case 6:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5]);
+			case 7:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6]);
+			case 8:
+			    return LispThread.currentThread().execute(f, wrappedArgs[0], wrappedArgs[1], wrappedArgs[2], wrappedArgs[3], wrappedArgs[4], wrappedArgs[5], wrappedArgs[6], wrappedArgs[7]);
+			default:
+			    return LispThread.currentThread().execute(f, wrappedArgs);
+			} 
+		    } else {
+			throw new NoSuchMethodException(name);
+		    }
+		} else {
+		    throw new NoSuchMethodException(name);
+		}
+	    } catch (ConditionThrowable e) {
+		throw new ScriptException(new RuntimeException(e));
+	    }
 	}
 
 	@Override
@@ -467,8 +476,8 @@ public class AbclScriptEngine extends AbstractScriptEngine implements Invocable,
 	@Override
 	public CompiledScript compile(String script) throws ScriptException {
 		try {
-			Function f = (Function) compileScript.execute(new SimpleString(script));
-			return new AbclCompiledScript(f);
+		    Function f = (Function) compileScript.execute(new SimpleString(script));
+		    return new AbclCompiledScript(f);
 		} catch (ConditionThrowable e) {
 			throw new ScriptException(new Exception(e));
 		} catch(ClassCastException e) {

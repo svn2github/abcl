@@ -83,10 +83,12 @@
     `((funcall ,function))))
 
 (defun compile-script (code-string)
-  (let ((*package* (find-package :abcl-script-user)))
-    (eval `(compile nil
-	    (lambda ()
-	      ,@(read-from-string (concatenate 'string "(" code-string ")")))))))
+  (eval 
+   `(compile
+     nil
+     (lambda ()
+       ,@(let ((*package* (find-package :abcl-script-user)))
+	      (read-from-string (concatenate 'string "(" code-string ")")))))))
 
 
 ;;Java interface implementation
