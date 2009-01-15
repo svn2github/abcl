@@ -704,7 +704,14 @@ public final class Java extends Lisp
 			try {
 				Object obj = javaObject.javaInstance();
 				PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-				return new JavaObject(pd.getReadMethod().invoke(obj));
+				Object value = pd.getReadMethod().invoke(obj);
+				if(value instanceof LispObject) {
+				    return (LispObject) value;
+				} else if(value != null) {
+				    return new JavaObject(value);
+				} else {
+				    return NIL;
+				}
 			} catch (Exception e) {
 				ConditionThrowable t = new ConditionThrowable("Exception reading property");
 				t.initCause(e);
@@ -722,7 +729,18 @@ public final class Java extends Lisp
 	    try {
 		obj = javaObject.javaInstance();
 		PropertyDescriptor pd = getPropertyDescriptor(obj, propertyName);
-		pd.getWriteMethod().invoke(obj, value.javaInstance());
+		Object jValue;
+		if(value == NIL) {
+		    if(Boolean.TYPE.equals(pd.getPropertyType()) ||
+		       Boolean.class.equals(pd.getPropertyType())) {
+			jValue = false;
+		    } else {
+			jValue = null;
+		    }
+		} else {
+		    jValue = value.javaInstance();
+		}
+		pd.getWriteMethod().invoke(obj, jValue);
 		return value;
 	    } catch (Exception e) {
 		ConditionThrowable t = new ConditionThrowable("Exception writing property " + propertyName.writeToString() + " in object " + obj + " to " + value.writeToString());
