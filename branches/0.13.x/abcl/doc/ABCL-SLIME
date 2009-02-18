@@ -1,4 +1,4 @@
-ABCL 0.13 runs against SLIME CVS HEAD of 2009-02-14 with the following
+ABCL 0.13 runs against SLIME CVS HEAD of 2009-02-17 with the following
 errata.
 
 [001] *standard-output* is not correctly bound to the appropiate
@@ -10,6 +10,8 @@ errata.
                   establishing the correct bindings for the
                   CONNECTION.
 
+		  You should see a CL-USER> prompt appear in the
+		  *inferior-lisp* buffer.
 
 #|
 ;; Swank started at port: 63344.
