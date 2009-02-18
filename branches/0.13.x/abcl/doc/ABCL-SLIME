@@ -1,0 +1,23 @@
+ABCL 0.13 runs against SLIME CVS HEAD of 2009-02-14 with the following
+errata.
+
+[001] *standard-output* is not correctly bound to the appropiate
+      SLIME-OUTPUT-STREAM on the statup of the REPL.
+      
+      WORKAROUND: Evaluate a self-quoting numeric form in the
+                  *inferior-lisp* buffer including the [RETURN]
+                  character.  The REPL returns the self-qoting form
+                  establishing the correct bindings for the
+                  CONNECTION.
+
+
+#|
+;; Swank started at port: 63344.
+CL-USER> 
+WARNING: Test failed: (EVAL-WHEN (&ANY :COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE) &BODY BODY) => "(eval-when (&any :compile-toplevel :load-toplevel :execute) &body
+ body)"
+  Expected: "(eval-when (&any :compile-toplevel :load-toplevel :execute) &body body)"
+
+  42 [RETURN]
+
+|#

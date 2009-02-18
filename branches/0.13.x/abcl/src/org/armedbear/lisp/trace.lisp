@@ -34,12 +34,18 @@
 (export 'untraced-function) ;; For FIND-GENERIC-FUNCTION in clos.lisp.
 
 (require "FORMAT")
-
 (defvar *trace-info-hashtable* (make-hash-table :test #'equal))
 
 (defstruct trace-info name untraced-function breakp)
 
-(defvar *trace-depth* 0)
+(defvar *trace-depth* 0
+  "Current depth of stack push for use of TRACE facility.")
+
+
+;;; XXX This eventually blows up in the compiler.How can we "punt" on  this and MAKE-LOAD-FORM ???
+(require "CLOS") 
+(defmethod make-load-form ((object trace-info) &optional environment)
+  (make-load-form-saving-slots object :environment environment))
 
 (defun list-traced-functions ()
   (copy-list *traced-names*))
@@ -103,6 +109,18 @@
                 (%format *trace-output* " no values"))
             (terpri *trace-output*)))
         (values-list results)))))
+
+(defun untraced-function (name)
+  (let ((info (gethash name *trace-info-hashtable*)))
+    (and info (trace-info-untraced-function info))))
+
+(defun trace-redefined-update (name untraced-function)
+  (when (and *traced-names* (find name *traced-names* :test #'equal))
+    (let* ((info (gethash name *trace-info-hashtable*))
+           (traced-function (traced-function name info untraced-function)))
+      (setf (trace-info-untraced-function info) untraced-function)
+      (let ((*traced-names* '()))
+        (setf (fdefinition name) traced-function)))))
 
 (defun untraced-function (name)
   (let ((info (gethash name *trace-info-hashtable*)))

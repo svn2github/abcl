@@ -1,0 +1,936 @@
+2009-02-10  mevenson  <mevenson>
+
+	* COPYING:
+	[svn r11655] Change reference from COPYING to LICENSE.
+	[adc9feb07f46] [tip]
+
+2009-02-10  mevenson  <mevenson>
+
+	* LICENSE:
+	[svn r11654] Add a stock copy of the GPLv2 that ABCL licensing is
+	based.
+	[a062c53b8952]
+
+2009-02-10  Mark Evenson  <evenson@panix.com>
+
+	* src/org/armedbear/lisp/Version.java: abcl-0.12.42.
+
+2009-02-10  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11652] Check cast takes a class name as its argument, not a
+	class reference.
+
+	Found by: Robert Dodier.
+	[1a502d2774ed] [tip]
+
+2009-02-10  Mark Evenson  <evenson@panix.com>
+
+	* src/org/armedbear/lisp/Version.java: abcl-0.12.41.
+
+2009-02-09  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11651] Followup from last commit: add the Symbol type to
+	DECLARE-OBJECT-AS-STRING too.
+	[2ad74928e195] [tip]
+
+2009-02-09  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11650] Generate Symbol-typed fields if we expect to be loading
+	off one. Also: generate uniquely prefixed symbols, aiding debugging.
+	[4a323de64620]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11649] Indentation: make opcode-enumerations look like
+	elsewhere.
+	[d94c404b0ae2]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11648] Strict checking of representations delivered vs
+	requested - inspired by Ville's find: r11646.
+	[472bffe6b684]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/Bignum.java:
+	[svn r11647] Add support for java.lang.Long arguments based on
+	Bignums.
+
+	Found by: ayrnieu.
+	[489984244e28]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11646] Fix compilation of Maxima: the wrong representation was
+	returned.
+
+	Found by: Ville Voutilainen
+	[4da5939df9bb]
+
+2009-02-08  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/compiler-pass1.lisp:
+	[svn r11645] Combine p2-let/let*-vars.
+	[d1fafb5cab0d]
+
+2009-02-08  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/compiler-pass1.lisp:
+	[svn r11644] Further cleanup for p1-flet/labels.
+	[1422d6917ce9]
+
+2009-02-08  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/compiler-pass1.lisp:
+	[svn r11643] Remove duplication from p1-flet and p1-labels.
+	[cda7cee2e768]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11642] Remove commented-out code ("emit-unbox-*") which is
+	superseeded by following FIX-BOXING.
+	[8354a7723878]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11641] Integer bounds derivation for MIN and MAX. Compilation
+	of (*) -> 1 (fixes ANSI test '*.1'). Better type derivation for (+).
+	[ca0b19924f9d]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11640] Type derivation for multi-argument +/-/*; Fixed type-
+	arguments for DERIVE-TYPE-MIN, DERIVE-TYPE-MAX; Generation of inline
+	code for multi-argument #'*.
+	[86774b5a6d08]
+
+2009-02-08  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11639] Add stack effect of used instruction.
+	[80e582a2d232]
+
+2009-02-07  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11638] Fix P2-MIN/MAX backquoting/unquoting error.
+	[560660457a92]
+
+2009-02-07  Mark Evenson  <evenson@panix.com>
+
+	* src/org/armedbear/lisp/Version.java: abcl-0.12.40
+
+2009-02-07  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11637] Extend EMIT-DUP to be able to duplicate past the top-
+	most stack value.
+	[cde1938d07f5] [tip]
+
+2009-02-07  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11636] Generalize code generation paths for :INT/:LONG
+	representations in P2-MIN/MAX into 1 path.
+	[2b24360a8baa]
+
+2009-02-06  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11635] Adjust stack effect of dcmpX: pop off 2 2-sized
+	operands, put 1 int (1-sized) element back: results in -3 stack
+	effect.
+	[5033b4d52175]
+
+2009-02-06  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11634] Better in-lining compilation of MIN and MAX.
+	[d222b9097904]
+
+2009-02-06  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11633] Clean up DERIVE-TYPE-{MIN,MAX,ASH} using the new
+	DERIVE-TYPE-NUMERIC-OP infrastructure. This eliminates the need for
+	WHEN-ARGS-INTEGER (sorry, Ville)...
+	[aec94aeb6235]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11632] Make our (static) fields FINAL, as we only write to
+	them once: during object construction.
+
+	Found by: dmiles.
+	[a8781046a5e4]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11631] Fix DERIVE-VARIABLE-REPRESENTATION in case the LIMIT-
+	VARIABLE resolves to NIL (as happens to be the case in DOTIMES.25).
+
+	Follow up to r11619.
+	[a13806e8863e]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11630] Optimize (and fix) CONVERT-REPRESENTATION for the case
+	of 2 eql arguments (fixes CONVERT-REPRESENTATION for the (NIL NIL)
+	argument case).
+	[1e51be903970]
+
+2009-02-05  astalla  <astalla>
+
+	* src/org/armedbear/lisp/scripting/AbclScriptEngine.java,
+	src/org/armedbear/lisp/scripting/lisp/config.lisp,
+	src/org/armedbear/lisp/scripting/lisp/packages.lisp:
+	[svn r11629] fixed exported symbol list for package :abcl-script.
+	[308673074d9c]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/trace.lisp:
+	[svn r11628] Remove commented-out lines.
+	[f9a1e118fc75]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/trace.lisp:
+	[svn r11627] Make TRACE protect *TRACE-DEPTH* from non-local returns
+	(such as RETURN to TOP-LEVEL restarts). Also make TRACE no longer
+	invoke CLOS (and thus the compiler, making it possible to trace
+	the compiler now, instead of getting a stack overflow.)
+	[c2dc0bc77236]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/format.lisp:
+	[svn r11626] Final and last fix for COERCE.20 and the issue with
+	printing double floats.
+	[6666484df802]
+
+2009-02-05  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/format.lisp:
+	[svn r11625] Fix COERCE.20 (a regression since 0.12).
+	[03f383897dc9]
+
+2009-02-04  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11624] Wider use of CONVERT-REPRESENTATION shows an issue:
+	LispInteger.getInstance() returns a LispInteger. Store Fixnum and
+	Bignum values in fields of type LispInteger to resolve it.
+	Additionally, simplify DECLARE-BIGNUM.
+	[8eb64c9a14f2]
+
+2009-02-04  astalla  <astalla>
+
+	* examples/abcl/jsr-223/JSR223Example.java,
+	src/org/armedbear/lisp/scripting/AbclScriptEngine.java,
+	src/org/armedbear/lisp/scripting/AbclScriptEngineFactory.java,
+	src/org/armedbear/lisp/scripting/lisp/abcl-script.lisp,
+	src/org/armedbear/lisp/scripting/lisp/config.lisp:
+	[svn r11623] Perfectioned ABCL auto-configuration when using
+	JSR-223; added option to compile scripts using temp files (default)
+	or using the run-time compiler; added example of usage of ABCL with
+	JSR-223.
+	[3f9b1e758720]
+
+2009-02-04  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11622] Eliminate NEW-FIXNUM and EMIT-FIXNUM-INIT in favor of
+	CONVERT-REPRESENTATION.
+	[de767d0ca6a1]
+
+2009-02-04  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11621] Implement P2-COMPILAND-UNBOX-VARIABLE in terms of new
+	primitives. Replace the last occurrance of (EMIT 'VAR-SET ...) with
+	(EMIT-MOVE-TO-VARIABLE ...); removes the need to 'RESOLVE-
+	VARIABLES': eliminate it and the VAR-SET artificial opcode.
+	[aa117d50a0ec]
+
+2009-02-03  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11620] Kill long code repetitions in COMPILE-VAR-REF and
+	P2-SETQ
+	- making the resulting ones more generic.
+	[aeb8dde03ec0]
+
+2009-02-03  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11619] Reduce code duplication: move variable representation
+	deduction to DERIVE-VARIABLE-REPRESENTATION. Also: introduce EMIT-
+	MOVE-TO-VARIABLE to move values off the stack to a variable slot,
+	another source for code duplication.
+	[87ff66f293ad]
+
+2009-02-03  Mark Evenson  <evenson@panix.com>
+
+	* src/org/armedbear/lisp/Version.java: abcl-0.13.39
+
+2009-02-02  astalla  <astalla>
+
+	* src/org/armedbear/lisp/scripting/AbclScriptEngine.java,
+	src/org/armedbear/lisp/scripting/lisp/abcl-script.lisp,
+	src/org/armedbear/lisp/scripting/lisp/config.lisp,
+	src/org/armedbear/lisp/scripting/lisp/packages.lisp:
+	[svn r11618] Added support for a configuration file in the CLASSPATH
+	for ABCL when loaded through JSR-223.
+	[9dbd584f5a44]
+
+2009-02-02  Mark Evenson  <evenson@chum.local>
+
+	*  src/org/armedbear/lisp/Version.java: abcl-0.12.38
+
+2009-02-01  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11617] More CONVERT-REPRESENTATIONs.
+	[40b4bf5f5aaf] [tip]
+
+2009-02-01  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/directory.lisp:
+	[svn r11616] Better matching in directory listing. There are still
+	cases where I can break it with my own trees, but it doesn't list
+	superfluous entries with this patch.
+	[99b1becf148a]
+
+2009-02-01  mevenson  <mevenson>
+
+	* src/org/armedbear/lisp/Version.java:
+	[svn r11615] Revert publishing of "internal" version back to
+	0.13.0-dev.
+	[7f1ce311170d]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11614] Inline all compiled subtractions instead of only the 2
+	and 3 argument cases.
+	[d832d6818bd0]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11613] Fix #'+ compilation with FEWER than 2 arguments.
+	[56a7241fc29a]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/Stream.java:
+	[svn r11612] Count linenumbers correctly again (they were double
+	counted before this commit).
+	[d8b66d03aab5]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11611] Clean up COMPILE-CONSTANT: there's no reason to cast
+	from one type to another at runtime if you can do it compile time.
+	[7c70855efa12]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11610] Add 2 used - but not enabled - opcodes.
+	[484f6c427f0a]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11609] Don't enumerate representation conversion inline: we
+	have a generic routine for it now.
+	[db827465c215]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11608] Support inline comparisons for many types of compiler
+	types (including single and double floats).
+	[9bd5ff717c68]
+
+2009-01-31  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11607] Implement inline float and double calculations for
+	P2-TIMES. Cleanup some functions which are now unused.
+	[419cfd6a9720] [tip]
+
+2009-01-30  Mark Evenson  <evenson@chum.local>
+
+	* src/org/armedbear/lisp/Version.java: 0.12.37
+
+2009-01-30  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11604] Smarter type derivation: start *using* the float and
+	double storage types (in P2-PLUS and P2-MINUS, others to follow).
+	[16b708bac9ea] [tip]
+
+2009-01-29  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11603] Use generic representation conversions instead of
+	enumerating in line.
+	[b51ac8c60995]
+
+2009-01-29  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11602] Implement generic type-representation derivations and
+	conversions; shorten P2-MINUS and P2-PLUS implementations by using
+	them.
+	[e03949d060fa]
+
+2009-01-29  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11601] Only compile one or the other argument to an :int.
+	[044f281b5014]
+
+2009-01-29  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11600] Add more opcodes to the list; update stack effect
+	information.
+	[3f9ac9e65d17]
+
+2009-01-28  Mark Evenson  <evenson@chum.local>
+
+	* src/org/armedbear/lisp/Version.java: 0.12.36
+	
+	* test/lisp/ansi/ansi-tests-compiled.lisp, test/lisp/ansi/ansi-tests-
+	interpreted.lisp, test/lisp/ansi/package.lisp:
+	[svn r11598] Added (somehow) missing GCL ANSI test ASDF loading
+	wrappers.
+	[93ffb994870c] [tip]
+
+2009-01-27  astalla  <astalla>
+
+	* src/org/armedbear/lisp/Lisp.java:
+	[svn r11597] Fixed URL decoding bug in loadCompiledFunction using
+	java.net.URLDecoder.
+	[20f9d83efbc8] [svn.11597, tip]
+
+2009-01-27  mevenson  <mevenson>
+
+	* abcl.asd, build.xml, scripts/ansi-tests-compiled.lisp, scripts/ansi-
+	tests-interpreted.lisp, test/lisp/abcl/compiler-tests.lisp,
+	test/lisp/abcl/condition-tests.lisp, test/lisp/abcl/file-system-
+	tests.lisp, test/lisp/abcl/java-tests.lisp, test/lisp/abcl/math-
+	tests.lisp, test/lisp/abcl/misc-tests.lisp, test/lisp/abcl/pathname-
+	tests.lisp, test/lisp/ansi/package.lisp:
+	[svn r11596] Invocation of ASDF tests from Lisp via instructions at
+	top of 'abcl.asd' works.
+
+	Optimized 'build.xml' run time for typical (repeated) usage
+	scenarios: o downloading of 'junit.jar' based on presence on
+	filesystem. o rebuilding of 'abcl.jar' based on explicit check
+	via Ant
+
+	Removed automatic execution of ABCL-TESTS based on load.
+
+	Ant 'abcl.test' target not working in all situations. Needs further
+	debugging. Workaround: use the Lisp-based ASDF test entry point for
+	now.
+
+	ANSI-TESTS-COMPILED ANSI-TESTS-INTERPRETED need a sibling directory
+	containing the GCL ANSI tests from <svn://common-lisp.net/project
+	/ansi-test/svn/trunk/ansi-tests>. They complain semi-intellibly if
+	not found.
+	[df74dda142da] [svn.11596]
+
+2009-01-26  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11594] Make DERIVE-TYPE support SINGLE-FLOAT and DOUBLE-FLOAT.
+	[8be2e867d289] [svn.11594]
+
+2009-01-26  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11593] Optimize unboxing of booleans.
+	[998d6ad5a021] [svn.11593]
+
+2009-01-26  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11592] Generic representation conversion (from one JVM type to
+	another) and boxing (JVM type to LispObject) support.
+
+	Removes EMIT-BOX-* and CONVERT-* functions as they're now part of
+	the generic framework.
+	[494ad22faee4] [svn.11592]
+
+2009-01-26  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-types.lisp:
+	[svn r11591] Make SINGLE-FLOAT and DOUBLE-FLOAT compiler types.
+	[c8475ab16375] [svn.11591]
+
+2009-01-26  Mark Evenson  <evenson@chum.log>
+
+	*  (0.12.35): Mark version.
+
+2009-01-26  astalla  <astalla>
+
+	* build.xml, src/META-INF/services/javax.script.ScriptEngineFactory,
+	src/org/armedbear/lisp/Autoload.java,
+	src/org/armedbear/lisp/JProxy.java,
+	src/org/armedbear/lisp/Java.java,
+	src/org/armedbear/lisp/JavaClass.java,
+	src/org/armedbear/lisp/JavaObject.java,
+	src/org/armedbear/lisp/LispObject.java,
+	src/org/armedbear/lisp/StandardClass.java,
+	src/org/armedbear/lisp/Symbol.java,
+	src/org/armedbear/lisp/autoloads.lisp,
+	src/org/armedbear/lisp/clos.lisp, src/org/armedbear/lisp/java.lisp,
+	src/org/armedbear/lisp/print-object.lisp,
+	src/org/armedbear/lisp/scripting/AbclScriptEngine.java,
+	src/org/armedbear/lisp/scripting/AbclScriptEngineFactory.java,
+	src/org/armedbear/lisp/scripting/lisp/packages.lisp,
+	src/org/armedbear/lisp/scripting/util/ReaderInputStream.java,
+	src/org/armedbear/lisp/scripting/util/WriterOutputStream.java:
+	[svn r11590] Merged the scripting branch, providing JSR-223 support
+	and other new features. JSR-233 is only built if the necessary
+	javax.script.* classes are found in the CLASSPATH.
+	[a53b64a117b2]
+
+2009-01-26  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11589] Add stack information for opcodes we'll start using
+	soon.
+	[4ea879c28e1b]
+
+2009-01-25  Mark Evenson  <evenson@panix.com>
+
+	* Merged svn r11588.
+	[f1949beae75b]
+
+2009-01-25  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11588] Optimize MIN/MAX inline calculations: with the right
+	stack use, we can avoid storing and reloading of values with shorter
+	execution paths and branches as a result. Also enable the
+	instructions pop2, dup2_x1 and dup2_x2.
+	[7f6ac45d2ac3]
+
+2009-01-25  Mark Evenson  <evenson@panix.com>
+
+	* build.xml, scripts/ansi-tests-compiled.lisp, scripts/ansi-tests-
+	interpreted.lisp, test/lisp/ansi/ansi-tests-compiled.lisp,
+	test/lisp/ansi/ansi-tests-interpreted.lisp,
+	test/lisp/ansi/package.lisp:
+	Incremental improvement to build.xml.
+
+	'abcl.jar.uptodate' saves more time in cases where abcl.jar does not
+	need to be updated by comparing timestamps on the filesystem.
+
+	Move scripts to load ANSI tests under 'test/lisp'.
+
+	Further information added to ANSI test logs.
+	[4f95ec16bb2f]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/BuiltInClass.java,
+	src/org/armedbear/lisp/SimpleString.java:
+	[svn r11587] Ofcourse, you need all components for a commit to
+	actually work... (Belongs to last commit.)
+	[bc97132a2b27]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/subtypep.lisp:
+	[svn r11586] Eliminate the pesky beeps in TYPE-OF.1; however
+	unfortunately, this breaks TYPE-OF.4 for the case of "". Now go and
+	search!
+	[890b1d383c9d]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/subtypep.lisp:
+	[svn r11585] Update type mapping table in agreement to our earlier
+	finding that in our lisp simple-strings are also base-strings.
+	[47c7d919475d]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11584] Handle both 'long' as well as 'double' argument and
+	return types as types of size 2 regardless of whether we have those
+	types now (we will later on...)
+	[e67485cc6877]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11583] Revert change to p2-minus: we can't do this without
+	adding a new LispObject primitive operation, which I tried, but
+	takes too long for now.
+
+	Note: the operation required would be negateAndAdd(int/long), which
+	is easy except for that you need to add it to all number
+	primitives...
+	[139b96a2c9e1]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp,
+	src/org/armedbear/lisp/opcodes.lisp:
+	[svn r11582] Use additional opcodes: don't store the "obvious"
+	constants in the constant pool.
+	[7f4a14ba4706]
+
+2009-01-24  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/Pathname.java:
+	[svn r11581] Make directory listing tolerate invalid paths and
+	permission errors. Note: clisp raises errors on permission denied,
+	sbcl doesn't and returns NIL. This patch makes abcl mirror sbcl
+	behaviour, so it returns NIL instead of raising errors.
+	[58405b30645e]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11580] Commit some of the changes required for FLOAT and
+	DOUBLE support (clean up my wc a bit)
+
+	- Add debugging output before triggering an ASSERT or AVER.
+	- Add boxing/unboxing routines (for future use).
+	- Add a new type (also for future use).
+	[c85a8fbde89f]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/Bignum.java,
+	src/org/armedbear/lisp/DoubleFloat.java,
+	src/org/armedbear/lisp/Fixnum.java,
+	src/org/armedbear/lisp/LispObject.java,
+	src/org/armedbear/lisp/Ratio.java,
+	src/org/armedbear/lisp/SingleFloat.java:
+	[svn r11579] Add floatValue() and doubleValue() to LispObject and
+	all number classes which didn't have it yet.
+	[43e271f54498]
+
+2009-01-24  ehuelsmann  <ehuelsmann>
+
+	* build.xml, src/org/armedbear/lisp/compiler-pass2.lisp,
+	test/lisp/ansi/package.lisp:
+	[svn r11578] Miscelanious:
+	 - Merge [within p2-plus] (fixnum-type-p type2) case with (fixnum-
+	type-p type1)
+	 - Add some cases handled by p2-plus to p2-minus too.
+	 - Fix parenthetical error
+	[fe6c37b7c6fb]
+
+2009-01-23  vvoutilainen  <vvoutilainen>
+
+	* src/org/armedbear/lisp/directory.lisp,
+	src/org/armedbear/lisp/pathnames.lisp:
+	[svn r11577] Support "partial" wildcards in DIRECTORY, like
+	"/path/somewh*re/foo*.txt". This also makes cl-bench report.lisp
+	work with either CL*.* (the form in report.lisp) or CL* (the form
+	which is the only one that clisp works with).
+	[c0a01ac6914e]
+
+2009-01-23  mevenson  <mevenson>
+
+	* abcl.asd, src/org/armedbear/lisp/tests/compiler-tests.lisp,
+	src/org/armedbear/lisp/tests/condition-tests.lisp,
+	src/org/armedbear/lisp/tests/file-system-tests.lisp,
+	src/org/armedbear/lisp/tests/java-tests.lisp,
+	src/org/armedbear/lisp/tests/jl-config.cl,
+	src/org/armedbear/lisp/tests/math-tests.lisp,
+	src/org/armedbear/lisp/tests/misc-tests.lisp,
+	src/org/armedbear/lisp/tests/pathname-tests.lisp,
+	src/org/armedbear/lisp/tests/rt-package.lisp,
+	src/org/armedbear/lisp/tests/rt.lisp, src/org/armedbear/lisp/tests
+	/test-utilities.lisp, test/lisp/abcl/compiler-tests.lisp,
+	test/lisp/abcl/condition-tests.lisp, test/lisp/abcl/file-system-
+	tests.lisp, test/lisp/abcl/java-tests.lisp, test/lisp/abcl/jl-
+	config.cl, test/lisp/abcl/math-tests.lisp, test/lisp/abcl/misc-
+	tests.lisp, test/lisp/abcl/pathname-tests.lisp, test/lisp/abcl/rt-
+	package.lisp, test/lisp/abcl/rt.lisp, test/lisp/abcl/test-
+	utilities.lisp:
+	[svn r11576] Move internal ABCL tests to proper hierarchy.
+
+	Loading via ASDF not finished.
+	[d0d7c350e8c7]
+
+2009-01-22  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/AbstractArray.java,
+	src/org/armedbear/lisp/AbstractBitVector.java:
+	[svn r11575] Eliminate the FastStringBuffer (from AbstractArray and
+	AbstractBitVector).
+
+	Patch by: Philip Hudson
+
+	Note: In this category, more patches are expected.
+	[88fc35410bc9]
+
+2009-01-21  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/Bignum.java,
+	src/org/armedbear/lisp/Fixnum.java,
+	src/org/armedbear/lisp/LispInteger.java:
+	[svn r11574] Introduce LispInteger super-type to Bignum and Fixnum:
+	The LispInteger logically can return both Bignum as well as Fixnum
+	values for its getInstance() method.
+	[86f07368f547]
+
+2009-01-21  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/Bignum.java,
+	src/org/armedbear/lisp/DoubleFloat.java,
+	src/org/armedbear/lisp/LispCharacter.java,
+	src/org/armedbear/lisp/LispObject.java,
+	src/org/armedbear/lisp/SingleFloat.java:
+	[svn r11573] Add a 'getInstance' static method to all lisp classes
+	which have a compiler primitive for (part of) their domain.
+	[90dffbf0a463]
+
+2009-01-21  ehuelsmann  <ehuelsmann>
+
+	* abcl.asd, src/org/armedbear/lisp/FloatFunctions.java:
+	[svn r11572] Fix NO-EXTRA-SYMBOLS-EXPORTED-FROM-COMMON-LISP.
+	[65413c092a58]
+
+2009-01-19  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11571] Implement some building blocks for compilation of float
+	math to byte code:
+	 - Constant compilation to specific representations
+	 - Boxing/unboxing of float/double values
+
+	See #41.
+	[f102229efef4]
+
+2009-01-19  mevenson  <mevenson>
+
+	* build.xml:
+	[svn r11570] Refactored Ant-based build to decrease compilation
+	time.
+
+	<antcall> targets are *always* invoked, so refactoring these out
+	them enables 'abcl.stamp' to not doubly invoke compile.lisp.
+
+	Remove odd references to J.
+
+	'abcl.init' replaces 'abcl.pre-compile' for aesthetic reasons.
+	[aa2b8fa07dc7]
+
+2009-01-19  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/FloatFunctions.java, src/org/armedbear/lisp
+	/compiler-pass2.lisp, src/org/armedbear/lisp/jvm.lisp:
+	[svn r11569] Eliminate float-serializing ambiguities: if you need a
+	float/double, store one (instead of reading it from a string).
+	[dcc790fe7c8e]
+
+2009-01-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compile-file.lisp:
+	[svn r11568] Restore *read-base* and *read-default-float-format*
+	after compiling a file.
+
+	They could have been changed (and in our case the latter *is*)
+	during file compilation.
+	[59d579de8aaa]
+
+2009-01-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/format.lisp:
+	[svn r11567] Use the same lines as in SBCL to make sure SCALE-
+	EXPONENT works for all float types.
+	[788946584195]
+
+2009-01-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/dump-form.lisp:
+	[svn r11566] Make sure to dump all floats with exponent marker,
+	because when loaded, the default may differ.
+	[0e717d982566]
+
+2009-01-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/inspect.lisp:
+	[svn r11565] Fix thinko: it's not "unless", it's "when" ext
+	:*inspector-hook* is bound to a non-NIL value.
+	[7117d04d7fe1]
+
+2009-01-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/compiler-pass2.lisp:
+	[svn r11564] Fix compiler issue found by compiling AP5: Instead of
+	calculating the true upper bound (which may become a number as big
+	as 2^most-positive-fixnum), return '* as the upper bound instead.
+	The number won't fit into a fixnum anyway.
+	[b203572e0d37]
+
+2009-01-18  mevenson  <mevenson>
+
+	* test/lisp/cl-bench.asd, test/lisp/cl-bench/cl-bench.asd:
+	[svn r11563] Arrangin directory structure for Lisp-based test
+	suites.
+	[3dc469a8e724]
+
+2009-01-17  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/AbstractArray.java,
+	src/org/armedbear/lisp/BasicVector_UnsignedByte16.java,
+	src/org/armedbear/lisp/BasicVector_UnsignedByte32.java,
+	src/org/armedbear/lisp/BasicVector_UnsignedByte8.java,
+	src/org/armedbear/lisp/ComplexArray.java,
+	src/org/armedbear/lisp/ComplexArray_UnsignedByte32.java,
+	src/org/armedbear/lisp/ComplexArray_UnsignedByte8.java,
+	src/org/armedbear/lisp/ComplexBitVector.java,
+	src/org/armedbear/lisp/ComplexString.java,
+	src/org/armedbear/lisp/ComplexVector.java,
+	src/org/armedbear/lisp/ComplexVector_UnsignedByte32.java,
+	src/org/armedbear/lisp/ComplexVector_UnsignedByte8.java,
+	src/org/armedbear/lisp/SimpleArray_T.java,
+	src/org/armedbear/lisp/SimpleArray_UnsignedByte16.java,
+	src/org/armedbear/lisp/SimpleArray_UnsignedByte32.java,
+	src/org/armedbear/lisp/SimpleArray_UnsignedByte8.java,
+	src/org/armedbear/lisp/SimpleBitVector.java,
+	src/org/armedbear/lisp/SimpleString.java,
+	src/org/armedbear/lisp/SimpleVector.java,
+	src/org/armedbear/lisp/ZeroRankArray.java,
+	src/org/armedbear/lisp/adjust_array.java:
+	[svn r11562] Change and document the internal adjustArray()
+	protocol: we can't use NIL as a marker for "absent initial
+	contents": It's valid for ZeroRankArray.
+	[ecfbf2a2085f]
+
+2009-01-17  Mark Evenson  <evenson@chum.local>
+
+	*  (0.12.32):
+
+	[svn r11561] Don't check the value of initialContent to see whether it was provided; it may be NIL.
+	[svn r11560] Followup to r11557: Fixes ADJUST-ARRAY for the special cases
+	[svn r11557] Fix ticket #28: Expressly adjustable array not adjustable.	
+	[svn r11556] Fix the Lisp based build system to include with the new Java classes in src/org/armedbear/util.
+	[svn r11555] Remove unused variable.
+	
+2009-01-14  Mark Evenson  <evenson@chum.local>
+
+	*  (0.12.31): 
+
+	[svn r11553] Increase performance of LispThread.currentThread() by more than 50% (uncontended case).
+	[svn r11554] Followup to the introduction of compile-forms-and-maybe-emit-clear-values.
+
+2009-01-09  Mark Evenson  <evenson@chum>
+	
+	* (0.12.30):
+
+	[svn r11551] Change the return value of Environment.isDeclaredSpecial() to include the
+	[svn r11550] Silence compiler warnings about deleting "Unused function CALL-NEXT-METHOD": it's being added
+	[svn r11549] Silence compile warnings in SBCL by moving a function up.
+	[svn r11548] Remove bindArg duplication.
+	[svn r11547] For let, variable values must be bound after the let-forms.
+	[svn r11546] More fixes for the Ant target 'abcl.test'.
+
+	
+2009-01-09  Mark Evenson  <evenson@chum>
+	
+	* (0.12.29):
+
+	[svn r11535] Intermediate fix to remove double dupliation.
+	[svn r11536] Finished adding @Override annotations for Primitives.java.
+	[svn r11537] build.xml's target 'abcl.test' invokes the GCL ANSI-TEST interpreted tests by default.
+	[svn r11538] Added JUnit tests to Netbeans project.
+	[svn r11539] Empty statements cleanup
+	[svn r11540] Helper macro for defining inlining functions.
+	[svn r11541] Look, I can do conditionals in the middle of a
+	[svn r11542] Helper macro for declare-* functions that use hashtables.
+	[svn r11543] Little helper for p2-plus/minus/times.
+	[svn r11544] Add bounds checking and prepare for support for 'wide' instruction prefix.
+	[svn r11545] Another small helper for p2-plus/minus.
+
+2009-01-04  Mark Evenson  <evenson@chum>
+
+	* (0.12.28):
+
+	[svn r11534] Helper function for creating a new fixnum and emitting
+	[svn r11533] Helper macro for p2-test-minusp/plusp/zerop/oddp/evenp.
+	[svn r11532] Helper function for p2-test-minusp/plusp/zerop.
+	[svn r11531] In preparation for further refactorings, a tiny change
+	[svn r11530] 'abcl.test' now invokes both Java and Lisp based tests.
+
+2009-01-03  Mark Evenson <evenson@chum>
+
+	* (0.12.27):
+	
+	Manually re-merge inadvertly removed 'scripting' changes to the Java 5 codepath.
+
+	* (0.12.26): 
+
+	[svn r11527] (Phil Hudson) Make FastStringBuffer an adapter to java-1.5's StringBuilder.
+
+	* (0.12.25)
+
+	[svn r11520] Make the compiler recognize subtypes while compiling THE forms.
+	[svn r11522] Helper function for p2-flet-process-compiland and
+	[svn r11523] Macro for temp files in p2-flet/labels-process-compiland.
+	[svn r11524] Tiny helper for checking that class file is loadable.
+	[svn r11525] Helper function for fixnum initializations.
+	[svn r11526] Make Throw.java do as Lisp.java and LispThread.java: create a human-readable tag for the
+
+2008-12-31  Mark Evenson  <evenson@chum>
+
+	* (0.12.24)
+
+	[svn r11514] CompiledClosure should delegate to CTF.execute, not CTF._execute.
+	[svn r11515] Remove references to building 'j' in the 'abcl' build.xml.
+	[svn r11516] Documentation of variable-info fields.
+	[svn r11517] Replace Java type indicator with pre-existing constant with the same purpose.
+	[svn r11518] Eliminate dead code.
+	[svn r11519] Remove code repetition in the beginning of p2-compiland.
+
+2008-12-30  Mark Evenson  <evenson@chum>
+
+	*  (0.12.23): added from svn:common-lisp:trunk:
+
+	[svn r11513] Update ABCL<-->Java example instructions.
+	[svn r11512] Duplicate (clone) the ClosureTemplateFunction in
+	[svn r11511] Use replacement characters for unmappable and malformed
+	[svn r11510] Remove old build artifacts that no longer work or are referenced in maintable ways.
+
+	*  (0.12.22): added from svn:common-lisp:trunk:
+
+	[svn r11509] Remove Cons special case from car/cdr, it doesn't seem
+	[svn r11508] Cleanup: `, -> (nothing); (EMIT 'LABEL ...) -> (LABEL ...)
+	[svn r11507] Emit the most efficient ALOAD and ASTORE instructions.
+	
+
