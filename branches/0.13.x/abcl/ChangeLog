@@ -1,3 +1,82 @@
+2009-02-19  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/trace.lisp:
+	[svn r11668] Prevent CLOS from kicking in on TRACE; makes sure the
+	compiler doesn't get called to compile an effective-method-
+	function. Enables TRACEing the compiler.
+	[ce9fac0d5de7] [tip]
+
+2009-02-18  ehuelsmann  <ehuelsmann>
+
+	* src/org/armedbear/lisp/top-level.lisp:
+	[svn r11667] Move the binding of *PRINT-LENGTH* outside of the inner
+	REPL-loop; now it only gets re-bound upon the TOP-LEVEL restart.
+	[a33371702612]
+
+2009-02-18  vvoutilainen  <vvoutilainen>
+
+	* COPYING:
+	[svn r11665] Add a mention about classpath exception in the
+	beginning of the file.
+	[c798d072e18a]
+
+2009-02-19  Mark  <evenson@panix.com>
+
+	* LICENSE, build-abcl.lisp, build.xml,
+	src/org/armedbear/lisp/trace.lisp:
+	Interrmediate checkin on path to candidate release for TRACE.
+
+	Start of 'build-abcl.lisp' normalization.
+
+	Merge through [svn r11660].
+	[71a1ef1a6a2a]
+
+2009-02-15  ehuelsmann  <ehuelsmann>
+
+	* build-abcl.lisp:
+	[svn r11660] Fix our lisp based build for CLISP 2.47 (and hopefully
+	from there onwards).
+	[f29f8cbf0e42]
+
+2009-02-14  mevenson  <mevenson>
+
+	* src/org/armedbear/lisp/trace.lisp:
+	[svn r11659] Re-enable compilation of TRACE forms.
+
+	Introduces a bug by including a reference to CLOS in the TRACE
+	facility, which makes tracing of forms that access the compiler
+	(FORMAT et. al.) problematic.
+
+	Proposed solution to ship as 0.13.0. --Mark
+	[3a1b97072c14]
+
+2009-02-14  vvoutilainen  <vvoutilainen>
+
+	* COPYING, LICENSE:
+	[svn r11658] Move GPLv2 text to COPYING, append Classpath exception
+	to COPYING, delete LICENSE.
+	[ef6c55d91667]
+
+2009-02-12  Mark  <evenson@panix.com>
+
+	* bugs/trace-1.lisp, src/org/armedbear/lisp/trace.lisp:
+	Reverted first two fixes of r11627 to fix TRACE.
+
+	Problems interacting with SLIME.
+	[aee2bfc511c4]
+
+2009-02-11  Mark  <evenson@panix.com>
+
+	* ChangeLog:
+	Merge through svn r11655.
+	[c848818df171]
+
+2009-02-10  mevenson  <mevenson>
+
+	* COPYING:
+	[svn r11655] Change reference from COPYING to LICENSE.
+	[adc9feb07f46]
+
 2009-02-10  mevenson  <mevenson>
 
 	* COPYING:
