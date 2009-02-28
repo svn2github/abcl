@@ -1,0 +1,28 @@
+# ABCL Tests
+
+
+## Internal tests (shipped with ABCL)
+
+1.  Java tests (based on Junit)
+
+2.  Lisp tests (based on RT)
+
+[Instructions for how to run tests.]
+
+
+##  External tests
+
+1. ANSI GCL tests
+
+Create a sibling directory of 'abcl' called 'ansi-tests' containing
+the [ANSI GCL tests][1].
+
+Invoke via 'abcl.test' target in Ant or by :force t on the ASDF
+'ANSI-COMPILED' or 'ANSI-INTERPRETED' systems.
+
+[1]: svn://common-lisp.net/project/ansi-test/svn/trunk/ansi-tests
+
+## Test results
+
+[Describe current status of test results.]
+

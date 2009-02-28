@@ -1,0 +1,8 @@
+abcl-0.13
+
+	JSR-232 (aka scripting) support thanks to Alessio Stalla
+	(requires Java 6).
+
+	[...]	
+
+	See ChangeLog for blow-by-blow.
