@@ -6,14 +6,75 @@
   <title><!--#include virtual="project-name" -->: Testimonials</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+  <style>
+dt { margin-top: 1cm;
+     font-weight: bold;
+     font-family: sans-serif;
+     font-size: 105%; }
+dd { margin-top: 0.3cm;
+    // font-family: sans-serif;
+     font-size: 90% }
+  </style>
 </head>
 
 <body>
+ <div class="header">
+   <h1><!--#include virtual="project-name" --></h1>
+ </div>
+
+<div style="margin-top:3cm;margin-right:1cm;float:left;width:20ex;background-color:#fea;font-family:sans-serif;font-size:12px;padding:10px 5px 10px 5px">
+<b><a href="./">Project page</a><br />
+<a href="./testimonials.shtml">Testimonials</a>
+</b>
+</div><div style="float:left;width:80ex;margin-top:1cm">
 
 <h1>Testimonials</h1>
 
-
 <dl>
+<dt>Brad Garton (Columbia University Computer Music Center)
+</dt>
+<dd>
+"I used ABCL (older, v. 0.0.10) as the interpreter
+underlying an object for a music/media graphical programming
+environment called <a href="http://www.cycling74.com/products/max5">Max/MSP</a>.
+ABCL allowed me to embed an entire LISP interpreter inside the
+Max/MSP package, and it has worked extremely well.  Max/MSP
+is designed primarily for real-time/interactive applications,
+used a lot by computer music academics, DJs/VJs, bizarro jazz
+performers, audio plugin developers, etc.  With the embedded
+abcl object, I am able to schedule LISP functions and work
+interactively with complex processes -- <b>the abcl interpreter
+has been rock-solid!</b> <br />
+<br />
+The source for the object is here (scroll down to the bottom of
+the page):<br />
+<br />
+       <a style="align:center" href="http://music.columbia.edu/~brad/maxlispj/">http://music.columbia.edu/~brad/maxlispj/</a><br />
+<br />
+And I also used it extensively in a large application built with
+Max/MSP... it's an interactive 'book' where the generative music
+follows what a reader is reading and creates an appropriate sound
+setting for the text:<br />
+<br />
+       <a style="align:center" href="http://music.columbia.edu/~brad/BookOfDreams/">http://music.columbia.edu/~brad/BookOfDreams/</a><br />
+<br />
+The music performance model underlying the shawm-like melodies
+is all coded using abcl.<br />
+<br />
+So to all of you who have contributed (and still contribute!) to
+the development of this terrific package, a big THANK YOU!!!"
+</dt>
+
+<dt>Alessio Stalla
+</dt>
+<dd>I'm currently integrating ABCL in a small, unreleased open source
+project. It's a sort of graphical object browser for Java (but its GUI
+sucks badly for now...). It can be run locally or as a client-server
+application. I'm adding scripting support so you can access some
+functionality from Lisp (or in principle any other Java Scripting API
+compatible script engine, though I'm focusing on ABCL).
+</dd>
+
 <dt>Hunter Monroe
 </dt>
 <dd>"Maxima algebraic computation software compiles with ABCL. The test suite
@@ -21,6 +82,11 @@ runs fairly quickly on Windows XP and, after work by Robert Dodier, 86
 percent of the test suite is passed successfully, although some individual
 tests crash the suite. If you want to compile Maxima with ABCL lisp, check
 out the Maxima source code and following the instructions in INSTALL.lisp."
+</dd>
+
+<dt>Ted Kosan
+</dt>
+<dd>I am in the process of integrating ABCL with <a href="http://mathrider.org">MathRider</a> in preparation for when Maxima is able to run on it.
 </dd>
 
 <dt>Alex Mizhari
@@ -47,22 +113,7 @@ That certainly made experience with ABCL less pleasant that it could be,
 but in general it was more-or-less good.
 </dd>
 
-<dt>Alessio Stalla
-</dt>
-<dd>I'm currently integrating ABCL in a small, unreleased open source
-project. It's a sort of graphical object browser for Java (but its GUI
-sucks badly for now...). It can be run locally or as a client-server
-application. I'm adding scripting support so you can access some
-functionality from Lisp (or in principle any other Java Scripting API
-compatible script engine, though I'm focusing on ABCL).
-</dd>
-
-<dt>Ted Kosan
-</dt>
-<dd>I am in the process of integrating ABCL with <a href="http://mathrider.org">MathRider</a> in preparation for when Maxima is able to run on it.
-</dd>
-
 </dl>
-
+</div>
 </body>
 </html>

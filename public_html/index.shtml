@@ -6,15 +6,30 @@
   <title><!--#include virtual="project-name" --></title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+<style>
+td { font-size: 90%; padding: 0 5px 0 5px }
+th { font-weight: bold; align: center; padding: 0 5px 0 5px }
+</style>
 </head>
 
 <body>
  <div class="header">
    <h1><!--#include virtual="project-name" --></h1>
  </div>
-<div style="text-align: center">
-  <h1>Armed Bear</h1>
-  <i>The right of the people to keep and arm bears shall not be infringed!</i>
+
+<div style="margin-left:auto;margin-right:auto;width:10cm">
+<table style="margin-top:1cm" cellspacing="0" cellpadding="0">
+<tr>
+<th colspan="2">Overview</th></tr>
+<tr>
+<td>Latest release: <span style="font-weight:bold;font-size:85%">0.0.13</span></td>
+<td><a href="release-notes-0.13.shtml">Release notes</a></td>
+</tr><tr>
+<td style="width:5cm;text-align:center" colspan="2"><a href="testimonials.shtml">What people say about ABCL</a></td>
+</tr><tr>
+<td style="width:5cm"><a href="http://trac.common-lisp.net/armedbear/wiki">Wiki</a></td><td style="width:5cm">FAQ (to be created)</td>
+</tr>
+</table>
 </div>
 
 <hr style="height: 2px;"/>
@@ -36,11 +51,11 @@
       same as used by GNU Classpath and J2SE (Java).
       <br /><br />
       ABCL runs on platforms that support Java 1.5 (or later), including Linux,
-      Windows, and Mac OS X.
+      Windows, Mac OS X and the BSD family.
       <br /><br />
       ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
       <br /><br />
-      The latest version is 0.12.0, released December 14, 2008.
+      The latest version is 0.13.0, released February 28, 2009.
   </dd>
 </dl>
 
@@ -61,10 +76,10 @@
 <dl>
   <dd>
 
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.12.0.tar.gz?use_mirror=">abcl-0.12.0.tar.gz</a>
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.13.0.tar.gz?use_mirror=">abcl-0.13.0.tar.gz</a>
       (source, 656652 bytes)
       <br /><br />
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.12.0.zip?use_mirror=">abcl-0.12.0.zip</a>
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.13.0.zip?use_mirror=">abcl-0.13.0.zip</a>
       (source, 1130754 bytes)
   </dd>
 </dl>
@@ -93,20 +108,22 @@
         quality of ABCL being good enough for their needs though. See
         the testimonials page.
         <br /><br />
-        ABCL 0.12.0 fails 44 out of 21702 tests in the GCL ANSI test suite
-        in interpreted mode. In compiled mode ABCL 0.12.0 fails 48 tests,
-        coming from ca 65 in the last release.
-        Most notable recent fixes relate to special variables handling
-        and making sure the compiler uses the correct environments with, e.g.,
-        LET/LET* and FLET/LABELS.
+        ABCL 0.13.0 fails 44 out of 21702 tests in the ANSI test suite
+        in interpreted mode. In compiled mode ABCL 0.13.0 also fails 44 tests,
+        coming from ca 48 in the last release.
+        Most notable recent fixes relate to issues found through running
+        the Maxima test suite. 0.13.0 is now able to run the test suite
+        without crashing. Before, some testcases could not be completed,
+        causing Java side errors. This is the issue resolved. The Maxima
+        tests don't run without errors, still.
         <br /><br />
-        ABCL's CLOS is intolerably slow and does not handle on-the-fly
+        ABCL's CLOS is slow and does not handle on-the-fly
         redefinition of classes correctly. There is no support for the long
         form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
         features are also missing. Enough CLOS is there to run ASDF and
         CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
         <br /><br />
-        Since this is an early public release, there might be build problems as
+        Since this is an early release, there might be build problems as
         well as runtime bugs.
         <br /><br />
         Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
@@ -134,11 +151,10 @@
     <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
     is recommended. There are
     <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
-
-    performance issues</a> with early versions of Java 1.6. To build ABCL, you'll need
-    the full JDK; the JRE is not enough. <br />
-    <em>Recent performance tests have shown Java 1.6 Update 10 - a Release
-    Candidate as of this writing - to be as fast as Java 1.5.</em> </dd>
+    performance issues</a> with versions of Java 1.6 prior to update 10.
+    To build ABCL, you'll need the full JDK; the JRE is not enough. <br />
+    <em>Recent performance tests have shown Java 1.6 Update 10 to be as fast
+      as Java 1.5.</em> </dd>
 </dl>
 
  <hr />
