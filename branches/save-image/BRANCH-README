@@ -1,0 +1,135 @@
+------- Table of Contents -------
+
+    - Summary
+    - Introduction
+    - The serialization algorithm
+    - Why serialization?
+    - Current status
+    - Known problems
+
+---------------------------------
+
+
+-- Summary --
+
+The purpose of this branch is to store a set of changes to ABCL intended to provide a save-image functionality, found in all the most important Lisp implementations, using Java serialization as the underlying technology.
+
+
+-- Introduction --
+
+Serialization (http://java.sun.com/j2se/1.5.0/docs/api/java/io/Serializable.html) is the capability of a Java runtime environment to write Java objects in binary form on a stream. The objects can be read back later, even on a different instance of the JVM (provided certain conditions are met); this process is called deserialization.
+
+The objects responsible of these processes are instances of the classes java.io.ObjectOuputputStream and java.io.ObjectInputStream. Using a single instance of ObjectOutputStream to serialize an object graph will ensure that each object is only written once to the stream, while subsequent references to it are stored as references in the stream. This ensures, among other things, that circular structures are supported out-of-the-box, at the cost of some memory consuption due to the hash tables that are used by ObjectOutputStream to record known instances.
+
+Serializing an object will write to the stream a descriptor of its class, followed by a representation of the object itself according to an algorithm presented below. On deserialization, the class descriptor will be read and a corresponding class will be searched in the currently active ClassLoader. If found, an instance of this class will be created (using a native method that does not invoke any constructor). The state of the instance will then be restored according to the algorithm below.
+
+
+-- The serialization algorithm --
+
+Serialization is quite simple to use, yet very configurable. At the bare minimum, a Java class must implement the java.io.Serializable marker interface to be serializable.
+
+The default serialization algorithm will save all non-transient fields of an object: both fields that are declared in that object's class and in its superclasses that implement Serializable. Deserialization will simply copy state back in the deserialized instance. This unless an object already appeared in the stream, in which case an instance is read/written only once and subsequent references are resolved to it.
+
+Sometimes the basic algorithm is not enough. Serializable classes are allowed to hook into the mechanism by implementing some or all of these 4 methods:
+
+- void readObject(ObjectInputStream)
+- Object readResolve()
+
+- void writeObject(ObjectOutputStream)
+- Object writeReplace()
+
+readObject and writeObject can provide custom serialization/deserialization code. Inside these methods you can call defaultReadObject()/defaultWriteObject() on the stream passed as argument to read/write state according to the basic algorithm.
+
+readResolve and writeReplace can designate another object to be read/written to the stream instead of the current one.
+
+
+-- Why serialization? --
+
+Using serialization for ABCL save/restore state has the following benefits:
+
+- it's built-in and quite easy to implement, at least in the common case
+- it handles circularity out of the box
+- it plays well with the fact that most ABCL objects inherit from a single superclass (LispObject)
+- potentially it allows for finer-grained save/restore functionality, e.g. to send single Lisp objects over the network.
+
+However, it has the following downsides:
+
+- It is purely Java side, so it can be hard to debug since it cannot leverage ABCL's interactivity
+- It is tricky to integrate it with the dynamism of ABCL (e.g. ad-hoc code must be written to serialize/deserialize classes generated at runtime by the compiler).
+
+
+-- Current status --
+
+Currently the LispObject class, plus some support classes (in general inner classes) have been marked as Serializable. Here is a summary of the various Lisp object types and how they are handled:
+
+
+- Java class -- Lisp type ------------- Serialization status --------------
+             |            |
+             |            |
+  LispObject |     T      |   Basic algorithm; special cases in subclasses
+             |            |
+             |            |
+    Symbol   |   symbol   |   Package is transient: only the name of the
+             |            |   package is written, and the package is searched
+             |            |   with find-package at deserialization. This allows
+             |            |   to save individual symbols should the need arise.
+             |            |   readResolve() finds the package and interns the
+             |            |   symbol into it, returning the interned instance
+             |            |   with state copied from the deserialized instance.
+             |            |   This makes the deserialized instance EQ with an
+             |            |   eventual preexististing symbol with the same name
+             |            |   in the same package.
+             |            |
+             |            |
+     Nil     |    null    |   readResolve() returns Lisp.NIL
+             |            |
+             |            |
+   Function  |  function  |   compiled functions are instances of runtime-
+             |            |   generated classes marked somehow (currently
+             |            |   prepending ABCL_GENERATED_ to their name).
+             |            |   Function recognizes such classes and in this
+             |            |   case designates as a replacement object an
+             |            |   instance of ExternalizedCompiledFunction
+             |            |   containing the compiler-generated class as
+             |            |   a byte[]. Such an instance is used at
+             |            |   deseriazation time to reload the class into
+             |            |   the classloader, thus reloading the compiled
+             |            |   function. Non-compiled functions are serialized
+             |            |   using the basic algorithm.
+             |            |
+             |            |
+    Cons     |    cons    |   The basic algorithm seems to suffice.
+  HashTable  | hash-table |
+  and others | and others |
+             |            |
+             |            |
+
+
+-- Known problems --
+
+Object{In|Out}putStream have problems working with Lisp streams. Currently I have bypassed Lisp streams and only used Java streams to a hardcoded file for testing purposes, but the problem will need to be addressed.
+
+Some objects currently cannot be serialized or deserialized:
+
+- the symbol + cannot be serialized because its plist references a structure
+  describing the + method combination, structure which is not serializable
+  (why?)
+
+- Deserialization of compiled functions containing calls to jmethod fail,
+  since apparently when loaded (instantiated) the jmethod compiled function -
+  or maybe the function jvm::p2-java-jmethod - tries to load
+  compiler-pass2-704.cls as a file (not from abcl.jar), which obviously fails.
+  (it tries to load it using Lisp.loadCompiledFunction(String)).
+  It can be that jmethod is compiled using compile-function-call, which can
+  call loadCompiledFunction on the LispObject obtained instantiating the
+  runtime generated class. It is unclear to me where the file path comes from,
+  however.
+
+- Objects with volatile state (streams, threads) have not been addressed.
+
+- probably many others. Needs much more experimentation. In particular little
+  or no CLOS stuff has been tested.
+  
+
+
+2009-03-07, Alessio Stalla
