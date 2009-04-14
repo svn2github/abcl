@@ -22,8 +22,8 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <tr>
 <th colspan="2">Overview</th></tr>
 <tr>
-<td>Latest release: <span style="font-weight:bold;font-size:85%">0.0.13</span></td>
-<td><a href="release-notes-0.13.shtml">Release notes</a></td>
+<td>Latest release: <span style="font-weight:bold;font-size:85%">0.14.1</span></td>
+<td><a href="release-notes-0.14.shtml">Release notes</a></td>
 </tr><tr>
 <td style="width:5cm;text-align:center" colspan="2"><a href="testimonials.shtml">What people say about ABCL</a></td>
 </tr><tr>
@@ -55,7 +55,7 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
       <br /><br />
       ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
       <br /><br />
-      The latest version is 0.13.0, released February 28, 2009.
+      The latest version is 0.14.1, released April 5, 2009.
   </dd>
 </dl>
 
@@ -76,11 +76,11 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <dl>
   <dd>
 
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.13.0.tar.gz?use_mirror=">abcl-0.13.0.tar.gz</a>
-      (source, 656652 bytes)
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.14.1.tar.gz?use_mirror=">abcl-src-0.14.1.tar.gz</a>
+      (source, 632584 bytes)
       <br /><br />
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.13.0.zip?use_mirror=">abcl-0.13.0.zip</a>
-      (source, 1130754 bytes)
+      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.14.1.zip?use_mirror=">abcl-src-0.14.1.zip</a>
+      (source, 1098276 bytes)
   </dd>
 </dl>
 <p>
@@ -108,14 +108,13 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
         quality of ABCL being good enough for their needs though. See
         the testimonials page.
         <br /><br />
-        ABCL 0.13.0 fails 44 out of 21702 tests in the ANSI test suite
-        in interpreted mode. In compiled mode ABCL 0.13.0 also fails 44 tests,
-        coming from ca 48 in the last release.
+        ABCL 0.14.1 fails 43 out of 21702 tests in the ANSI test suite
+        in interpreted mode. In compiled mode ABCL 0.14.1 also fails 43 tests,
+        coming from ca 44 in the last release.
         Most notable recent fixes relate to issues found through running
         the Maxima test suite. 0.13.0 is now able to run the test suite
-        without crashing. Before, some testcases could not be completed,
-        causing Java side errors. This is the issue resolved. The Maxima
-        tests don't run without errors, still.
+        without only ca 75 failing tests, coming from ca 1400 failures
+        october 2008 (6 months ago).
         <br /><br />
         ABCL's CLOS is slow and does not handle on-the-fly
         redefinition of classes correctly. There is no support for the long
@@ -123,8 +122,10 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
         features are also missing. Enough CLOS is there to run ASDF and
         CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
         <br /><br />
-        Since this is an early release, there might be build problems as
-        well as runtime bugs.
+        Due to the age of the source code (when compared to several other
+        implementations) you're more likely to find bugs in ABCL.  However,
+        we're committed to fixing any bugs you find.  Patches (bugfixes as
+        well as features) are most welcome.
         <br /><br />
         Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
         (you must be subscribed to post).<br /><br />
