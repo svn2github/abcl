@@ -7,7 +7,7 @@
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
 <style>
-dt { font-size: 110%; font-weight: bold }
+dt { font-size: 105%; font-family: sans-serif; font-weight: bold }
 dd { }
 </style>
 </head>
@@ -17,10 +17,13 @@ dd { }
    <h1><!--#include virtual="project-name" --></h1>
  </div>
 
+<!--#include virtual="left-menu" -->
+
+<div style="float:left;width:80ex;margin-top:1cm">
 
 <h2 style="text-align:center">Release notes for ABCL 0.14</h2>
 <p>
-  <b style="font-family: sans-serif; font-size: large;">Major changes and new features</b>
+  <b style="font-family: sans-serif; font-size: 125%;">Major changes and new features</b>
 </p>
 <dl style="margin-left:3cm;width:20cm">
   <dt>Fixed special bindings un-binding in compiled code for
@@ -47,7 +50,8 @@ dd { }
 <h2 style="text-align:center">Release notes for ABCL 0.13</h2>
 
 <p>
-  <b style="font-family: sans-serif; font-size: large;">Major changes and new features</b>
+  <b style="font-family: sans-serif; font-size: 125%;">Major changes and new features</b>
+
 </p>
 <dl style="margin-left:3cm;width:20cm">
   <dt>JSR-223: Java Scripting Plugin
@@ -74,6 +78,9 @@ dd { }
 <p>These release notes have not been created before. If someone takes
   the effort to create them, they will be added for 0.11 and 0.12.</p>
 
+</div>
+
+<div style="float:left;width:100%">
  <hr />
  <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
 
@@ -81,5 +88,6 @@ dd { }
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id: index.shtml 11358 2008-10-18 22:10:11Z ehuelsmann $</div>
+</div>
 </body>
 </html>

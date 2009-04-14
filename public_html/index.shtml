@@ -33,6 +33,11 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 </div>
 
 <hr style="height: 2px;"/>
+
+<!--#include virtual="left-menu" -->
+
+<div style="float:left;width:80ex;margin-top:1cm">
+
 <p>
   <b style="font-family: sans-serif; font-size: large;">About ABCL</b>
 </p>
@@ -158,6 +163,9 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
       as Java 1.5.</em> </dd>
 </dl>
 
+</div>
+
+<div style="float:left;width:100%">
  <hr />
  <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
 
@@ -165,5 +173,6 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
+</div>
 </body>
 </html>

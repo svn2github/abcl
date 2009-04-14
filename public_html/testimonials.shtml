@@ -22,11 +22,9 @@ dd { margin-top: 0.3cm;
    <h1><!--#include virtual="project-name" --></h1>
  </div>
 
-<div style="margin-top:3cm;margin-right:1cm;float:left;width:20ex;background-color:#fea;font-family:sans-serif;font-size:12px;padding:10px 5px 10px 5px">
-<b><a href="./">Project page</a><br />
-<a href="./testimonials.shtml">Testimonials</a>
-</b>
-</div><div style="float:left;width:80ex;margin-top:1cm">
+<!--#include virtual="left-menu" -->
+
+<div style="float:left;width:80ex;margin-top:1cm">
 
 <h1>Testimonials</h1>
 
