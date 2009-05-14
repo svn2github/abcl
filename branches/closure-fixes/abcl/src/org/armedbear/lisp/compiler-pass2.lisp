@@ -8110,40 +8110,45 @@ for use with derive-type-times.")
               (and *closure-variables* (not *child-p*)))
       (dformat t "~S moving arguments to closure array~%"
                (compiland-name compiland))
-      (cond (*child-p*
-             (aver (eql (compiland-closure-register compiland) 1))
-             (aload (compiland-closure-register compiland)))
-            (t ;; if we're the ultimate parent: create the closure array
-             (emit-push-constant-int (length *closure-variables*))
-             (dformat t "p2-compiland ~S anewarray 1~%"
-                      (compiland-name compiland))
-             (emit 'anewarray "org/armedbear/lisp/ClosureBinding")))
-      (dolist (variable closure-args)
-        (dformat t "moving variable ~S~%" (variable-name variable))
-        (cond ((variable-register variable)
+      (if *child-p*
+          (aload (compiland-closure-register compiland))
+          (progn
+            ;; if we're the ultimate parent: create the closure array
+            (emit-push-constant-int (length *closure-variables*))
+            (emit 'anewarray "org/armedbear/lisp/ClosureBinding")))
+      (dotimes (i (length *closure-variables*))
+        ;; Loop over all slots, setting their value
+        ;;  unconditionally if we're the parent creating it (using null
+        ;;  values if no real value is available)
+        ;; or selectively if we're a child binding certain slots.
+        (let ((variable (find i closure-args
+                              :key #'variable-closure-index
+                              :test #'eql)))
+          (when (or (not *child-p*) variable)
+            ;; we're the parent, or we have a variable to set.
+            (emit 'dup) ; array
+            (emit-push-constant-int i)
+            (emit 'new "org/armedbear/lisp/ClosureBinding")
+            (emit 'dup)
+            (cond
+              ((null variable)
+               (assert (not *child-p*))
+               (emit 'aconst_null))
+              ((variable-register variable)
                (assert (not (eql (variable-register variable)
                                  (compiland-closure-register compiland))))
-               (emit 'dup) ; array
-               (emit-push-constant-int (variable-closure-index variable))
-               (emit 'new "org/armedbear/lisp/ClosureBinding")
-               (emit 'dup)
                (aload (variable-register variable))
-               (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                       (list +lisp-object+))
-               (emit 'aastore)
                (setf (variable-register variable) nil))
               ((variable-index variable)
-               (emit 'dup) ; array
-               (emit-push-constant-int (variable-closure-index variable))
-               (emit 'new "org/armedbear/lisp/ClosureBinding")
-               (emit 'dup)
                (aload (compiland-argument-register compiland))
                (emit-push-constant-int (variable-index variable))
                (emit 'aaload)
-               (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                       (list +lisp-object+))
-               (emit 'aastore)
-               (setf (variable-index variable) nil))))
+               (setf (variable-index variable) nil))
+              (t
+               (assert (not "Can't happen!!"))))
+            (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
+                                     (list +lisp-object+))
+            (emit 'aastore))))
 
       (aver (not (null (compiland-closure-register compiland))))
       (cond (*child-p*
