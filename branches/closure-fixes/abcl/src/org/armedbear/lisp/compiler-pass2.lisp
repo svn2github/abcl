@@ -3919,14 +3919,17 @@ given a specific common representation.")
          (emit 'swap)
          (emit-invokevirtual +lisp-thread-class+ "bindSpecial"
                              (list +lisp-symbol+ +lisp-object+) nil))
-        ((variable-closure-index variable)
-         (emit 'new "org/armedbear/lisp/ClosureBinding")
-         (emit 'dup)
+        ((variable-closure-index variable)              ;; stack:
+         (emit 'new "org/armedbear/lisp/ClosureBinding") ;; value c-b
+         (emit 'dup_x1)                                  ;; c-b value c-b
+         (emit 'swap)                                    ;; c-b c-b value
          (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                 (list +lisp-object+))
+                                 (list +lisp-object+))   ;; c-b
          (aload (compiland-closure-register *current-compiland*))
-         (emit 'swap) ; array value
+                                                         ;; c-b array
+         (emit 'swap)                                    ;; array c-b
          (emit-push-constant-int (variable-closure-index variable))
+                                                         ;; array c-b int
          (emit 'swap) ; array index value
          (emit 'aastore))
         (t
@@ -8122,23 +8125,23 @@ for use with derive-type-times.")
                                  (compiland-closure-register compiland))))
                (emit 'dup) ; array
                (emit-push-constant-int (variable-closure-index variable))
-               (aload (variable-register variable))
                (emit 'new "org/armedbear/lisp/ClosureBinding")
                (emit 'dup)
+               (aload (variable-register variable))
                (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                       (list "Lorg/armedbear/lisp/LisObject;"))
+                                       (list +lisp-object+))
                (emit 'aastore)
                (setf (variable-register variable) nil))
               ((variable-index variable)
                (emit 'dup) ; array
                (emit-push-constant-int (variable-closure-index variable))
+               (emit 'new "org/armedbear/lisp/ClosureBinding")
+               (emit 'dup)
                (aload (compiland-argument-register compiland))
                (emit-push-constant-int (variable-index variable))
                (emit 'aaload)
-               (emit 'new "org/armedbear/lisp/ClosureBinding")
-               (emit 'dup)
                (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
-                                       (list "Lorg/armedbear/lisp/LisObject;"))
+                                       (list +lisp-object+))
                (emit 'aastore)
                (setf (variable-index variable) nil))))
 
