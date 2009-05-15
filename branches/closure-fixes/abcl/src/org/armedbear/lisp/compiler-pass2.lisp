@@ -2991,26 +2991,6 @@ is registered (or not)."
   (fix-boxing representation nil)
   (emit-move-from-stack target))
 
-(defun save-variables (variables)
-  (let ((saved-vars '()))
-    (dolist (variable variables)
-      (when (variable-closure-index variable)
-        (let ((register (allocate-register)))
-          (aload (compiland-closure-register *current-compiland*))
-          (emit-push-constant-int (variable-closure-index variable))
-          (emit 'aaload)
-          (astore register)
-          (push (cons variable register) saved-vars))))
-    saved-vars))
-
-(defun restore-variables (saved-vars)
-  (dolist (saved-var saved-vars)
-    (let ((variable (car saved-var))
-          (register (cdr saved-var)))
-      (aload (compiland-closure-register *current-compiland*))
-      (emit-push-constant-int (variable-closure-index variable))
-      (aload register)
-      (emit 'aastore))))
 
 (defun duplicate-closure-array (compiland)
   (let* ((*register* *register*)
@@ -3025,7 +3005,7 @@ is registered (or not)."
     (emit-push-constant-int (length *closure-variables*)) ;; length
     (emit-invokestatic "java/lang/System" "arraycopy"
                        (list "Ljava/lang/Object;" "I"
-                             "Ljava/lang/Object;" "I" "I") "V")
+                             "Ljava/lang/Object;" "I" "I") nil)
     (aload register))) ;; reload dest value
 
 
@@ -3040,23 +3020,11 @@ Note: DEFUN implies a named lambda."
          (op (car form))
          (args (cdr form))
          (local-function (find-local-function op))
-         (*register* *register*)
-         (saved-vars '())
-         (label-START (gensym))
-         (label-END (gensym))
-         (label-EXIT (gensym)))
+         (*register* *register*))
     (cond ((local-function-variable local-function)
            ;; LABELS
            (dformat t "compile-local-function-call LABELS case variable = ~S~%"
                    (variable-name (local-function-variable local-function)))
-           (unless (null (compiland-parent compiland))
-             (setf saved-vars
-                   (save-variables (intersection
-                                    (compiland-arg-vars (local-function-compiland local-function))
-                                    *visible-variables*))))
-;;            (emit 'var-ref (local-function-variable local-function) 'stack)
-           (when saved-vars
-             (label label-START))
            (compile-var-ref (make-var-ref (local-function-variable local-function)) 'stack nil))
           (t
            (dformat t "compile-local-function-call default case~%")
@@ -3066,25 +3034,14 @@ Note: DEFUN implies a named lambda."
              (emit 'getstatic *this-class* g +lisp-object+) ; Stack: template-function
              (when *closure-variables*
                (emit 'checkcast +lisp-ctf-class+)
-               (aload (compiland-closure-register compiland))
+               (duplicate-closure-array compiland)
                (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
                                   +lisp-object+)))))
     (process-args args)
     (emit-call-execute (length args))
     (fix-boxing representation nil)
-    (emit-move-from-stack target representation)
-    (when saved-vars
-      (emit 'goto label-EXIT)
-      (label label-END)
-      (restore-variables saved-vars)
-      (emit 'athrow)
-      (label label-EXIT)
-      (restore-variables saved-vars)
-      (push (make-handler :from label-START
-                          :to label-END
-                          :code label-END
-                          :catch-type 0) *handlers*)))
+    (emit-move-from-stack target representation))
   t)
 
 
@@ -4898,7 +4855,7 @@ given a specific common representation.")
       (dformat t "(compiland-closure-register parent) = ~S~%"
 	       (compiland-closure-register parent))
       (emit 'checkcast +lisp-ctf-class+)
-      (aload (compiland-closure-register parent))
+      (duplicate-closure-array parent)
       (emit-invokestatic +lisp-class+ "makeCompiledClosure"
 			 (list +lisp-object+ +closure-binding-array+)
 			 +lisp-object+)))
@@ -5046,7 +5003,7 @@ given a specific common representation.")
                (delete-file pathname)))))
     (cond ((null *closure-variables*)) ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
-           (aload (compiland-closure-register *current-compiland*))
+           (duplicate-closure-array *current-compiland*)
            (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                               (list +lisp-object+ +closure-binding-array+)
                               +lisp-object+)
@@ -5078,7 +5035,7 @@ given a specific common representation.")
 
                            (when (compiland-closure-register *current-compiland*)
                              (emit 'checkcast +lisp-ctf-class+)
-                             (aload (compiland-closure-register *current-compiland*))
+                             (duplicate-closure-array *current-compiland*)
                              (emit-invokestatic +lisp-class+ "makeCompiledClosure"
                                                 (list +lisp-object+ +closure-binding-array+)
                                                 +lisp-object+)))))
