@@ -206,6 +206,8 @@
 (defconstant +lisp-object+ "Lorg/armedbear/lisp/LispObject;")
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
+(defconstant +closure-binding+ "Lorg/armedbear/lisp/ClosureBinding;")
+(defconstant +closure-binding-class+ "org/armedbear/lisp/ClosureBinding")
 (defconstant +lisp-symbol-class+ "org/armedbear/lisp/Symbol")
 (defconstant +lisp-symbol+ "Lorg/armedbear/lisp/Symbol;")
 (defconstant +lisp-structure-object-class+ "org/armedbear/lisp/StructureObject")
@@ -3009,6 +3011,24 @@ is registered (or not)."
       (emit-push-constant-int (variable-closure-index variable))
       (aload register)
       (emit 'aastore))))
+
+(defun duplicate-closure-array (compiland)
+  (let* ((*register* *register*)
+         (register (allocate-register)))
+    (aload (compiland-closure-register compiland))        ;; src
+    (emit-push-constant-int 0)                            ;; srcPos
+    (emit-push-constant-int (length *closure-variables*))
+    (emit 'anewarray "org/armedbear/lisp/ClosureBinding")     ;; dest
+    (emit 'dup)
+    (astore register)  ;; save dest value
+    (emit-push-constant-int 0)                            ;; destPos
+    (emit-push-constant-int (length *closure-variables*)) ;; length
+    (emit-invokestatic "java/lang/System" "arraycopy"
+                       (list "Ljava/lang/Object;" "I"
+                             "Ljava/lang/Object;" "I" "I") "V")
+    (aload register))) ;; reload dest value
+
+
 
 (defknown compile-local-function-call (t t t) t)
 (defun compile-local-function-call (form target representation)
@@ -8044,6 +8064,8 @@ for use with derive-type-times.")
          (args (cadr p1-result))
          (closure-args (intersection *closure-variables*
                                      (compiland-arg-vars compiland)))
+         (local-closure-vars
+          (find compiland *closure-variables* :key #'variable-compiland))
          (body (cddr p1-result))
          (*using-arg-array* nil)
          (*hairy-arglist-p* nil)
@@ -8105,17 +8127,20 @@ for use with derive-type-times.")
        (dformat t "p2-compiland 2 closure register = ~S~%"
                 (compiland-closure-register compiland)))
 
+    (when *closure-variables*
+      (cond
+        ((not *child-p*)
+         ;; if we're the ultimate parent: create the closure array
+         (emit-push-constant-int (length *closure-variables*))
+         (emit 'anewarray "org/armedbear/lisp/ClosureBinding"))
+        (local-closure-vars
+         (duplicate-closure-array compiland))))
+
     ;; Move args from their original registers to the closure variables array
     (when (or closure-args
               (and *closure-variables* (not *child-p*)))
       (dformat t "~S moving arguments to closure array~%"
                (compiland-name compiland))
-      (if *child-p*
-          (aload (compiland-closure-register compiland))
-          (progn
-            ;; if we're the ultimate parent: create the closure array
-            (emit-push-constant-int (length *closure-variables*))
-            (emit 'anewarray "org/armedbear/lisp/ClosureBinding")))
       (dotimes (i (length *closure-variables*))
         ;; Loop over all slots, setting their value
         ;;  unconditionally if we're the parent creating it (using null
@@ -8148,13 +8173,11 @@ for use with derive-type-times.")
                (assert (not "Can't happen!!"))))
             (emit-invokespecial-init "org/armedbear/lisp/ClosureBinding"
                                      (list +lisp-object+))
-            (emit 'aastore))))
+            (emit 'aastore)))))
 
+    (when (or local-closure-vars (and *closure-variables* (not *child-p*)))
       (aver (not (null (compiland-closure-register compiland))))
-      (cond (*child-p*
-             (emit 'pop))
-            (t
-             (astore (compiland-closure-register compiland))))
+      (astore (compiland-closure-register compiland))
       (dformat t "~S done moving arguments to closure array~%"
                (compiland-name compiland)))
 
