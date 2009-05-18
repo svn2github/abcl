@@ -279,7 +279,7 @@ public abstract class HashTable extends LispObject
         HashEntry e = buckets[i];
         while (e != null)
           {
-            function.execute(e.key, e.value);
+            function.execute(new LispObject[] { e.key, e.value });
             e = e.next;
           }
       }

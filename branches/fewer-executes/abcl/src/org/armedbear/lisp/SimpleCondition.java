@@ -87,7 +87,7 @@ public class SimpleCondition extends Condition
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_CONTROL);
+            return Symbol.STD_SLOT_VALUE.execute(new LispObject[] { arg, Symbol.FORMAT_CONTROL });
         }
     };
 
@@ -98,7 +98,7 @@ public class SimpleCondition extends Condition
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.FORMAT_ARGUMENTS);
+            return Symbol.STD_SLOT_VALUE.execute(new LispObject[] { arg, Symbol.FORMAT_ARGUMENTS });
         }
     };
 }

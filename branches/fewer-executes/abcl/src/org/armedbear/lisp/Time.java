@@ -86,7 +86,7 @@ public final class Time extends Lisp
         long realStart = System.currentTimeMillis();
         try
           {
-            return arg.execute();
+            return arg.execute(new LispObject[0]);
           }
         finally
           {

@@ -148,7 +148,7 @@ public final class ZeroRankArray extends AbstractArray
             if (data == this && Symbol.PRINT_CIRCLE.symbolValue(thread) != NIL) {
                 StringOutputStream stream = new StringOutputStream();
                 thread.execute(Symbol.OUTPUT_OBJECT.getSymbolFunction(),
-                               data, stream);
+                               new LispObject[] { data, stream });
                 sb.append(stream.getString().getStringValue());
             } else
                 sb.append(data.writeToString());

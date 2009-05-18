@@ -197,7 +197,7 @@ public class Condition extends StandardObject
         if (formatControl instanceof Function)
           {
             StringOutputStream stream = new StringOutputStream();
-            Symbol.APPLY.execute(formatControl, stream, getFormatArguments());
+            Symbol.APPLY.execute(new LispObject[] { formatControl, stream, getFormatArguments() });
             return stream.getString().getStringValue();
           }
         if (formatControl instanceof AbstractString)
@@ -205,7 +205,7 @@ public class Condition extends StandardObject
             LispObject f = Symbol.FORMAT.getSymbolFunction();
             if (f == null || f instanceof Autoload)
               return format(formatControl, getFormatArguments());
-            return Symbol.APPLY.execute(f, NIL, formatControl, getFormatArguments()).getStringValue();
+            return Symbol.APPLY.execute(new LispObject[] { f, NIL, formatControl, getFormatArguments() }).getStringValue();
           }
       }
     final int maxLevel;

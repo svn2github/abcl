@@ -399,11 +399,12 @@ public final class Java extends Lisp
                 error(new JavaException(t));
             else
                 Symbol.SIGNAL.execute(
-                    condition,
-                    Keyword.CAUSE,
-                    JavaObject.getInstance(t),
-                    Keyword.FORMAT_CONTROL,
-                    new SimpleString(getMessage(t)));
+                        new LispObject[] {
+                                condition,
+                                Keyword.CAUSE,
+                                JavaObject.getInstance(t),
+                                Keyword.FORMAT_CONTROL,
+                                new SimpleString(getMessage(t)) });
         }
         // Not reached.
         return NIL;
@@ -464,11 +465,12 @@ public final class Java extends Lisp
                     error(new JavaException(t));
                 else
                     Symbol.SIGNAL.execute(
-                        condition,
-                        Keyword.CAUSE,
-                        JavaObject.getInstance(t),
-                        Keyword.FORMAT_CONTROL,
-                        new SimpleString(getMessage(t)));
+                        new LispObject[] {
+                                condition,
+                                Keyword.CAUSE,
+                                JavaObject.getInstance(t),
+                                Keyword.FORMAT_CONTROL,
+                                new SimpleString(getMessage(t)) });
             }
             // Not reached.
             return NIL;
@@ -518,11 +520,12 @@ public final class Java extends Lisp
                 error(new JavaException(t));
             else
                 Symbol.SIGNAL.execute(
-                    condition,
-                    Keyword.CAUSE,
-                    JavaObject.getInstance(t),
-                    Keyword.FORMAT_CONTROL,
-                    new SimpleString(getMessage(t)));
+                        new LispObject[] {
+                                condition,
+                                Keyword.CAUSE,
+                                JavaObject.getInstance(t),
+                                Keyword.FORMAT_CONTROL,
+                                new SimpleString(getMessage(t)) });
         }
         // Not reached.
         return NIL;
@@ -576,11 +579,12 @@ public final class Java extends Lisp
                     error(new JavaException(t));
                 else
                     Symbol.SIGNAL.execute(
-                        condition,
-                        Keyword.CAUSE,
-                        JavaObject.getInstance(t),
-                        Keyword.FORMAT_CONTROL,
-                        new SimpleString(getMessage(t)));
+                        new LispObject[] {
+                                condition,
+                                Keyword.CAUSE,
+                                JavaObject.getInstance(t),
+                                Keyword.FORMAT_CONTROL,
+                                new SimpleString(getMessage(t)) });
             }
             // Not reached.
             return NIL;
@@ -658,11 +662,12 @@ public final class Java extends Lisp
                 error(new JavaException(t));
             else
                 Symbol.SIGNAL.execute(
-                    condition,
-                    Keyword.CAUSE,
-                    JavaObject.getInstance(t),
-                    Keyword.FORMAT_CONTROL,
-                    new SimpleString(getMessage(t)));
+                        new LispObject[] {
+                                condition,
+                                Keyword.CAUSE,
+                                JavaObject.getInstance(t),
+                                Keyword.FORMAT_CONTROL,
+                                new SimpleString(getMessage(t)) });
         }
         // Not reached.
         return null;

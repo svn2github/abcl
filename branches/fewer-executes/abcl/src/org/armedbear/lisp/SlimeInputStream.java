@@ -96,7 +96,8 @@ public class SlimeInputStream extends Stream
         if (offset >= length) {
             try {
                 ostream.finishOutput();
-                s = LispThread.currentThread().execute(f).getStringValue();
+                s = LispThread.currentThread()
+                        .execute(f, new LispObject[0]).getStringValue();
             }
             catch (Throwable t) {
                 return -1;

@@ -93,7 +93,7 @@ public class JavaException extends LispError
         @Override
         public LispObject execute(LispObject arg) throws ConditionThrowable
         {
-            return Symbol.STD_SLOT_VALUE.execute(arg, Symbol.CAUSE);
+            return Symbol.STD_SLOT_VALUE.execute(new LispObject[] { arg, Symbol.CAUSE });
         }
     };
 }

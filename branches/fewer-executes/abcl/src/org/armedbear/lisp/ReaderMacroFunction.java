@@ -62,11 +62,14 @@ public abstract class ReaderMacroFunction extends Function
     }
 
     @Override
-    public LispObject execute(LispObject first, LispObject second)
+    public LispObject execute(LispObject[] args)
         throws ConditionThrowable
     {
-        Stream stream = inSynonymOf(first);
-        char c = LispCharacter.getValue(second);
+        if (args.length != 2)
+            return error(new WrongNumberOfArgumentsException(this));
+
+        Stream stream = inSynonymOf(args[0]);
+        char c = LispCharacter.getValue(args[1]);
         return execute(stream, c);
     }
 

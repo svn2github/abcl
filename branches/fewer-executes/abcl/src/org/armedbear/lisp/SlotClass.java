@@ -110,7 +110,7 @@ public class SlotClass extends LispClass
             if (c instanceof StandardClass) {
                 LispObject obj = ((StandardClass)c).getDirectDefaultInitargs();
                 if (obj != NIL)
-                    result = Symbol.APPEND.execute(result, obj);
+                    result = Symbol.APPEND.execute(new LispObject[] { result, obj });
             }
             cpl = cpl.cdr();
         }

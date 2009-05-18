@@ -646,70 +646,6 @@ public class LispObject extends Lisp
     return error(new LispError());
   }
 
-  public LispObject execute() throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject arg) throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth,
-                            LispObject seventh)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
-  public LispObject execute(LispObject first, LispObject second,
-                            LispObject third, LispObject fourth,
-                            LispObject fifth, LispObject sixth,
-                            LispObject seventh, LispObject eighth)
-    throws ConditionThrowable
-  {
-    return type_error(this, Symbol.FUNCTION);
-  }
-
   public LispObject execute(LispObject[] args) throws ConditionThrowable
   {
     return type_error(this, Symbol.FUNCTION);
@@ -718,32 +654,7 @@ public class LispObject extends Lisp
   // Used by COMPILE-MULTIPLE-VALUE-CALL.
   public LispObject dispatch(LispObject[] args) throws ConditionThrowable
   {
-    switch (args.length)
-      {
-      case 0:
-        return execute();
-      case 1:
-        return execute(args[0]);
-      case 2:
-        return execute(args[0], args[1]);
-      case 3:
-        return execute(args[0], args[1], args[2]);
-      case 4:
-        return execute(args[0], args[1], args[2], args[3]);
-      case 5:
-        return execute(args[0], args[1], args[2], args[3], args[4]);
-      case 6:
-        return execute(args[0], args[1], args[2], args[3], args[4],
-                       args[5]);
-      case 7:
-        return execute(args[0], args[1], args[2], args[3], args[4],
-                       args[5], args[6]);
-      case 8:
-        return execute(args[0], args[1], args[2], args[3], args[4],
-                       args[5], args[6], args[7]);
-      default:
-        return type_error(this, Symbol.FUNCTION);
-      }
+    return type_error(this, Symbol.FUNCTION);
   }
 
   public int intValue() throws ConditionThrowable

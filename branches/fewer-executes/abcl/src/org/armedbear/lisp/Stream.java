@@ -538,7 +538,7 @@ public class Stream extends LispObject
     if (handler instanceof ReaderMacroFunction)
       return ((ReaderMacroFunction)handler).execute(this, c);
     if (handler != null && handler != NIL)
-      return handler.execute(this, LispCharacter.getInstance(c));
+      return handler.execute(new LispObject[] { this, LispCharacter.getInstance(c) });
     return readToken(c, rt);
   }
 
@@ -596,7 +596,7 @@ public class Stream extends LispObject
         Symbol DEFSTRUCT_DEFAULT_CONSTRUCTOR =
           PACKAGE_SYS.intern("DEFSTRUCT-DEFAULT-CONSTRUCTOR");
         LispObject constructor =
-          DEFSTRUCT_DEFAULT_CONSTRUCTOR.getSymbolFunctionOrDie().execute(structure);
+          DEFSTRUCT_DEFAULT_CONSTRUCTOR.getSymbolFunctionOrDie().execute(new LispObject[] { structure });
         final int length = args.length();
         if ((length % 2) != 0)
           return error(new ReaderError("Odd number of keyword arguments following #S: " +
@@ -644,7 +644,7 @@ public class Stream extends LispObject
         Symbol DEFSTRUCT_DEFAULT_CONSTRUCTOR =
           PACKAGE_SYS.intern("DEFSTRUCT-DEFAULT-CONSTRUCTOR");
         LispObject constructor =
-          DEFSTRUCT_DEFAULT_CONSTRUCTOR.getSymbolFunctionOrDie().execute(structure);
+          DEFSTRUCT_DEFAULT_CONSTRUCTOR.getSymbolFunctionOrDie().execute(new LispObject[] { structure });
         final int length = args.length();
         if ((length % 2) != 0)
           return error(new ReaderError("Odd number of keyword arguments following #S: " +
@@ -792,8 +792,9 @@ public class Stream extends LispObject
     if (fun != NIL)
       {
         LispObject result =
-          thread.execute(fun, this, LispCharacter.getInstance(c),
-                         (numArg < 0) ? NIL : Fixnum.getInstance(numArg));
+          thread.execute(fun,
+            new LispObject[] { this, LispCharacter.getInstance(c),
+                               (numArg < 0) ? NIL : Fixnum.getInstance(numArg) });
         LispObject[] values = thread._values;
         if (values != null && values.length == 0)
           result = null;

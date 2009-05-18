@@ -92,7 +92,8 @@ public class Profiler extends Lisp
                             object.setCallCount(0);
                             if (object instanceof StandardGenericFunction) {
                                 LispObject methods =
-                                    PACKAGE_MOP.intern("GENERIC-FUNCTION-METHODS").execute(object);
+                                    PACKAGE_MOP.intern("GENERIC-FUNCTION-METHODS")
+                                    .execute(new LispObject[] { object });
                                 while (methods != NIL) {
                                     StandardMethod method = (StandardMethod) methods.car();
                                     method.getFunction().setCallCount(0);

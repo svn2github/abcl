@@ -403,7 +403,7 @@ public final class StructureObject extends LispObject
             Symbol PRINT_RESTART = PACKAGE_SYS.intern("PRINT-RESTART");
             LispObject fun = PRINT_RESTART.getSymbolFunction();
             StringOutputStream stream = new StringOutputStream();
-            thread.execute(fun, this, stream);
+            thread.execute(fun, new LispObject[] { this, stream });
             return stream.getString().getStringValue();
           }
         if (_PRINT_STRUCTURE_.symbolValue(thread) == NIL)
@@ -446,7 +446,7 @@ public final class StructureObject extends LispObject
                   {
                     StringOutputStream stream = new StringOutputStream();
                     thread.execute(Symbol.OUTPUT_OBJECT.getSymbolFunction(),
-                                   slots[i], stream);
+                                   new LispObject[] { slots[i], stream });
                     sb.append(stream.getString().getStringValue());
                   }
                 else

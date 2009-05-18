@@ -335,7 +335,7 @@ public final class Interpreter extends Lisp
             Symbol TOP_LEVEL_LOOP = intern("TOP-LEVEL-LOOP", PACKAGE_TPL);
             LispObject tplFun = TOP_LEVEL_LOOP.getSymbolFunction();
             if (tplFun instanceof Function) {
-                thread.execute(tplFun);
+                thread.execute(new LispObject[] { tplFun });
                 return;
             }
             // We only arrive here if something went wrong and we weren't able

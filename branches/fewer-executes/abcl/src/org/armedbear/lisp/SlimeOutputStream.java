@@ -130,7 +130,7 @@ public final class SlimeOutputStream extends Stream
         if (stringWriter.getBuffer().length() > 0) {
             String s = stringWriter.toString();
             stringWriter.getBuffer().setLength(0);
-            LispThread.currentThread().execute(f, new SimpleString(s));
+            LispThread.currentThread().execute(f, new LispObject[] { new SimpleString(s) });
         }
     }
 

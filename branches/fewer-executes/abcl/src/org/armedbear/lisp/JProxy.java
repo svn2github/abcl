@@ -187,7 +187,7 @@ public final class JProxy extends Lisp
 	    }
 	    Object retVal =
 		LispThread.currentThread().execute
-		(Symbol.APPLY, function, lispArgs.reverse()).javaInstance();
+		(Symbol.APPLY, new LispObject[] { function, lispArgs.reverse() }).javaInstance();
 	    //(function.execute(lispArgs)).javaInstance();
 	    /* DOES NOT WORK due to autoboxing!
 	       if(retVal != null && !method.getReturnType().isAssignableFrom(retVal.getClass())) {
@@ -200,7 +200,7 @@ public final class JProxy extends Lisp
   	private static final Primitive _JMAKE_INVOCATION_HANDLER =
 	    new Primitive("%jmake-invocation-handler", PACKAGE_JAVA, false,
 	                  "function") {
-		
+            @Override
 	      	public LispObject execute(LispObject[] args) throws ConditionThrowable {
 	      		int length = args.length;
 	      		if (length != 1) {
@@ -216,7 +216,7 @@ public final class JProxy extends Lisp
     private static final Primitive _JMAKE_PROXY =
 	    new Primitive("%jmake-proxy", PACKAGE_JAVA, false,
 	                  "interface invocation-handler") {
-		
+            @Override
 	      	public LispObject execute(final LispObject[] args) throws ConditionThrowable {
 	      		int length = args.length;
 	      		if (length != 3) {

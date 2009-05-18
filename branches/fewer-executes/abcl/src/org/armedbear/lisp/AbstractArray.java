@@ -235,7 +235,7 @@ public abstract class AbstractArray extends LispObject
             if (Symbol.PRINT_CIRCLE.symbolValue(thread) != NIL) {
                 StringOutputStream stream = new StringOutputStream();
                 thread.execute(Symbol.OUTPUT_OBJECT.getSymbolFunction(),
-                               AREF(index), stream);
+                               new LispObject[] { AREF(index), stream });
                 sb.append(stream.getString().getStringValue());
             } else
                 sb.append(AREF(index).writeToString());

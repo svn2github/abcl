@@ -93,121 +93,99 @@ public class Primitive extends Function
         return Symbol.COMPILED_FUNCTION;
     }
 
-    @Override
     public LispObject execute() throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[0];
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject arg) throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[1];
-        args[0] = arg;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[2];
-        args[0] = first;
-        args[1] = second;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[3];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[4];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[5];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[6];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[7];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        args[6] = seventh;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
 
-    @Override
     public LispObject execute(LispObject first, LispObject second,
                               LispObject third, LispObject fourth,
                               LispObject fifth, LispObject sixth,
                               LispObject seventh, LispObject eighth)
         throws ConditionThrowable
     {
-        LispObject[] args = new LispObject[8];
-        args[0] = first;
-        args[1] = second;
-        args[2] = third;
-        args[3] = fourth;
-        args[4] = fifth;
-        args[5] = sixth;
-        args[6] = seventh;
-        args[7] = eighth;
-        return execute(args);
+        return error(new WrongNumberOfArgumentsException(this));
     }
+
+    @Override
+    public LispObject execute(LispObject[] args) throws ConditionThrowable
+    {
+      switch (args.length)
+        {
+          case 0:
+            return execute();
+          case 1:
+            return execute(args[0]);
+          case 2:
+            return execute(args[0], args[1]);
+          case 3:
+            return execute(args[0], args[1], args[2]);
+          case 4:
+            return execute(args[0], args[1], args[2], args[3]);
+          case 5:
+            return execute(args[0], args[1], args[2], args[3], args[4]);
+          case 6:
+            return execute(args[0], args[1], args[2], args[3], args[4],
+                           args[5]);
+          case 7:
+            return execute(args[0], args[1], args[2], args[3], args[4],
+                           args[5], args[6]);
+          case 8:
+            return execute(args[0], args[1], args[2], args[3], args[4],
+                           args[5], args[6], args[7]);
+          default:
+            return error(new WrongNumberOfArgumentsException(this));
+        }
+    }
+
 }

@@ -161,7 +161,7 @@ public class StandardObject extends LispObject
     if (typep(Symbol.CONDITION) != NIL)
       {
         StringOutputStream stream = new StringOutputStream();
-        Symbol.PRINT_OBJECT.execute(this, stream);
+        Symbol.PRINT_OBJECT.execute(new LispObject[] { this, stream });
         return stream.getString().getStringValue();
       }
     return unreadableString(typeOf().writeToString());
@@ -235,8 +235,8 @@ public class StandardObject extends LispObject
     newInstance.layout = tempLayout;
     Debug.assertTrue(!layout.isInvalid());
     // Call UPDATE-INSTANCE-FOR-REDEFINED-CLASS.
-    Symbol.UPDATE_INSTANCE_FOR_REDEFINED_CLASS.execute(this, added,
-                                                       discarded, plist);
+    Symbol.UPDATE_INSTANCE_FOR_REDEFINED_CLASS
+            .execute(new LispObject[] { this, added, discarded, plist });
     return newLayout;
   }
 
@@ -373,8 +373,9 @@ public class StandardObject extends LispObject
         if (value == UNBOUND_VALUE)
           {
             LispObject slotName = instance.layout.getSlotNames()[index];
-            value = Symbol.SLOT_UNBOUND.execute(instance.getLispClass(),
-                                                instance, slotName);
+            value = Symbol.SLOT_UNBOUND
+                    .execute(new LispObject[] { instance.getLispClass(),
+                                                instance, slotName });
             LispThread.currentThread()._values = null;
           }
         return value;
@@ -423,8 +424,9 @@ public class StandardObject extends LispObject
         // Not found.
         final LispThread thread = LispThread.currentThread();
         LispObject value =
-          thread.execute(Symbol.SLOT_MISSING, instance.getLispClass(),
-                         instance, second, Symbol.SLOT_BOUNDP);
+          thread.execute(Symbol.SLOT_MISSING,
+              new LispObject[] { instance.getLispClass(),
+                                 instance, second, Symbol.SLOT_BOUNDP });
         // "If SLOT-MISSING is invoked and returns a value, a boolean
         // equivalent to its primary value is returned by SLOT-BOUNDP."
         thread._values = null;
@@ -452,13 +454,15 @@ public class StandardObject extends LispObject
         // Check for shared slot.
         LispObject location = layout.getSharedSlotLocation(slotName);
         if (location == null)
-          return Symbol.SLOT_MISSING.execute(getLispClass(), this, slotName,
-                                             Symbol.SLOT_VALUE);
+          return Symbol.SLOT_MISSING
+                  .execute(new LispObject[] { getLispClass(), this, slotName,
+                                              Symbol.SLOT_VALUE });
         value = location.cdr();
       }
     if (value == UNBOUND_VALUE)
       {
-        value = Symbol.SLOT_UNBOUND.execute(getLispClass(), this, slotName);
+        value = Symbol.SLOT_UNBOUND
+                .execute(new LispObject[] { getLispClass(), this, slotName });
         LispThread.currentThread()._values = null;
       }
     return value;

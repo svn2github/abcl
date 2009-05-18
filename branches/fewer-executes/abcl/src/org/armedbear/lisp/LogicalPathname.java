@@ -99,7 +99,8 @@ public final class LogicalPathname extends Pathname
                 else if (v.equals("NEWEST") || v.equals("newest"))
                     version = Keyword.NEWEST;
                 else
-                    version = PACKAGE_CL.intern("PARSE-INTEGER").execute(new SimpleString(v));
+                    version = PACKAGE_CL.intern("PARSE-INTEGER")
+                            .execute(new LispObject[] { new SimpleString(v) });
             } else {
                 String t = rest;
                 if (t.equals("*"))
@@ -139,7 +140,8 @@ public final class LogicalPathname extends Pathname
     public static Pathname translateLogicalPathname(LogicalPathname pathname)
         throws ConditionThrowable
     {
-        return (Pathname) Symbol.TRANSLATE_LOGICAL_PATHNAME.execute(pathname);
+        return (Pathname) Symbol.TRANSLATE_LOGICAL_PATHNAME
+                .execute(new LispObject[] { pathname });
     }
 
     private static final LispObject parseDirectory(String s)

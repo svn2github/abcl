@@ -140,49 +140,12 @@ public abstract class Lisp
         fun.incrementCallCount();
     try
       {
-        switch (args.length)
-          {
-          case 0:
-            result = fun.execute();
-            break;
-          case 1:
-            result = fun.execute(args[0]);
-            break;
-          case 2:
-            result = fun.execute(args[0], args[1]);
-            break;
-          case 3:
-            result = fun.execute(args[0], args[1], args[2]);
-            break;
-          case 4:
-            result = fun.execute(args[0], args[1], args[2], args[3]);
-            break;
-          case 5:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4]);
-            break;
-          case 6:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5]);
-            break;
-          case 7:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5], args[6]);
-            break;
-          case 8:
-            result = fun.execute(args[0], args[1], args[2], args[3],
-                                 args[4], args[5], args[6], args[7]);
-            break;
-          default:
-            result = fun.execute(args);
-            break;
-          }
+        return fun.execute(args);
       }
     finally
       {
         thread.setStack(stack);
       }
-    return result;
   }
 
   public static final LispObject macroexpand(LispObject form,
@@ -239,7 +202,7 @@ public abstract class Lisp
                     expander.incrementCallCount();
                 LispObject hook =
                   coerceToFunction(Symbol.MACROEXPAND_HOOK.symbolValue(thread));
-                return thread.setValues(hook.execute(expander, form, env),
+                return thread.setValues(hook.execute(new LispObject[] {expander, form, env} ),
                                         T);
               }
           }
@@ -273,7 +236,8 @@ public abstract class Lisp
         LispObject result;
         try
           {
-            result = thread.execute(Symbol.EVAL.getSymbolFunction(), object);
+            result = thread.execute(Symbol.EVAL.getSymbolFunction(),
+                        new LispObject[] { object });
           }
         catch (OutOfMemoryError e)
           {
@@ -334,13 +298,13 @@ public abstract class Lisp
   public static final LispObject error(LispObject condition)
     throws ConditionThrowable
   {
-    return Symbol.ERROR.execute(condition);
+    return Symbol.ERROR.execute(new LispObject[] { condition });
   }
 
   public static final LispObject error(LispObject condition, LispObject message)
     throws ConditionThrowable
   {
-    return Symbol.ERROR.execute(condition, Keyword.FORMAT_CONTROL, message);
+    return Symbol.ERROR.execute(new LispObject[] { condition, Keyword.FORMAT_CONTROL, message });
   }
 
   public static final LispObject type_error(LispObject datum,
@@ -360,7 +324,7 @@ public abstract class Lisp
   public static final void handleInterrupt() throws ConditionThrowable
   {
     setInterrupted(false);
-    Symbol.BREAK.getSymbolFunction().execute();
+    Symbol.BREAK.getSymbolFunction().execute(new LispObject[0]);
     setInterrupted(false);
   }
 
@@ -465,79 +429,9 @@ public abstract class Lisp
                                              LispThread thread)
     throws ConditionThrowable
   {
-    if (args == NIL)
-      return thread.execute(function);
-    LispObject first = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first);
-      }
-    LispObject second = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second);
-      }
-    LispObject third = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third);
-      }
-    LispObject fourth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth);
-      }
-    LispObject fifth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth);
-      }
-    LispObject sixth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth);
-      }
-    LispObject seventh = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh);
-      }
-    LispObject eighth = eval(args.car(), env, thread);
-    args = ((Cons)args).cdr;
-    if (args == NIL)
-      {
-        thread._values = null;
-        return thread.execute(function, first, second, third, fourth, fifth,
-                              sixth, seventh, eighth);
-      }
-    // More than CALL_REGISTERS_MAX arguments.
-    final int length = args.length() + CALL_REGISTERS_MAX;
+    final int length = args.length();
     LispObject[] array = new LispObject[length];
-    array[0] = first;
-    array[1] = second;
-    array[2] = third;
-    array[3] = fourth;
-    array[4] = fifth;
-    array[5] = sixth;
-    array[6] = seventh;
-    array[7] = eighth;
-    for (int i = CALL_REGISTERS_MAX; i < length; i++)
+    for (int i = 0; i < length; i++)
       {
         array[i] = eval(args.car(), env, thread);
         args = args.cdr();
@@ -782,7 +676,8 @@ public abstract class Lisp
     LispObject[] values = thread._values;
     thread._values = null;
     if (values == null)
-      return thread.execute(coerceToFunction(function), result);
+      return thread.execute(coerceToFunction(function),
+              new LispObject[] { result });
     else
       return funcall(coerceToFunction(function), values, thread);
   }

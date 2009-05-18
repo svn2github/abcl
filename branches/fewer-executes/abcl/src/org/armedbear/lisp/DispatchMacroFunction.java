@@ -62,17 +62,19 @@ public abstract class DispatchMacroFunction extends Function
     }
 
     @Override
-    public LispObject execute(LispObject first, LispObject second,
-                              LispObject third)
+    public LispObject execute(LispObject[] args)
         throws ConditionThrowable
     {
-        Stream stream = inSynonymOf(first);
-        char c = LispCharacter.getValue(second);
+        if (args.length != 3)
+            return error(new WrongNumberOfArgumentsException(this));
+        
+        Stream stream = inSynonymOf(args[0]);
+        char c = LispCharacter.getValue(args[1]);
         int n;
-        if (third == NIL)
+        if (args[2] == NIL)
             n = -1;
         else
-            n = Fixnum.getValue(third);
+            n = Fixnum.getValue(args[2]);
         return execute(stream, c, n);
     }
 
