@@ -300,8 +300,10 @@ public final class Load extends Lisp
                     if (url != null) {
                         try {
                             in = url.openStream();
-                            if ("jar".equals(url.getProtocol()))
+                            if ("jar".equals(url.getProtocol()) &&
+				url.getPath().startsWith("file:")) {
                                 pathname = new Pathname(url);
+			    }
                             truename = getPath(url);
                         }
                         catch (IOException e) {

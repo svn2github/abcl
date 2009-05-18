@@ -1023,53 +1023,41 @@ public abstract class Lisp
               coerceToPathname(Symbol.DEFAULT_PATHNAME_DEFAULTS.symbolValue(thread));
           }
       }
-    if (device instanceof Pathname)
-      {
-        // We're loading a fasl from j.jar.
+    if (device instanceof Pathname) {
+        // We're loading a fasl from a jar.
         URL url = Lisp.class.getResource(namestring);
-        if (url != null)
-          {
-            try
-              {
-                String s = url.toString();
-                String zipFileName;
-                String entryName;
-                if (s.startsWith("jar:file:"))
-                  {
-                    s = s.substring(9);
-                    int index = s.lastIndexOf('!');
-                    if (index >= 0)
-                      {
-                        zipFileName = s.substring(0, index);
-                        entryName = s.substring(index + 1);
-                        if (entryName.length() > 0 && entryName.charAt(0) == '/')
-                          entryName = entryName.substring(1);
-                        if (Utilities.isPlatformWindows)
-                          {
-                            // "/C:/Documents%20and%20Settings/peter/Desktop/j.jar"
-                            if (zipFileName.length() > 0 && zipFileName.charAt(0) == '/')
-                              zipFileName = zipFileName.substring(1);
-                          }
-                        zipFileName = URLDecoder.decode(zipFileName, "UTF-8");
-                        ZipFile zipFile = new ZipFile(zipFileName);
-                        try
-                          {
-                            ZipEntry entry = zipFile.getEntry(entryName);
-                            if (entry != null)
-                              {
-                                long size = entry.getSize();
-                                InputStream in = zipFile.getInputStream(entry);
-                                LispObject obj = loadCompiledFunction(in, (int) size);
-                                return obj != null ? obj : NIL;
-                              }
-                          }
-                        finally
-                          {
-                            zipFile.close();
-                          }
-                      }
-                  }
-              }
+        if (url != null) {
+            try {
+		InputStream input = url.openStream();
+		java.io.ByteArrayOutputStream baos =
+		    new java.io.ByteArrayOutputStream();
+               
+		byte[] bytes = new byte[4096];
+		int n = 0;
+		while (n >= 0) {
+		    n = input.read(bytes, 0, 4096);
+		    if(n >= 0) {
+			baos.write(bytes, 0, n);
+		    }
+		}
+		input.close();
+		bytes = baos.toByteArray();
+		baos.close();
+		JavaClassLoader loader = new JavaClassLoader();
+		Class c =
+		    loader.loadClassFromByteArray(null, bytes, 0, bytes.length);
+		if (c != null) {
+		    Class[] parameterTypes = new Class[0];
+		    Constructor constructor =
+			c.getConstructor(parameterTypes);
+		    Object[] initargs = new Object[0];
+		    LispObject obj =
+			(LispObject) constructor.newInstance(initargs);
+		    if (obj instanceof Function)
+			((Function)obj).setClassBytes(bytes);
+		    return obj != null ? obj : NIL;
+		}
+	    }
             catch (VerifyError e)
               {
                 return error(new LispError("Class verification failed: " +
