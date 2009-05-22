@@ -87,7 +87,7 @@ dd { }
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
-<div style="float:right;font-size:10px;font-family:monospace">$Id: index.shtml 11358 2008-10-18 22:10:11Z ehuelsmann $</div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
 </body>
 </html>
