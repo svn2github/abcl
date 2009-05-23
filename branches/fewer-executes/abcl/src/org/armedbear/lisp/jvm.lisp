@@ -341,7 +341,7 @@
     (when (equal name (local-function-name local-function))
         (return local-function))))
 
-(defvar *using-arg-array* nil)
+(defvar *using-arg-array* t)
 (defvar *hairy-arglist-p* nil)
 
 (defstruct node

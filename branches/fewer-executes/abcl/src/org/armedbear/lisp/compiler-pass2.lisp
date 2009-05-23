@@ -2783,31 +2783,23 @@ the Java object representing SYMBOL can be retrieved."
 The results are either accumulated on the stack or in an array
 in order to call the relevant `execute' form. The function call
 itself is *not* compiled by this function."
-  (when args
-    (let ((numargs (length args)))
-      (let ((must-clear-values nil))
-        (declare (type boolean must-clear-values))
-        (cond ((<= numargs call-registers-limit)
-               (dolist (arg args)
-                 (compile-form arg 'stack nil)
-                 (unless must-clear-values
-                   (unless (single-valued-p arg)
-                     (setf must-clear-values t)))))
-              (t
-               (emit-push-constant-int numargs)
-               (emit 'anewarray +lisp-object-class+)
-               (let ((i 0))
-                 (dolist (arg args)
-                   (emit 'dup)
-                   (emit-push-constant-int i)
-                   (compile-form arg 'stack nil)
-                   (emit 'aastore) ; store value in array
-                   (unless must-clear-values
-                     (unless (single-valued-p arg)
-                       (setf must-clear-values t)))
-                   (incf i)))))
-        (when must-clear-values
-          (emit-clear-values)))))
+  (let ((numargs (length args)))
+    (let ((must-clear-values nil))
+      (declare (type boolean must-clear-values))
+      (emit-push-constant-int numargs)
+      (emit 'anewarray +lisp-object-class+)
+      (let ((i 0))
+	(dolist (arg args)
+	  (emit 'dup)
+	  (emit-push-constant-int i)
+	  (compile-form arg 'stack nil)
+	  (emit 'aastore) ; store value in array
+	  (unless must-clear-values
+	    (unless (single-valued-p arg)
+	      (setf must-clear-values t)))
+	  (incf i)))
+      (when must-clear-values
+	(emit-clear-values))))
   t)
 
 (defknown lisp-object-arg-types (fixnum) list)
@@ -2824,17 +2816,15 @@ itself is *not* compiled by this function."
 
 (declaim (ftype (function (t) t) emit-call-execute))
 (defun emit-call-execute (numargs)
-  (let ((arg-types (if (<= numargs call-registers-limit)
-                       (lisp-object-arg-types numargs)
-                       (list +lisp-object-array+)))
+  (declare (ignore numargs))
+  (let ((arg-types (list +lisp-object-array+))
         (return-type +lisp-object+))
     (emit-invokevirtual +lisp-object-class+ "execute" arg-types return-type)))
 
 (declaim (ftype (function (t) t) emit-call-thread-execute))
 (defun emit-call-thread-execute (numargs)
-  (let ((arg-types (if (<= numargs call-registers-limit)
-                       (lisp-object-arg-types (1+ numargs))
-                       (list +lisp-object+ +lisp-object-array+)))
+  (declare (ignore numargs))
+  (let ((arg-types (list +lisp-object+ +lisp-object-array+))
         (return-type +lisp-object+))
     (emit-invokevirtual +lisp-thread-class+ "execute" arg-types return-type)))
 
@@ -2892,7 +2882,7 @@ itself is *not* compiled by this function."
 Depending on the `*speed*' and `*debug*' settings, a stack frame
 is registered (or not)."
   (let ((numargs (length args)))
-    (cond ((> *speed* *debug*)
+    (cond ((and (> *speed* *debug*) (not *require-stack-frame*))
            (process-args args)
            (emit-call-execute numargs))
           (t
@@ -3839,7 +3829,7 @@ given a specific common representation.")
      (compile-form (second form) 'stack nil)
      (emit-invokestatic +lisp-class+ "coerceToFunction"
                         (lisp-object-arg-types 1) +lisp-object+)
-     (emit-invokevirtual +lisp-object-class+ "execute" nil +lisp-object+))
+     (emit-invokevirtual +lisp-object-class+ "execute" (list +lisp-object-array+) +lisp-object+))
     (3
      (let* ((*register* *register*)
             (function-register (allocate-register)))
@@ -7866,9 +7856,7 @@ for use with derive-type-times.")
         (return-from analyze-args
           (get-descriptor (list +lisp-object-array+) +lisp-object+)))
       (return-from analyze-args
-        (cond ((<= arg-count call-registers-limit)
-               (get-descriptor (lisp-object-arg-types arg-count) +lisp-object+))
-              (t (setf *using-arg-array* t)
+        (cond (t (setf *using-arg-array* t)
                  (setf (compiland-arity compiland) arg-count)
                  (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
     (when (or (memq '&KEY args)
@@ -7878,13 +7866,9 @@ for use with derive-type-times.")
       (setf *hairy-arglist-p* t)
       (return-from analyze-args
                    (get-descriptor (list +lisp-object-array+) +lisp-object+)))
-    (cond ((<= arg-count call-registers-limit)
-           (get-descriptor (lisp-object-arg-types (length args))
-                            +lisp-object+))
-          (t
-           (setf *using-arg-array* t)
-           (setf (compiland-arity compiland) arg-count)
-           (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
+    (setf *using-arg-array* t)
+    (setf (compiland-arity compiland) arg-count)
+    (get-descriptor (list +lisp-object-array+) +lisp-object+)))
 
 (defun write-class-file (class-file)
   (let* ((super (class-file-superclass class-file))
@@ -7997,7 +7981,7 @@ for use with derive-type-times.")
          (local-closure-vars
           (find compiland *closure-variables* :key #'variable-compiland))
          (body (cddr p1-result))
-         (*using-arg-array* nil)
+         (*using-arg-array* t)
          (*hairy-arglist-p* nil)
          ;; *hairy-arglist-p* != NIL --> *using-arglist-array* != NIL
 
