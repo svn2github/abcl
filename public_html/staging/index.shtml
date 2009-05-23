@@ -36,7 +36,8 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <td>
 <ul>
 <li> FAQ </li>
-<li> Introduction: building &amp; running </li>
+<li> Introduction: <a href="doc/abcl-install-with-java.html">building
+               &amp; running</a> </li>
 <li> Documentation </li>
 <li> Examples </li>
 <li> <a href="testimonials.shtml">Testimonials</a> </li>
@@ -45,8 +46,8 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 </td>
 </tr>
 <tr>
-<td class="summary-header">Developers (development <em>of</em> ABCL)
-<td class="summary-header"> Availability</td>
+<td class="summary-header">Developers (development <em>of</em> ABCL) </td>
+<td class="summary-header">Availability </td>
 </tr>
 <tr>
 <td>
@@ -54,17 +55,43 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <li> Mailing list </li>
 <li> Repository </li>
 <li> Technical wiki </li>
-<li> Bug tracker </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
 </ul>
 </td>
 </td>
 <td>
 Latest version: <b style="font-size:90%">0.15.0</b>
 <ul>
-<li> Download </li>
+<li> <a href="http://downloads.sourceforge.net/armedbear-j/">Download (from SourceForge)</a> </li>
 <li> Release notes </li>
 <li> Change history </li>
 </ul>
+</td>
+</tr>
+<tr>
+<td colspan="2" class="summary-header">General information</td>
+</tr>
+<tr>
+<td colspan="2">
+<b>System requirements</b>
+<dl>
+<dt>Using (developing with ABCL)</dt>
+<dd>
+<ul>
+<li> Java Runtime (JRE)
+<li> Java version 1.5.0 (any patch level) or 1.6.0 (patch level 10 or higher) </li>
+<li> Any operating system, although explicitly supported:<br />
+     Windows, MacOS X, OpenBSD, NetBSD and FreeBSD and Google App Engine </li>
+</ul>
+</dd>
+<dt>Building (developing of ABCL)</dt>
+<dd>
+<ul>
+<li> Java Development Kit (JDK) </li>
+<li> Same versions as for using </li>
+</dd>
+</dl>
+
 </td>
 </tr>
 </table>
