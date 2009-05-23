@@ -23,27 +23,21 @@ dd dt { font-weight: bold; font-style: italic }
 
 <div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
 <table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
-<tr><td colspan="3" class="summary-header">Project description</td></tr>
-<tr><td colspan="3"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
+<tr><td colspan="2" class="summary-header">Project description</td></tr>
+<tr><td colspan="2"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
  featuring both an <b>interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
  started to be a scripting language for the J editor, it now supports <b>JSR-233
  (Java scripting API)</b>: it can be a scripting engine in any Java application.
+ Additionally, it can be used to implement (parts of) the application
+ using <b>Java to Lisp integration</b> APIs.
 </td></tr>
-<tr><td class="summary-header" colspan="3"><a href="http://downloads.sourceforge.net/armedbear-j/" style="color:yellow">
+<tr><td class="summary-header" colspan="2"><a href="http://downloads.sourceforge.net/armedbear-j/" style="color:yellow">
 Download your copy from SourceForge: 0.15.0</a></td></tr>
-<tr><td class="summary-header">Feature list</td>
-<td class="summary-header">Users (development <em>with</em> ABCL)</td></tr>
-<tr><td>
-<ul>
-<li> Full Common Lisp implementation </li>
-<li> Many JVM host environments (Sun, IBM, ...) </li>
-<li> Interpreter </li>
-<li> Compiler </li>
-<li> Integration with Java programs </li>
-<li> Java Scripting support (JSR-233) </li>
-<li> ... </li>
-</ul>
-</td>
+<tr>
+<td class="summary-header">Users (development <em>with</em> ABCL)</td>
+<td class="summary-header">Developers (development <em>of</em> ABCL) </td>
+</tr>
+<tr>
 <td>
 <ul>
 <li> <a href="faq.shtml">FAQ</a> </li>
@@ -55,12 +49,6 @@ Download your copy from SourceForge: 0.15.0</a></td></tr>
 <li> Bug reporting </li>
 </ul>
 </td>
-</tr>
-<tr>
-<td class="summary-header">Developers (development <em>of</em> ABCL) </td>
-<td class="summary-header">Availability </td>
-</tr>
-<tr>
 <td>
 <ul>
 <li> Mailing list </li>
@@ -70,14 +58,36 @@ Download your copy from SourceForge: 0.15.0</a></td></tr>
 <li> <a href="contributing.shtml">Contributing</a> </li>
 </ul>
 </td>
+</tr>
+<tr>
+<td class="summary-header">System requirements (Users)</td>
+<td class="summary-header">System requirements (Developers) </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li> JRE 1.5.0 (any patch level), or </li>
+<li> JRE 1.6.0 (patch level 10 or higher) </li>
+</ul>
 </td>
 <td>
-Latest version: <b style="font-size:90%">0.15.0</b>
 <ul>
-<li> <a href="http://downloads.sourceforge.net/armedbear-j/">Download (from SourceForge)</a> </li>
-<li> Release notes </li>
-<li> Change history </li>
+<li> JDK 1.5.0 (any patch level), or </li>
+<li> JDK 1.6.0 (patch level 10 or higher) </li>
+<li> Ant version 1.7.0 or higher </li>
 </ul>
+</td>
+</tr>
+<tr>
+<td class="summary-header" colspan="2">Licensing </td>
+</tr>
+<tr>
+<td colspan="2">
+Armed Bear CL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
+GNU General Public License</a> with
+<a href="http://www.gnu.org/software/classpath/license.html" title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
+distribute ABCL with your application without the requirement to open the
+sources to your application.
 </td>
 </tr>
 <tr>
@@ -86,10 +96,6 @@ Latest version: <b style="font-size:90%">0.15.0</b>
 <tr>
 <td colspan="2">
 <dl>
-<dt>Licensing</dt>
-<dd>The implementation is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>
-   with <a href="" title="Classpath exception and clarification"
-           >Classpath exception</a>.</dd>
 <dt>System requirements</dt>
 <dd>
 <dl>
