@@ -6,7 +6,7 @@
   <title>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style>
+<style type="text/css">
 td { font-size: 90%; padding: 0 5px 0 5px }
 th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 </style>
@@ -17,28 +17,30 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
    <h1>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</h1>
  </div>
 
+<!--#include virtual="left-menu" -->
+
 <div style="margin-left:auto;margin-right:auto;width:20cm">
 <table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
 <tr><td class="summary-header">Feature list</td>
 <td class="summary-header">Users (development <em>with</em> ABCL)</td></tr>
 <tr><td>
 <ul>
-<li> Many JVM host environments (Sun, IBM, ...)
-<li> Interpreter
-<li> Compiler
-<li> Integration with Java programs
-<li> Java Scripting support (JSR-233)
-<li> ...
+<li> Many JVM host environments (Sun, IBM, ...) </li>
+<li> Interpreter </li>
+<li> Compiler </li>
+<li> Integration with Java programs </li>
+<li> Java Scripting support (JSR-233) </li>
+<li> ... </li>
 </ul>
 </td>
 <td>
 <ul>
-<li> FAQ
-<li> Introduction: building &amp; running
-<li> Documentation
-<li> Examples
-<li> Testimonials
-<li> Bug reporting
+<li> FAQ </li>
+<li> Introduction: building &amp; running </li>
+<li> Documentation </li>
+<li> Examples </li>
+<li> Testimonials </li>
+<li> Bug reporting </li>
 </ul>
 </td>
 </tr>
@@ -49,19 +51,19 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <tr>
 <td>
 <ul>
-<li> Mailing list
-<li> Repository
-<li> Technical wiki
-<li> Bug tracker
+<li> Mailing list </li>
+<li> Repository </li>
+<li> Technical wiki </li>
+<li> Bug tracker </li>
 </ul>
 </td>
 </td>
 <td>
 Latest version: <b style="font-size:90%">0.15.0</b>
 <ul>
-<li> Download
-<li> Release notes
-<li> Change history
+<li> Download </li>
+<li> Release notes </li>
+<li> Change history </li>
 </ul>
 </td>
 </tr>
@@ -69,8 +71,6 @@ Latest version: <b style="font-size:90%">0.15.0</b>
 </div>
 
 <hr style="height: 2px;"/>
-
-<!--#include virtual="left-menu" -->
 
 <div style="float:left;width:80ex;margin-top:1cm">
 
