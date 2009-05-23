@@ -9,6 +9,8 @@
 <style type="text/css">
 td { font-size: 90%; padding: 0 5px 0 5px }
 th { font-weight: bold; align: center; padding: 0 5px 0 5px }
+dt { font-weight: bold }
+dd dt { font-weight: bold; font-style: italic }
 </style>
 </head>
 
@@ -21,10 +23,19 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 
 <div style="margin-left:auto;margin-right:auto;width:20cm">
 <table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
+<tr><td colspan="3" class="summary-header">Project description</td></tr>
+<tr><td colspan="3">ABCL is a full implementation of the Common Lisp language
+ featuring both an interpreter and a compiler, running in the JVM. Originally
+ started to be a scripting language for the J editor, it now supports JSR-233
+ (Java scripting): it can be a scripting engine in any Java application.
+</td></tr>
+<tr><td class="summary-header" colspan="3"><a href="http://downloads.sourceforge.net/armedbear-j/" style="color:yellow">
+Download your copy from SourceForge: 0.15.0</a></td></tr>
 <tr><td class="summary-header">Feature list</td>
 <td class="summary-header">Users (development <em>with</em> ABCL)</td></tr>
 <tr><td>
 <ul>
+<li> Full Common Lisp implementation </li>
 <li> Many JVM host environments (Sun, IBM, ...) </li>
 <li> Interpreter </li>
 <li> Compiler </li>
@@ -35,7 +46,7 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 </td>
 <td>
 <ul>
-<li> FAQ </li>
+<li> <a href="faq.shtml">FAQ</a> </li>
 <li> Introduction: <a href="doc/abcl-install-with-java.html">building
                &amp; running</a> </li>
 <li> Documentation </li>
@@ -56,6 +67,7 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <li> Repository </li>
 <li> Technical wiki </li>
 <li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
+<li> <a href="contributing.shtml">Contributing</a> </li>
 </ul>
 </td>
 </td>
@@ -73,7 +85,13 @@ Latest version: <b style="font-size:90%">0.15.0</b>
 </tr>
 <tr>
 <td colspan="2">
-<b>System requirements</b>
+<dl>
+<dt>Licensing</dt>
+<dd>The implementation is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>
+   with <a href="" title="Classpath exception and clarification"
+           >Classpath exception</a>.</dd>
+<dt>System requirements</dt>
+<dd>
 <dl>
 <dt>Using (developing with ABCL)</dt>
 <dd>
@@ -81,7 +99,7 @@ Latest version: <b style="font-size:90%">0.15.0</b>
 <li> Java Runtime (JRE)
 <li> Java version 1.5.0 (any patch level) or 1.6.0 (patch level 10 or higher) </li>
 <li> Any operating system, although explicitly supported:<br />
-     Windows, MacOS X, OpenBSD, NetBSD and FreeBSD and Google App Engine </li>
+     Windows, Linux, MacOS X, OpenBSD, NetBSD and FreeBSD and Google App Engine </li>
 </ul>
 </dd>
 <dt>Building (developing of ABCL)</dt>
@@ -89,6 +107,8 @@ Latest version: <b style="font-size:90%">0.15.0</b>
 <ul>
 <li> Java Development Kit (JDK) </li>
 <li> Same versions as for using </li>
+</dd>
+</dl>
 </dd>
 </dl>
 
