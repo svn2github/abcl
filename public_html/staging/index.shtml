@@ -39,7 +39,7 @@ th { font-weight: bold; align: center; padding: 0 5px 0 5px }
 <li> Introduction: building &amp; running </li>
 <li> Documentation </li>
 <li> Examples </li>
-<li> Testimonials </li>
+<li> <a href="testimonials.shtml">Testimonials</a> </li>
 <li> Bug reporting </li>
 </ul>
 </td>
