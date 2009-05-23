@@ -21,13 +21,13 @@ dd dt { font-weight: bold; font-style: italic }
 
 <!--#include virtual="left-menu" -->
 
-<div style="margin-left:auto;margin-right:auto;width:20cm">
+<div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
 <table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
 <tr><td colspan="3" class="summary-header">Project description</td></tr>
-<tr><td colspan="3">ABCL is a full implementation of the Common Lisp language
- featuring both an interpreter and a compiler, running in the JVM. Originally
- started to be a scripting language for the J editor, it now supports JSR-233
- (Java scripting): it can be a scripting engine in any Java application.
+<tr><td colspan="3"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
+ featuring both an <b>interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
+ started to be a scripting language for the J editor, it now supports <b>JSR-233
+ (Java scripting API)</b>: it can be a scripting engine in any Java application.
 </td></tr>
 <tr><td class="summary-header" colspan="3"><a href="http://downloads.sourceforge.net/armedbear-j/" style="color:yellow">
 Download your copy from SourceForge: 0.15.0</a></td></tr>
