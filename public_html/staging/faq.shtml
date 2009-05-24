@@ -3,20 +3,14 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>FAQ: Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
+  <title>FAQ: ABCL - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<style type="text/css">
-td { font-size: 90%; padding: 0 5px 0 5px }
-th { font-weight: bold; align: center; padding: 0 5px 0 5px }
-dt { font-weight: bold }
-dd dt { font-weight: bold; font-style: italic }
-</style>
 </head>
 
 <body>
  <div class="header">
-   <h1>FAQ: Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</h1>
+   <h1>FAQ: ABCL - Common Lisp on the JVM</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
@@ -26,16 +20,36 @@ dd dt { font-weight: bold; font-style: italic }
 <ol id="toc">
   <li><a href="#general">General</a>
   <ol>
+    <li><a href="#what">What is ABCL?</a></li>
     <li><a href="#license">What license is used for ABCL?</a></li>
     <li><a href="#bug-reporting">How/Where should I report bugs?</a></li>
+    <li><a href="#speed">Is ABCL faster or slower than implementation XYZ?</a></li>
+    <li><a href="#qa">What is the quality of the implementation? How can you tell?</a></li>
   </ol>
   </li> <!-- general -->
 </ol>
-</div>
 
 
 <div class="h2" title="general" id="general">
 <h2>General</h2>
+
+<div class="h3" title="what" id="what">
+<h3>What is ABCL?</h3>
+<p>ABCL is an implementation of the full Common Lisp specification, with
+the exception of the implementation of the long form of
+DEFINE-METHOD-COMBINATION.</p>
+
+<p>Unfortunately, the CLOS implementation is not accessible through
+a MOP (MetaObject Protocol). Any contributions in this area would
+be greatly appreciated, ofcourse.</p>
+
+<p>One thing which is considered almost standard lisp - because all
+implementations deliver it - is "Gray streams". Unfortunately ABCLs
+version is broken [as per 05/2009]. It should be noted this is by no
+means the final state of affairs, though, merely a warning that one
+can't depend on this feature at the moment.</p>
+
+</div>
 
 
 <div class="h3" title="license" id="license">
@@ -60,12 +74,67 @@ Unfortunately, due to spamming problems, administration of bugs has been
 closed for anybody but common-lisp.net members.</p>
 
 <p>If you found a bug which is not on the list, or you want to stress
-the importance of one that is, please mail our <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">mailing list</a> about it.</p>
+the importance of one that is, please mail our <a
+href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">mailing list</a> about it.</p>
+</div>
+
+
+<div class="h3" title="speed" id="speed">
+<h3>Is ABCL faster or slower than implementation XYZ?</h3>
+
+<p>General comparisons are hard to make, the relative speeds depend
+on a lot of factors. For example timing outcomes of specific bits
+of Java may have different timings depending on the settings of
+the HotSpot JIT compiler (if the tests are run on Sun).</p>
+
+<p>Some statements can be made in general though. Due to the fact that
+ABCL has been implemented in Java, it inherits some of the aspects of
+Java itself as well as the fact that it can't directly manipulate
+CPU content. Implementations such as SBCL and Closure CL can do that and
+take that to their advantage: for example in SBCL a boxed fixnum is a
+direct register value, while in ABCL it's encapsulated in an object.</p>
+
+<p>On the other hand, ABCL - like SBCL - supports unboxed fixnums. ABCL's
+fixnums support the full 32 bit range of integer values, while SBCL due
+to its boxing strategy can only use 29 bit integers (on 32bit platforms).</p>
+
+<p>Given ABCL's age - a young project by Lisp standards - there is also
+plenty of room for improvement in the area of execution speed and optimization.
+The project welcomes initiatives to improve performance.</p>
+
+</div>
+
+
+<div class="h3" title="qa" id="qa">
+<h3>What is the quality of the implementation? How can you tell?</h3>
+
+<p>The project recognises there are several dimensions to quality:</p>
+<ol>
+<li> The level of compliance to the standard </li>
+<li> The level of 'useability': whether (or not) the application is able
+  to run existing Lisp code</li>
+</ol>
+
+<p>The plan is to add to the list above software from Edi Weitz, who
+ wrote some great libraries.</p>
+
+<p>The first item is being measured by running the ANSI test suite compliance
+  tests. The second item is measured by compiling and running the test suite
+  in the <a href="http://maxima.sourceforge.net/">Maxima application</a>.
+  Additionally, compilation of <a href="http://ap5.com/">AP5</a> is used to
+  improve this measure too.</p>
+
+<p>ABCL 0.15.0 fails 34 out of 21702 tests in the ANSI test suite
+  in interpreted and compiled modes, coming from ca 44 in the last
+  release.</p>
+<p>As a measure of 'improvement achieved', the development team refers
+  to the number of failing tests in the Maxima test suite too.
+  ABCL 0.15.0 is able to run the test suite with 'only' ca 75 failing
+  tests, coming from ca 1400 failures around October 2008.</p>
+
 </div>
 
 </div>
-
-
 
 <div style="float:left;width:100%">
  <hr />
@@ -75,6 +144,7 @@ the importance of one that is, please mail our <a href="https://lists.sourceforg
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
+</div>
 </div>
 </body>
 </html>

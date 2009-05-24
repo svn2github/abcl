@@ -6,12 +6,6 @@
   <title>Contributing: Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style type="text/css">
-td { font-size: 90%; padding: 0 5px 0 5px }
-th { font-weight: bold; align: center; padding: 0 5px 0 5px }
-dt { font-weight: bold }
-dd dt { font-weight: bold; font-style: italic }
-</style>
 </head>
 
 <body>
@@ -22,6 +16,8 @@ dd dt { font-weight: bold; font-style: italic }
 <!--#include virtual="left-menu" -->
 
 <div style="margin-left:auto;margin-right:auto;width:20cm">
+
+
 </div>
 
 <div style="float:left;width:100%">

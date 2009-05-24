@@ -142,24 +142,11 @@ sources to your application.
         quality of ABCL being good enough for their needs though. Check
         the testimonials page for their own words.
         <br /><br />
-        ABCL 0.15.0 fails 34 out of 21702 tests in the ANSI test suite
-        in interpreted and compiled modes, coming from ca 44 in the last
-        release.
-        As a measure of 'improvement achieved', the development team refers
-        to the number of failing tests in the Maxima test suite too.
-        ABCL 0.15.0 is able to run the test suite with 'only' ca 75 failing
-        tests, coming from ca 1400 failures around october 2008.
-        <br /><br />
         ABCL's CLOS is slow and does not handle on-the-fly
         redefinition of classes correctly. There is no support for the long
         form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
         features are also missing. Enough CLOS is there to run ASDF and
         CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
-        <br /><br />
-        Due to the age of the source code (when compared to several other
-        implementations) you're more likely to find bugs in ABCL.  However,
-        we're committed to fixing any bugs you find.  Patches (bugfixes as
-        well as features) are most welcome.
         <br /><br />
         Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
         (you must be subscribed to post).<br /><br />
