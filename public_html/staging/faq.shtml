@@ -26,7 +26,8 @@ dd dt { font-weight: bold; font-style: italic }
 <ol id="toc">
   <li><a href="#general">General</a>
   <ol>
-    <li><a href="#abcl">abcl</a></li>
+    <li><a href="#license">What license is used for ABCL?</a></li>
+    <li><a href="#bug-reporting">How/Where should I report bugs?</a></li>
   </ol>
   </li> <!-- general -->
 </ol>
@@ -37,12 +38,30 @@ dd dt { font-weight: bold; font-style: italic }
 <h2>General</h2>
 
 
-<div class="h3" title="abcl" id="abcl">
-<h3>abcl</h3>
+<div class="h3" title="license" id="license">
+<h3>What license is used for ABCL?</h3>
 
+<p>ABCL is distributed under the <a href="http://www.gnu.org/copyleft/gpl.html"
+>GNU General Public License</a> with <a
+href="http://www.gnu.org/software/classpath/license.html">Classpath
+exception</a>. This is the same license as used for JAVA SE and GNU Classpath.</p>
+
+<p>Basically this means you can use ABCL from your application without the
+need to make your own application open source.</p>
 
 </div>
 
+<div class="h3" title="bug-reporting" id="bug-reporting">
+<h3>How/Where should I report bugs?</h3>
+
+<p>There is a list of currently known problems (bugs) in our
+<a href="http://trac.common-lisp.net/armedbear/report/1">bug tracker</a>.
+Unfortunately, due to spamming problems, administration of bugs has been
+closed for anybody but common-lisp.net members.</p>
+
+<p>If you found a bug which is not on the list, or you want to stress
+the importance of one that is, please mail our mailing list about it.</p>
+</div>
 
 </div>
 

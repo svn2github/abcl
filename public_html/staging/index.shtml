@@ -25,7 +25,7 @@ dd dt { font-weight: bold; font-style: italic }
 <table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
 <tr><td colspan="2" class="summary-header">Project description</td></tr>
 <tr><td colspan="2"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
- featuring both an <b>interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
+ featuring both <b>an interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
  started to be a scripting language for the J editor, it now supports <b>JSR-233
  (Java scripting API)</b>: it can be a scripting engine in any Java application.
  Additionally, it can be used to implement (parts of) the application
@@ -44,7 +44,7 @@ Download your copy from SourceForge: 0.15.0</a> <a href="http://sourceforge.net/
 <li> Introduction: <a href="doc/abcl-install-with-java.html">building
                &amp; running</a> </li>
 <li> Documentation </li>
-<li> Examples </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">Examples</a> </li>
 <li> <a href="testimonials.shtml">Testimonials</a> </li>
 <li> Bug reporting </li>
 </ul>
@@ -111,33 +111,12 @@ sources to your application.
       compiler that compiles Lisp source to JVM bytecode, and an interactive
       REPL for program development.
       <br /><br />
-      ABCL is distributed under the terms of the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
-      License</a>, with a special linking exception. If you link ABCL with your
-      own program, then you do not need to release the source code for that
-      program. However, any changes that you make to ABCL itself must be
-      released in accordance with the terms of the GPL.  The license is the
-      same as used by GNU Classpath and J2SE (Java).
-      <br /><br />
-      ABCL runs on platforms that support Java 1.5 (or later), including Linux,
-      Windows, Mac OS X and the BSD family.
-      <br /><br />
       ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
       <br /><br />
       The latest version is 0.15.0, released June ??, 2009.
   </dd>
 </dl>
 
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Examples</b>
-</p>
-<dl>
-  <dd>
-  In the source repository there are
-  <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">examples
-  on how to integrate the Lisp environment with your Java code</a>,
-  showing you how to call back and forth between the two.<br />
-  </dd>
-</dl>
 <p>
   <b style="font-family: sans-serif; font-size: large;">Repository</b>
 </p>
