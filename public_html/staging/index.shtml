@@ -32,7 +32,7 @@ dd dt { font-weight: bold; font-style: italic }
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
 <tr><td class="summary-header" colspan="2"><a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335" style="color:yellow">
-Download your copy from SourceForge: 0.15.0</a></td></tr>
+Download your copy from SourceForge: 0.15.0</a> <a href="http://sourceforge.net/project/downloading.php?group_id=55057&amp;filename=abcl-src-0.14.1.zip&amp;a=68058566" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
 <tr>
 <td class="summary-header">Users (development <em>with</em> ABCL)</td>
 <td class="summary-header">Developers (development <em>of</em> ABCL) </td>
@@ -88,7 +88,7 @@ sources to your application.
 <td>
 <ul>
 <li> <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">JDK 1.5.0</a> (any patch level), <em>or</em> </li>
-<li> JDK 1.6.0 (patch level 10 or higher) </li>
+<li> <a href="http://java.sun.com/javase/downloads/index.jsp">JDK 1.6.0 (patch level 10 or higher)</a> </li>
 <li> Ant version 1.7.0 or higher, <em>or</em> </li>
 <li> A Lisp to run the lisp-based build system </li>
 </ul>
