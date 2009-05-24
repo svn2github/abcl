@@ -67,7 +67,7 @@ Download your copy from SourceForge: 0.15.0</a></td></tr>
 Armed Bear CL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
 GNU General Public License</a> with
 <a href="http://www.gnu.org/software/classpath/license.html" title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
-distribute ABCL with your application without the requirement to open the
+use ABCL in your application without the requirement to open the
 sources to your application.
 </td>
 </tr>
