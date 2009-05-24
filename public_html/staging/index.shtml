@@ -89,7 +89,7 @@ sources to your application.
 <ul>
 <li> <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">JDK 1.5.0</a> (any patch level), <em>or</em> </li>
 <li> <a href="http://java.sun.com/javase/downloads/index.jsp">JDK 1.6.0 (patch level 10 or higher)</a> </li>
-<li> <a href="http://ant.apache.org/bindownload.cgi?Preferred=http%3A%2F%2Fwww.apache.org%2Fdist">Ant</a> version <a href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
+<li> <a href="http://ant.apache.org">Ant</a> version <a href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
 <li> A Lisp to run the lisp-based build system </li>
 </ul>
 </td>
