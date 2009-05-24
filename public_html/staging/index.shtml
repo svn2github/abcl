@@ -34,8 +34,10 @@ dd dt { font-weight: bold; font-style: italic }
 <tr><td class="summary-header" colspan="2"><a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335" style="color:yellow">
 Download your copy from SourceForge: 0.15.0</a> <a href="http://sourceforge.net/project/downloading.php?group_id=55057&amp;filename=abcl-src-0.14.1.zip&amp;a=68058566" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
 <tr>
-<td class="summary-header">Users (development <em>with</em> ABCL)</td>
-<td class="summary-header">Developers (development <em>of</em> ABCL) </td>
+<td class="summary-header">Users
+  <span>(development <em>with</em> ABCL)</span></td>
+<td class="summary-header">Developers
+  <span>(development <em>of</em> ABCL)</span> </td>
 </tr>
 <tr>
 <td>
@@ -72,8 +74,8 @@ sources to your application.
 </td>
 </tr>
 <tr>
-<td class="summary-header">System requirements (Users)</td>
-<td class="summary-header">System requirements (Developers) </td>
+<td class="summary-header">System requirements <span>(Users)</span></td>
+<td class="summary-header">System requirements <span>(Developers)</span></td>
 </tr>
 <tr>
 <td>
@@ -102,22 +104,6 @@ sources to your application.
 <div style="float:left;width:80ex;margin-top:1cm">
 
 <p>
-  <b style="font-family: sans-serif; font-size: large;">About ABCL</b>
-</p>
-<dl>
-  <dd>
-      Armed Bear Common Lisp (ABCL) is an implementation of ANSI Common Lisp
-      that runs in a Java virtual machine. It provides a runtime system, a
-      compiler that compiles Lisp source to JVM bytecode, and an interactive
-      REPL for program development.
-      <br /><br />
-      ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
-      <br /><br />
-      The latest version is 0.15.0, released June ??, 2009.
-  </dd>
-</dl>
-
-<p>
   <b style="font-family: sans-serif; font-size: large;">Repository</b>
 </p>
 <dl>
@@ -131,37 +117,6 @@ sources to your application.
   </dd>
 
 </dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Bugs</b>
-</p>
-<dl>
-    <dd>
-        ABCL is a young implementation (particularly by Lisp standards).
-        Even though a lot of energy is spent resolving issues, you may
-        well encounter bugs. A number of people have testified to the
-        quality of ABCL being good enough for their needs though. Check
-        the testimonials page for their own words.
-        <br /><br />
-        ABCL's CLOS is slow and does not handle on-the-fly
-        redefinition of classes correctly. There is no support for the long
-        form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
-        features are also missing. Enough CLOS is there to run ASDF and
-        CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
-        <br /><br />
-        Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
-        (you must be subscribed to post).<br /><br />
-    </dd>
-    <dd>The project is using several ways to test standards compliance as well
-        as practical applicability of ABCL by using these projects' test suites
-        as 'compliance' indicators:
-        <ul>
-          <li>ANSI Common Lisp compliance tests</li>
-          <li>Maxima - Computer algebra system</li>
-          <li>AP5 - see <a href="http://ap5.com/">http://ap5.com/</a></li>
-        </ul>
-    </dd>
-</dl>
-
 <p>
   <b style="font-family: sans-serif; font-size: large;">Installation</b>
 </p>

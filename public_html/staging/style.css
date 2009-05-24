@@ -54,7 +54,13 @@
 		 text-decoration:underline; }
 
 .summary-header {
+    font-size: 120%;
     font-weight: bold;
     color: white;
     background-color: #369;
     text-align: center }
+
+.summary-header span {
+    font-weight: normal;
+    font-size: 80%;
+}
