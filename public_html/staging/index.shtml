@@ -31,7 +31,7 @@ dd dt { font-weight: bold; font-style: italic }
  Additionally, it can be used to implement (parts of) the application
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
-<tr><td class="summary-header" colspan="2"><a href="http://downloads.sourceforge.net/armedbear-j/" style="color:yellow">
+<tr><td class="summary-header" colspan="2"><a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335" style="color:yellow">
 Download your copy from SourceForge: 0.15.0</a></td></tr>
 <tr>
 <td class="summary-header">Users (development <em>with</em> ABCL)</td>
@@ -51,30 +51,11 @@ Download your copy from SourceForge: 0.15.0</a></td></tr>
 </td>
 <td>
 <ul>
-<li> Mailing list </li>
+<li> <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">Mailing list</a> </li>
 <li> Repository </li>
 <li> Technical wiki </li>
 <li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
 <li> <a href="contributing.shtml">Contributing</a> </li>
-</ul>
-</td>
-</tr>
-<tr>
-<td class="summary-header">System requirements (Users)</td>
-<td class="summary-header">System requirements (Developers) </td>
-</tr>
-<tr>
-<td>
-<ul>
-<li> JRE 1.5.0 (any patch level), or </li>
-<li> JRE 1.6.0 (patch level 10 or higher) </li>
-</ul>
-</td>
-<td>
-<ul>
-<li> JDK 1.5.0 (any patch level), or </li>
-<li> JDK 1.6.0 (patch level 10 or higher) </li>
-<li> Ant version 1.7.0 or higher </li>
 </ul>
 </td>
 </tr>
@@ -91,33 +72,26 @@ sources to your application.
 </td>
 </tr>
 <tr>
-<td colspan="2" class="summary-header">General information</td>
+<td class="summary-header">System requirements (Users)</td>
+<td class="summary-header">System requirements (Developers) </td>
 </tr>
 <tr>
-<td colspan="2">
-<dl>
-<dt>System requirements</dt>
-<dd>
-<dl>
-<dt>Using (developing with ABCL)</dt>
-<dd>
+<td>
 <ul>
-<li> Java Runtime (JRE)
-<li> Java version 1.5.0 (any patch level) or 1.6.0 (patch level 10 or higher) </li>
-<li> Any operating system, although explicitly supported:<br />
-     Windows, Linux, MacOS X, OpenBSD, NetBSD and FreeBSD and Google App Engine </li>
+<li> JRE 1.5.0 (any patch level), or </li>
+<li> JRE 1.6.0 (patch level 10 or higher) </li>
+<li> One of the explicitly supported platforms: <br />
+  Windows, Linux, MacOS X, OpenBSD, NetBSD, <br />
+  FreeBSD or Google App Engine</li>
 </ul>
-</dd>
-<dt>Building (developing of ABCL)</dt>
-<dd>
+</td>
+<td>
 <ul>
-<li> Java Development Kit (JDK) </li>
-<li> Same versions as for using </li>
-</dd>
-</dl>
-</dd>
-</dl>
-
+<li> <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">JDK 1.5.0</a> (any patch level), <em>or</em> </li>
+<li> JDK 1.6.0 (patch level 10 or higher) </li>
+<li> Ant version 1.7.0 or higher, <em>or</em> </li>
+<li> A Lisp to run the lisp-based build system </li>
+</ul>
 </td>
 </tr>
 </table>
@@ -162,19 +136,6 @@ sources to your application.
   <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">examples
   on how to integrate the Lisp environment with your Java code</a>,
   showing you how to call back and forth between the two.<br />
-  </dd>
-</dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Download</b>
-</p>
-<dl>
-  <dd>
-
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.15.0.tar.gz?use_mirror=">abcl-src-0.15.0.tar.gz</a>
-      (source, ????? bytes)
-      <br /><br />
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.15.0.zip?use_mirror=">abcl-src-0.15.0.zip</a>
-      (source, ??????? bytes)
   </dd>
 </dl>
 <p>
@@ -241,16 +202,7 @@ sources to your application.
 <dl>
   <dd>
     The README file in the root directory of the source distribution contains
-    instructions for building ABCL.
-    <br /><br />
-    Java 1.5 or higher is required;
-    <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
-    is recommended. There are
-    <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
-    performance issues</a> with versions of Java 1.6 prior to update 10.
-    To build ABCL, you'll need the full JDK; the JRE is not enough. <br />
-    <em>Recent performance tests have shown Java 1.6 Update 10 (and newer)
-      to be as fast as Java 1.5.</em> </dd>
+    instructions for building ABCL. </dd>
 </dl>
 
 </div>
