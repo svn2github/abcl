@@ -64,7 +64,7 @@ Download your copy from SourceForge: 0.15.0</a></td></tr>
 </tr>
 <tr>
 <td colspan="2">
-Armed Bear CL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
+ABCL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
 GNU General Public License</a> with
 <a href="http://www.gnu.org/software/classpath/license.html" title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
 use ABCL in your application without the requirement to open the
