@@ -18,19 +18,11 @@
 <div style="margin-left:auto;margin-right:auto;width:20cm">
 
 
-</div>
 
-<div style="float:left;width:100%">
- <hr />
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
 
- <div class="check">
-   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
- </div>
-<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
-</div>
 
-<div>
+
+
   <h2>A quick guide to producing patches for ABCL</h2>
 
 This guide describes how to contribute patches to ABCL, while making
@@ -70,5 +62,15 @@ sure that the patch doesn't introduce regressions.
   </li>
 </ol>
 </div>
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
+</div>
+
 </body>
 </html>
