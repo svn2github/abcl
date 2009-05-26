@@ -5,7 +5,7 @@
 <head>
   <title>Contributing: Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
- -equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
 </head>
 
 <body>
