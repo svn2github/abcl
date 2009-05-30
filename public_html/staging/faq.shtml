@@ -63,6 +63,22 @@ exception</a>. This is the same license as used for JAVA SE and GNU Classpath.</
 <p>Basically this means you can use ABCL from your application without the
 need to make your own application open source.</p>
 
+<p>
+In general, such usage means that whenever you keep ABCL as a separate
+jar file, you won't have licensing problems. The combining in the
+Classpath exception means that you can
+
+<ol>
+<li>Extend ABCL java classes in your program</li>
+<li>Use ABCL java classes in your program</li>
+<li>Invoke ABCL lisp functions in your program</li>
+</ol>
+
+without having to worry about the licensing. You do have to
+distribute the source code of ABCL (including modifications) 
+if you distribute ABCL, but otherwise the license of ABCL is not viral.
+</p>
+
 </div>
 
 <div class="h3" title="bug-reporting" id="bug-reporting">
