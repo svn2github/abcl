@@ -31,8 +31,8 @@ dd dt { font-weight: bold; font-style: italic }
  Additionally, it can be used to implement (parts of) the application
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
-<tr><td class="summary-header" colspan="2"><a href="http://sourceforge.net/project/showfiles.php?group_id=55057&amp;package_id=287335" style="color:yellow">
-Download your copy from SourceForge: 0.15.0</a> <a href="http://sourceforge.net/project/downloading.php?group_id=55057&amp;filename=abcl-src-0.14.1.zip&amp;a=68058566" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
+<tr><td class="summary-header" colspan="2"><a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.tgz" style="color:yellow">
+Download your copy from SourceForge: 0.15.0</a> <a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.zip" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
 <tr>
 <td class="summary-header">Users
   <span>(development <em>with</em> ABCL)</span></td>
