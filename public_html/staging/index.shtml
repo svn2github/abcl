@@ -100,35 +100,6 @@ sources to your application.
 </table>
 </div>
 
-<hr style="height: 2px;"/>
-
-<div style="float:left;width:80ex;margin-top:1cm">
-
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Repository</b>
-</p>
-<dl>
-  <dd>
-      The project's Common-Lisp.net Subversion repository can be checked
-      out through anonymous access with the following command:
-      <pre style="background-color:#99d">
-
-      <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/abcl abcl</b>
-      </pre>
-  </dd>
-
-</dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Installation</b>
-</p>
-<dl>
-  <dd>
-    The README file in the root directory of the source distribution contains
-    instructions for building ABCL. </dd>
-</dl>
-
-</div>
-
 <div style="float:left;width:100%">
  <hr />
  <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
