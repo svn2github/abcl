@@ -3,166 +3,101 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title><!--#include virtual="project-name" --></title>
+  <title>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style>
+<style type="text/css">
 td { font-size: 90%; padding: 0 5px 0 5px }
 th { font-weight: bold; align: center; padding: 0 5px 0 5px }
+dt { font-weight: bold }
+dd dt { font-weight: bold; font-style: italic }
 </style>
 </head>
 
 <body>
  <div class="header">
-   <h1><!--#include virtual="project-name" --></h1>
+   <h1>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</h1>
  </div>
-
-<div style="margin-left:auto;margin-right:auto;width:10cm">
-<table style="margin-top:1cm" cellspacing="0" cellpadding="0">
-<tr>
-<th colspan="2">Overview</th></tr>
-<tr>
-<td>Latest release: <span style="font-weight:bold;font-size:85%">0.14.1</span></td>
-<td><a href="release-notes-0.14.shtml">Release notes</a></td>
-</tr><tr>
-<td style="width:5cm;text-align:center" colspan="2"><a href="testimonials.shtml">What people say about ABCL</a></td>
-</tr><tr>
-<td style="width:5cm"><a href="http://trac.common-lisp.net/armedbear/wiki">Wiki</a></td><td style="width:5cm">FAQ (to be created)</td>
-</tr>
-</table>
-</div>
-
-<hr style="height: 2px;"/>
 
 <!--#include virtual="left-menu" -->
 
-<div style="float:left;width:80ex;margin-top:1cm">
-
-<p>
-  <b style="font-family: sans-serif; font-size: large;">About ABCL</b>
-</p>
-<dl>
-  <dd>
-      Armed Bear Common Lisp (ABCL) is an implementation of ANSI Common Lisp
-      that runs in a Java virtual machine. It provides a runtime system, a
-      compiler that compiles Lisp source to JVM bytecode, and an interactive
-      REPL for program development.
-      <br /><br />
-      ABCL is distributed under the terms of the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public
-      License</a>, with a special linking exception. If you link ABCL with your
-      own program, then you do not need to release the source code for that
-      program. However, any changes that you make to ABCL itself must be
-      released in accordance with the terms of the GPL.  The license is the
-      same as used by GNU Classpath and J2SE (Java).
-      <br /><br />
-      ABCL runs on platforms that support Java 1.5 (or later), including Linux,
-      Windows, Mac OS X and the BSD family.
-      <br /><br />
-      ABCL is free software and comes with ABSOLUTELY NO WARRANTY.
-      <br /><br />
-      The latest version is 0.14.1, released April 5, 2009.
-  </dd>
-</dl>
-
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Examples</b>
-</p>
-<dl>
-  <dd>
-  In the source repository there are
-  <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">examples
-  on how to integrate the Lisp environment with your Java code</a>,
-  showing you how to call back and forth between the two.<br />
-  </dd>
-</dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Download</b>
-</p>
-<dl>
-  <dd>
-
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.14.1.tar.gz?use_mirror=">abcl-src-0.14.1.tar.gz</a>
-      (source, 632584 bytes)
-      <br /><br />
-      <a href="http://downloads.sourceforge.net/armedbear-j/abcl-src-0.14.1.zip?use_mirror=">abcl-src-0.14.1.zip</a>
-      (source, 1098276 bytes)
-  </dd>
-</dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Repository</b>
-</p>
-<dl>
-  <dd>
-      The project's Common-Lisp.net Subversion repository can be checked
-      out through anonymous access with the following command:
-      <pre style="background-color:#99d">
-
-      <b>$ svn co svn://common-lisp.net/project/armedbear/svn/trunk/abcl abcl</b>
-      </pre>
-  </dd>
-
-</dl>
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Bugs</b>
-</p>
-<dl>
-    <dd>
-        ABCL is a young implementation (particularly by Lisp standards).
-        Even though a lot of energy is spent resolving issues, you may
-        well encounter bugs. A number of people have testified to the
-        quality of ABCL being good enough for their needs though. See
-        the testimonials page.
-        <br /><br />
-        ABCL 0.14.1 fails 43 out of 21702 tests in the ANSI test suite
-        in interpreted mode. In compiled mode ABCL 0.14.1 also fails 43 tests,
-        coming from ca 44 in the last release.
-        Most notable recent fixes relate to issues found through running
-        the Maxima test suite. 0.13.0 is now able to run the test suite
-        without only ca 75 failing tests, coming from ca 1400 failures
-        october 2008 (6 months ago).
-        <br /><br />
-        ABCL's CLOS is slow and does not handle on-the-fly
-        redefinition of classes correctly. There is no support for the long
-        form of DEFINE-METHOD-COMBINATION, and certain other required CLOS
-        features are also missing. Enough CLOS is there to run ASDF and
-        CL-PPCRE, if you're in no hurry. There's no MOP worth mentioning.
-        <br /><br />
-        Due to the age of the source code (when compared to several other
-        implementations) you're more likely to find bugs in ABCL.  However,
-        we're committed to fixing any bugs you find.  Patches (bugfixes as
-        well as features) are most welcome.
-        <br /><br />
-        Please report problems to the <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">j development mailing list</a>
-        (you must be subscribed to post).<br /><br />
-    </dd>
-    <dd>The project is using several ways to test standards compliance as well
-        as practical applicability of ABCL by using these projects' test suites
-        as 'compliance' indicators:
-        <ul>
-          <li>ANSI Common Lisp compliance tests</li>
-          <li>Maxima - Computer algebra system</li>
-        </ul>
-    </dd>
-</dl>
-
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Installation</b>
-</p>
-<dl>
-  <dd>
-    The README file in the root directory of the source distribution contains
-    instructions for building ABCL.
-    <br /><br />
-    Java 1.5 or higher is required;
-    <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">Java 1.5</a>
-    is recommended. There are
-    <a href="http://sourceforge.net/mailarchive/message.php?msg_name=20070218045318.5111%40stephen">
-    performance issues</a> with versions of Java 1.6 prior to update 10.
-    To build ABCL, you'll need the full JDK; the JRE is not enough. <br />
-    <em>Recent performance tests have shown Java 1.6 Update 10 to be as fast
-      as Java 1.5.</em> </dd>
-</dl>
-
+<div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
+<table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
+<tr><td colspan="2" class="summary-header">Project description</td></tr>
+<tr><td colspan="2"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
+ featuring both <b>an interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
+ started to be a scripting language for the J editor, it now supports <b>JSR-233
+ (Java scripting API)</b>: it can be a scripting engine in any Java application.
+ Additionally, it can be used to implement (parts of) the application
+ using <b>Java to Lisp integration</b> APIs.
+</td></tr>
+<tr><td class="summary-header" colspan="2"><a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.tgz" style="color:yellow">
+Download your copy from SourceForge: 0.15.0</a> <a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.zip" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
+<tr>
+<td class="summary-header">Users
+  <span>(development <em>with</em> ABCL)</span></td>
+<td class="summary-header">Developers
+  <span>(development <em>of</em> ABCL)</span> </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li> <a href="faq.shtml">FAQ</a> </li>
+<li> Introduction: <a href="doc/abcl-install-with-java.html">building
+               &amp; running</a> </li>
+<li> Documentation </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">Examples</a> </li>
+<li> <a href="testimonials.shtml">Testimonials</a> </li>
+<li> Bug reporting </li>
+</ul>
+</td>
+<td>
+<ul>
+<li> <a href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">Mailing list</a> and <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old mailing list (abandoned)</a></li>
+<li> <a href="http://news.gmane.org/gmane.editors.j.devel">Mailing list access on gmane</a></li>
+<li> Repository </li>
+<li> Technical wiki </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
+<li> <a href="contributing.shtml">Contributing</a> </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="summary-header" colspan="2">Licensing </td>
+</tr>
+<tr>
+<td colspan="2">
+ABCL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
+GNU General Public License</a> with
+<a href="http://www.gnu.org/software/classpath/license.html" title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
+use ABCL in your application without the requirement to open the
+sources to your application.
+</td>
+</tr>
+<tr>
+<td class="summary-header">System requirements <span>(Users)</span></td>
+<td class="summary-header">System requirements <span>(Developers)</span></td>
+</tr>
+<tr>
+<td>
+<ul>
+<li> JRE 1.5.0 (any patch level), or </li>
+<li> JRE 1.6.0 (patch level 10 or higher) </li>
+<li> One of the explicitly supported platforms: <br />
+  Windows, Linux, MacOS X, OpenBSD, NetBSD, <br />
+  FreeBSD or Google App Engine</li>
+</ul>
+</td>
+<td>
+<ul>
+<li> <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">JDK 1.5.0</a> (any patch level), <em>or</em> </li>
+<li> <a href="http://java.sun.com/javase/downloads/index.jsp">JDK 1.6.0 (patch level 10 or higher)</a> </li>
+<li> <a href="http://ant.apache.org">Ant</a> version <a href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
+<li> A Lisp to run the lisp-based build system </li>
+</ul>
+</td>
+</tr>
+</table>
 </div>
 
 <div style="float:left;width:100%">
