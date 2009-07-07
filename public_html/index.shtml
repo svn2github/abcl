@@ -4,8 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <title>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
-  <link rel="stylesheet" type="text/css" href="style.css"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <style type="text/css">
 td { font-size: 90%; padding: 0 5px 0 5px }
 th { font-weight: bold; align: center; padding: 0 5px 0 5px }
@@ -22,7 +22,7 @@ dd dt { font-weight: bold; font-style: italic }
 <!--#include virtual="left-menu" -->
 
 <div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
-<table style="margin-top:1cm" cellspacing="15" cellpadding="0" >
+<table style="margin-top:1cm" cellspacing="15" cellpadding="0">
 <tr><td colspan="2" class="summary-header">Project description</td></tr>
 <tr><td colspan="2"><b>ABCL</b> is a full implementation of the <b>Common Lisp</b> language
  featuring both <b>an interpreter and a compiler</b>, running in the <b>JVM</b>. Originally
@@ -31,8 +31,12 @@ dd dt { font-weight: bold; font-style: italic }
  Additionally, it can be used to implement (parts of) the application
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
-<tr><td class="summary-header" colspan="2"><a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.tgz" style="color:yellow">
-Download your copy from SourceForge: 0.15.0</a> <a href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.zip" style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
+<tr><td class="summary-header" colspan="2"><a
+href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.tgz"
+style="color:yellow">
+Download your copy from SourceForge: 0.15.0</a> <a
+href="http://downloads.sourceforge.net/armedbear-j/abc/abcl-src-0.15.0.zip"
+style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
 <tr>
 <td class="summary-header">Users
   <span>(development <em>with</em> ABCL)</span></td>
@@ -46,17 +50,19 @@ Download your copy from SourceForge: 0.15.0</a> <a href="http://downloads.source
 <li> Introduction: <a href="doc/abcl-install-with-java.html">building
                &amp; running</a> </li>
 <li> Documentation </li>
-<li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">Examples</a> </li>
+<li> <a
+href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">Examples</a> </li>
 <li> <a href="testimonials.shtml">Testimonials</a> </li>
 <li> Bug reporting </li>
 </ul>
 </td>
 <td>
 <ul>
-<li> <a href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">Mailing list</a> and <a href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old mailing list (abandoned)</a></li>
+<li> <a href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">Mailing list</a> and <a
+href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old mailing list (abandoned)</a></li>
 <li> <a href="http://news.gmane.org/gmane.editors.j.devel">Mailing list access on gmane</a></li>
-<li> Repository </li>
-<li> Technical wiki </li>
+<li> <a href="faq.shtml#repository">Repository</a> </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/wiki/TitleIndex">Technical wiki</a> </li>
 <li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
 <li> <a href="contributing.shtml">Contributing</a> </li>
 </ul>
@@ -69,7 +75,8 @@ Download your copy from SourceForge: 0.15.0</a> <a href="http://downloads.source
 <td colspan="2">
 ABCL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
 GNU General Public License</a> with
-<a href="http://www.gnu.org/software/classpath/license.html" title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
+<a href="http://www.gnu.org/software/classpath/license.html"
+title="Classpath exception and clarification">Classpath exception</a>, meaning that you can
 use ABCL in your application without the requirement to open the
 sources to your application.
 </td>
@@ -92,7 +99,8 @@ sources to your application.
 <ul>
 <li> <a href="http://java.sun.com/javase/downloads/index_jdk5.jsp">JDK 1.5.0</a> (any patch level), <em>or</em> </li>
 <li> <a href="http://java.sun.com/javase/downloads/index.jsp">JDK 1.6.0 (patch level 10 or higher)</a> </li>
-<li> <a href="http://ant.apache.org">Ant</a> version <a href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
+<li> <a href="http://ant.apache.org">Ant</a> version <a
+href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
 <li> A Lisp to run the lisp-based build system </li>
 </ul>
 </td>

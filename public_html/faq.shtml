@@ -150,6 +150,16 @@ The project welcomes initiatives to improve performance.</p>
 
 </div>
 
+<div class="h3" title="repository" id="repository">
+<h3>Where is ABCL's source code repository?</h3>
+
+<p>If you want to build the latest (unstable) ABCL code,
+you can check out through
+svn://common-lisp.net/project/armedbear/svn/trunk/abcl.</p>
+
+</div>
+
+
 </div>
 
 <div style="float:left;width:100%">
