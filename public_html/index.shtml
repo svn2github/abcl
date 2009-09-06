@@ -31,12 +31,11 @@ dd dt { font-weight: bold; font-style: italic }
  Additionally, it can be used to implement (parts of) the application
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
-<tr><td class="summary-header" colspan="2"><a
-href="releases/abcl-src-0.16.0.tar.gz"
-style="color:yellow">
-Download your copy from SourceForge: 0.16.0</a> <a
+<tr><th style="border:1px black solid" colspan="2"><a
+href="releases/abcl-src-0.16.0.tar.gz" style="color:black;font-weight:normal">
+Download 0.16.0</a> <a
 href="releases/abcl-src-0.16.0.zip"
-style="font-size:75%;color:yellow;font-weight:normal">(zip)</a></td></tr>
+style="font-size:75%;color:black;font-weight:normal">(zip)</a></th></tr>
 <tr>
 <td class="summary-header">Users
   <span>(development <em>with</em> ABCL)</span></td>
