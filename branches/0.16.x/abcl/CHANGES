@@ -1,5 +1,14 @@
+Version 0.16.1
+svn://common-lisp.net/project/armedbear/svn/branches/0.16.x/abcl
+(Unreleased)
+
+Bugs fixed:
+
+  * More careful checking for null args in LispStackFrame
+  * Honor appearance of &allow-other-keys in CLOS MAKE-INSTANCE
+
 Version 0.16.0
-(unreleased)
+(06 Sep, 2009)
 
   Summary of changes:
   * Fixed generated wrapper for path names with spaces (Windows)
