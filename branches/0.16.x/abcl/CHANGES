@@ -7,6 +7,7 @@ Bugs fixed:
   * More careful checking for null args in LispStackFrame
   * Honor appearance of &allow-other-keys in CLOS MAKE-INSTANCE
   * Fix #63: GO forms to non-existent TAGBODY labels would exit ABCL
+  * Don't leak temp files during compilation.
 
 Version 0.16.0
 svn://common-lisp.net/project/armedbear/svn/tags/0.16.0/abcl
