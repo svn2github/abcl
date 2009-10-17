@@ -19,9 +19,13 @@ dd dt { font-weight: bold; font-style: italic }
    <h1>Armed Bear Common Lisp (ABCL) - Commercial support</h1>
  </div>
 
+
 <!--#include virtual="left-menu" -->
 
-<div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
+<div style="float:left;width:80ex;margin-top:1cm;font-family:sans-serif">
+
+<h2 style="text-align:center">Paid support</h2>
+
 <p>ABCL is being developed as open source. Each of the contributers chooses
   his orher own priorities based on criteria like complexity and time
   available.  Many changes implemented over the past year were implemented
@@ -35,7 +39,8 @@ dd dt { font-weight: bold; font-style: italic }
   isn't being addressed as quickly as you like.
 </p>
 
-<p>If you decide you want to use this option, please contact me directly at
+<p>If you decide you want to use this option, or have other needs related
+  to abcl, please contact me directly at
   ehuelsmann 'at' common-lisp 'dot' net.
 </p>
 
@@ -47,6 +52,13 @@ dd dt { font-weight: bold; font-style: italic }
 </div>
 
 
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check" style="width:100%">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id: index.shtml 12203 2009-10-17 19:43:18Z ehuelsmann $</div>
 </div>
 </body>
