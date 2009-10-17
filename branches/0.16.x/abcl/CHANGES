@@ -1,6 +1,6 @@
 Version 0.16.1
-svn://common-lisp.net/project/armedbear/svn/branches/0.16.x/abcl
-(Unreleased)
+svn://common-lisp.net/project/armedbear/svn/tags/0.16.1/abcl
+(17 Oct, 2009)
 
 Bugs fixed:
 
