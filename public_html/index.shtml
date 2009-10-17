@@ -32,9 +32,9 @@ dd dt { font-weight: bold; font-style: italic }
  using <b>Java to Lisp integration</b> APIs.
 </td></tr>
 <tr><th style="border:1px black solid" colspan="2"><a
-href="releases/abcl-src-0.16.0.tar.gz" style="color:black;font-weight:normal">
-Download 0.16.0</a> <a
-href="releases/abcl-src-0.16.0.zip"
+href="releases/abcl-src-0.16.1.tar.gz" style="color:black;font-weight:normal">
+Download 0.16.1</a> <a
+href="releases/abcl-src-0.16.1.zip"
 style="font-size:75%;color:black;font-weight:normal">(zip)</a></th></tr>
 <tr>
 <td class="summary-header">Users
