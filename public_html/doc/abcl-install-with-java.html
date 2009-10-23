@@ -552,6 +552,8 @@ the following Lisp code to a file, say <tt>test.lisp</tt>:
 </p>
 
 <pre>
+(defvar symbols nil)
+
 (do-all-symbols (sym)
   (let ((package (symbol-package sym)))
        (cond
