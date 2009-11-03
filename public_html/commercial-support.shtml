@@ -45,6 +45,15 @@ dd dt { font-weight: bold; font-style: italic }
 </p>
 
 
+<p>Projects / tasks to be addressed include:</p>
+
+<ul>
+  <li>Finalizing Gray stream support</li>
+  <li>Performance research and improvements</li>
+  <li>(More) [A]MOP support</li>
+  <li>Better Java/JNA (foreign library) integration</li>
+</ul>
+
 <p><span style="size:70%">Other developers are free to get their names added
     to this list, but at this point no other developers are known to
     want to provide this type of support.</span></p>
