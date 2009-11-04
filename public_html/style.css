@@ -64,3 +64,24 @@
     font-weight: normal;
     font-size: 80%;
 }
+
+div.rn {
+  float:        left;
+  width:        20cm;
+  margin-top:    1cm;
+  margin-bottom: 1cm;
+}
+
+div.rn dl {
+  margin-left: 3cm;
+  width:      17cm;
+}
+
+div.rn dl dt {
+  font-family: sans-serif;
+  font-weight:       bold;
+  margin-top:         1cm;
+  background:        #369;
+  color:             #fff;
+  padding-left:       2ex;
+}
