@@ -35,9 +35,9 @@ package org.armedbear.lisp;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -95,52 +95,45 @@ public final class Lisp
   // We need NIL before we can call usePackage().
   static
   {
-    try
-      {
-        PACKAGE_CL.addNickname("CL");
-        PACKAGE_CL_USER.addNickname("CL-USER");
-        PACKAGE_CL_USER.usePackage(PACKAGE_CL);
-        PACKAGE_CL_USER.usePackage(PACKAGE_EXT);
-        PACKAGE_CL_USER.usePackage(PACKAGE_JAVA);
-        PACKAGE_SYS.addNickname("SYS");
-        PACKAGE_SYS.usePackage(PACKAGE_CL);
-        PACKAGE_SYS.usePackage(PACKAGE_EXT);
-        PACKAGE_MOP.usePackage(PACKAGE_CL);
-        PACKAGE_MOP.usePackage(PACKAGE_EXT);
-        PACKAGE_MOP.usePackage(PACKAGE_SYS);
-        PACKAGE_TPL.addNickname("TPL");
-        PACKAGE_TPL.usePackage(PACKAGE_CL);
-        PACKAGE_TPL.usePackage(PACKAGE_EXT);
-        PACKAGE_EXT.addNickname("EXT");
-        PACKAGE_EXT.usePackage(PACKAGE_CL);
-        PACKAGE_EXT.usePackage(PACKAGE_THREADS);
-        PACKAGE_JVM.usePackage(PACKAGE_CL);
-        PACKAGE_JVM.usePackage(PACKAGE_EXT);
-        PACKAGE_JVM.usePackage(PACKAGE_SYS);
-        PACKAGE_LOOP.usePackage(PACKAGE_CL);
-        PACKAGE_PROF.addNickname("PROF");
-        PACKAGE_PROF.usePackage(PACKAGE_CL);
-        PACKAGE_PROF.usePackage(PACKAGE_EXT);
-        PACKAGE_JAVA.usePackage(PACKAGE_CL);
-        PACKAGE_JAVA.usePackage(PACKAGE_EXT);
-        PACKAGE_LISP.usePackage(PACKAGE_CL);
-        PACKAGE_LISP.usePackage(PACKAGE_EXT);
-        PACKAGE_LISP.usePackage(PACKAGE_SYS);
-        PACKAGE_THREADS.usePackage(PACKAGE_CL);
-        PACKAGE_THREADS.usePackage(PACKAGE_EXT);
-        PACKAGE_THREADS.usePackage(PACKAGE_SYS);
-        PACKAGE_FORMAT.usePackage(PACKAGE_CL);
-        PACKAGE_FORMAT.usePackage(PACKAGE_EXT);
-        PACKAGE_XP.usePackage(PACKAGE_CL);
-        PACKAGE_PRECOMPILER.addNickname("PRE");
-        PACKAGE_PRECOMPILER.usePackage(PACKAGE_CL);
-        PACKAGE_PRECOMPILER.usePackage(PACKAGE_EXT);
-        PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
+    PACKAGE_CL.addNickname("CL");
+    PACKAGE_CL_USER.addNickname("CL-USER");
+    PACKAGE_CL_USER.usePackage(PACKAGE_CL);
+    PACKAGE_CL_USER.usePackage(PACKAGE_EXT);
+    PACKAGE_CL_USER.usePackage(PACKAGE_JAVA);
+    PACKAGE_SYS.addNickname("SYS");
+    PACKAGE_SYS.usePackage(PACKAGE_CL);
+    PACKAGE_SYS.usePackage(PACKAGE_EXT);
+    PACKAGE_MOP.usePackage(PACKAGE_CL);
+    PACKAGE_MOP.usePackage(PACKAGE_EXT);
+    PACKAGE_MOP.usePackage(PACKAGE_SYS);
+    PACKAGE_TPL.addNickname("TPL");
+    PACKAGE_TPL.usePackage(PACKAGE_CL);
+    PACKAGE_TPL.usePackage(PACKAGE_EXT);
+    PACKAGE_EXT.addNickname("EXT");
+    PACKAGE_EXT.usePackage(PACKAGE_CL);
+    PACKAGE_EXT.usePackage(PACKAGE_THREADS);
+    PACKAGE_JVM.usePackage(PACKAGE_CL);
+    PACKAGE_JVM.usePackage(PACKAGE_EXT);
+    PACKAGE_JVM.usePackage(PACKAGE_SYS);
+    PACKAGE_LOOP.usePackage(PACKAGE_CL);
+    PACKAGE_PROF.addNickname("PROF");
+    PACKAGE_PROF.usePackage(PACKAGE_CL);
+    PACKAGE_PROF.usePackage(PACKAGE_EXT);
+    PACKAGE_JAVA.usePackage(PACKAGE_CL);
+    PACKAGE_JAVA.usePackage(PACKAGE_EXT);
+    PACKAGE_LISP.usePackage(PACKAGE_CL);
+    PACKAGE_LISP.usePackage(PACKAGE_EXT);
+    PACKAGE_LISP.usePackage(PACKAGE_SYS);
+    PACKAGE_THREADS.usePackage(PACKAGE_CL);
+    PACKAGE_THREADS.usePackage(PACKAGE_EXT);
+    PACKAGE_THREADS.usePackage(PACKAGE_SYS);
+    PACKAGE_FORMAT.usePackage(PACKAGE_CL);
+    PACKAGE_FORMAT.usePackage(PACKAGE_EXT);
+    PACKAGE_XP.usePackage(PACKAGE_CL);
+    PACKAGE_PRECOMPILER.addNickname("PRE");
+    PACKAGE_PRECOMPILER.usePackage(PACKAGE_CL);
+    PACKAGE_PRECOMPILER.usePackage(PACKAGE_EXT);
+    PACKAGE_PRECOMPILER.usePackage(PACKAGE_SYS);
   }
 
   // End-of-file marker.
@@ -291,16 +284,11 @@ public final class Lisp
                                       thread.backtrace(0));
             return error(new StorageCondition("Stack overflow."));
           }
-        catch (Go go)
+        catch (ControlTransfer c)
           {
-            throw go;
+            throw c;
           }
-        catch (Throw t)
-          {
-            return error(new ControlError("Attempt to throw to the nonexistent tag " +
-                                           t.tag.writeToString() + "."));
-          }
-        catch (Throwable t)
+        catch (Throwable t) // ControlTransfer handled above
           {
             Debug.trace(t);
             thread.setSpecialVariable(_SAVED_BACKTRACE_,
@@ -1209,37 +1197,18 @@ public final class Lisp
   // Used by the compiler.
   public static final LispObject readObjectFromString(String s)
   {
-    try
-      {
-        return new StringInputStream(s).faslRead(true, NIL, false,
-                                                 LispThread.currentThread());
-      }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-        return null;
-      }
+    return new StringInputStream(s).faslRead(true, NIL, false,
+                                             LispThread.currentThread());
   }
 
   public static final LispObject loadCompiledFunction(final String namestring)
 
   {
-    try {
       byte[] bytes = readFunctionBytes(namestring);
       if (bytes != null)
         return loadClassBytes(bytes);
-    }
-    catch (VerifyError e)
-    {
-      return error(new LispError("Class verification failed: " +
-                                 e.getMessage()));
-    }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
-    return error(new FileError("File not found: " + namestring,
-                                new Pathname(namestring)));
+
+      return null;
   }
 
   public static final byte[] readFunctionBytes(final String namestring)
@@ -1347,10 +1316,6 @@ public final class Lisp
               {
                 Debug.trace(e);
               }
-            catch (Throwable t)
-              {
-                Debug.trace(t);
-              }
           }
         error(new LispError("Unable to load " + namestring));
         return null; // not reached
@@ -1368,17 +1333,11 @@ public final class Lisp
             if (bytes != null)
               return bytes;
           }
-        catch (VerifyError e)
-          {
-            error(new LispError("Class verification failed: " +
-                                e.getMessage()));
+        catch (FileNotFoundException fnf) {
+            error(new LispError("Unable to load " + pathname.writeToString()
+                                + ": " + fnf.getMessage()));
             return null; // not reached
-          }
-        catch (Throwable t)
-          {
-            Debug.trace(t);
-          }
-        error(new LispError("Unable to load " + pathname.writeToString()));
+        }
         return null; // not reached
       }
     try
@@ -1405,7 +1364,7 @@ public final class Lisp
             ZipCache.removeZip(zipFile.getName());
           }
       }
-    catch (Throwable t)
+    catch (IOException t)
       {
         Debug.trace(t);
       }
@@ -1432,21 +1391,11 @@ public final class Lisp
 
   public static final LispObject loadCompiledFunction(InputStream in, int size)
   {
-    try {
       byte[] bytes = readFunctionBytes(in, size);
       if (bytes != null)
         return loadClassBytes(bytes);
-    }
-    catch (VerifyError e)
-    {
-      return error(new LispError("Class verification failed: " +
-                                 e.getMessage()));
-    }
-    catch (Throwable t)
-      {
-        Debug.trace(t);
-      }
-    return error(new FileError("Can't read file off stream."));
+      else
+        return error(new FileError("Can't read file off stream."));
   }
 
 
@@ -1472,22 +1421,20 @@ public final class Lisp
 
         return bytes;
       }
-    catch (Throwable t)
+    catch (IOException t)
       {
-        Debug.trace(t);
+        Debug.trace(t); // FIXME: call error()?
       }
     return null;
   }
 
     public static final Function loadClassBytes(byte[] bytes)
-        throws Throwable
     {
-	return loadClassBytes(bytes, new JavaClassLoader());
+    	return loadClassBytes(bytes, new JavaClassLoader());
     }
 
     public static final Function loadClassBytes(byte[] bytes,
                                                 JavaClassLoader cl)
-        throws Throwable
     {
         Class<?> c = cl.loadClassFromByteArray(null, bytes, 0, bytes.length);
 	Function obj = makeCompiledFunctionFromClass(c);

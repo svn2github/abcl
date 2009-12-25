@@ -180,7 +180,7 @@ public final class Load
             try {
                 zipfile = ZipCache.getZip(zipFileName);
             }
-            catch (Throwable t) {
+            catch (IOException e) {
                 return error (new FileError("Zip file not found: " + filename, pathname));
             }
             ZipEntry entry = zipfile.getEntry(zipEntryName);
@@ -374,10 +374,8 @@ public final class Load
                             catch (ZipException e) {
                                 // Fall through.
                             }
-                            catch (Throwable t) {
-                                Debug.trace(t);
-                                in = null;
-                                // Fall through.
+                            catch (IOException e) {
+                                // fall through
                             }
                         }
                         if (in == null) {
@@ -675,7 +673,7 @@ public final class Load
                     && bytes[2] == 0x03
                     && bytes[3] == 0x04);
         }
-        catch (Throwable t) {
+        catch (Throwable t) { // any error probably means 'no'
             return false;
         }
         finally {
@@ -683,7 +681,7 @@ public final class Load
                 try {
                     in.close();
                 }
-                catch (Throwable t) {}
+                catch (IOException e) {} // ignore exceptions
             }
         }
     }
