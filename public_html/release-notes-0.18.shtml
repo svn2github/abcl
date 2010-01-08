@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v0.17</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version 0.18</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 0.18</h2>
+
+
+<p><a href="release-notes-0.17.shtml">Release notes for older releases</a>.</p>
+
+
+
+<dl>
+  <dt>Faster initial startup</dt>
+  <dd>To achieve faster startup times - required for example by
+    Google App Engine which restarts the servlet regularly -
+    ABCL now delays reflection calls associated function-class
+    resolution by resolving functions upon their first call.</dd>
+  <dt>Portable FASLs</dt>
+  <dd>As part of a fixed bug, ABCL now has portable fasls: all
+    fasls use UTF-8 as their encoding, instead of the system dependent
+    default encoding. This should help easy deployment and deployment
+    to Google App Engine. Because of this change, the FASL version
+    number has increased to 35.</dd>
+  <dt>Faster special variable lookup</dt>
+  <dd>As part of the continued search for performance improvements
+    has the lookup mechanism for special variable value lookup been
+    changed. Part of this change is the introduction of an API to
+    record unbinding marks for unwinding later on.</dd>
+  <dt>Improved reliability with exceptions</dt>
+  <dd>Out-of-memory or Stack-overflow conditions can be handled
+    programatically by binding handlers for them in handler-bind.
+    In addition, program execution used to continue on caught but
+    unhandled generic (Throwable) exceptions. This is no longer
+    the case: only specific exceptions get caught, or the generic
+    exception is handled, preventing execution from 'just' continuing.</dd>
+  <dt>Fixed memory leak with functions-with-documentation</dt>
+  <dd>Functions with documentation going out of scope because of
+    being unused were incorrectly not GC-ed. This has now been resolved.</dd>
+</dl>
+
+
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-0.16.shtml 12246 2009-11-04 22:00:47Z ehuelsmann $</div>
+</div>
+</body>
+</html>
