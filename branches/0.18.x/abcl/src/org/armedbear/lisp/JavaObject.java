@@ -47,12 +47,14 @@ public final class JavaObject extends LispObject {
 
     public JavaObject(Object obj) {
         this.obj = obj;
-	this.intendedClass = obj != null ? obj.getClass() : null;
+	this.intendedClass =
+	    obj != null ? Java.maybeBoxClass(obj.getClass()) : null;
     }
 
     /**
      * Constructs a Java Object with the given intended class, used to access
-     * the object reflectively.
+     * the object reflectively. If the class represents a primitive type,
+     * the corresponding wrapper type is used instead.
      * @throws ClassCastException if the object is not an instance of the
      *                            intended class.
      */
@@ -60,8 +62,11 @@ public final class JavaObject extends LispObject {
 	if(obj != null && intendedClass == null) {
 	    intendedClass = obj.getClass();
 	}
-	if(intendedClass != null && !intendedClass.isInstance(obj)) {
-	    throw new ClassCastException(obj + " can not be cast to " + intendedClass);
+	if(intendedClass != null) {
+	    intendedClass = Java.maybeBoxClass(intendedClass);
+	    if(!intendedClass.isInstance(obj)) {
+		throw new ClassCastException(obj + " can not be cast to " + intendedClass);
+	    }
 	}
 	this.obj = obj;
 	this.intendedClass = intendedClass;
@@ -229,13 +234,19 @@ public final class JavaObject extends LispObject {
     }
 
     @Override
-    public Object javaInstance(Class c) {
+    public Object javaInstance(Class<?> c) {
 	if(obj == null) {
-	    return obj;
-	} else if(c.isAssignableFrom(intendedClass)) {
+	    if(c.isPrimitive()) {
+		throw new NullPointerException("Cannot assign null to " + c);
+	    }
 	    return obj;
 	} else {
-	    return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
+	    c = Java.maybeBoxClass(c);
+	    if(c.isAssignableFrom(intendedClass)) {
+		return obj;
+	    } else {
+		return error(new TypeError(intendedClass.getName() + " is not assignable to " + c.getName()));
+	    }
 	}
     }
 
