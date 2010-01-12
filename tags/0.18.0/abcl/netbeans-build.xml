@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="antlib:org.apache.tools.ant"
+    name="abcl" default="default" basedir=".">
+
+<!-- XXX need way to autodetect NetBeans as installed, as this will
+     probably fail otherwise.  -->
+  <import file="nbproject/build-impl.xml"/>
+
+  <target name="-post-compile">
+    <antcall target="abcl.compile.lisp"/>
+  </target>
+</project>
+
