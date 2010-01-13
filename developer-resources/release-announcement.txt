@@ -1,22 +1,28 @@
-Subject: [ANNOUNCE] ABCL 0.17.0 released
+Subject: [ANNOUNCE] ABCL 0.18.0 released
 
 
 
 On behalf of the developers of ABCL (Armed Bear Common Lisp) I'm glad to
-be able to announce the 0.17.0 release. ABCL is a Common Lisp
-implementation implemented in Java and running on the JVM, featuring
-both an interpreter and a compiler. The compiler targets the JVM directly
-meaning that its output is runnable JVM bytecode. The fact that ABCL is
-written in Java allows for relatively easy embedding in larger applications.
-For integration with existing applications ABCL implements JSR-223.
+be able to announce the 0.18.0 release.
+
+ABCL is a Common Lisp implementation implemented in Java and running on the
+JVM, featuring both an interpreter and a compiler. The compiler targets the
+JVM directly meaning that its output is runnable JVM bytecode. The fact
+that ABCL is written in Java allows for relatively easy embedding in larger
+applications. For integration with existing applications ABCL implements
+Java Specification Request (JSR) 223: Java scripting API.
 
 
-This release features - among lots of other things - performance improvements,
-a fix for unexpected thread termination due to uncaught exceptions and
-example code for running ABCL on Google App Engine. You can find the full
+This release features - among lots of other things - faster initial startup,
+faster special variable lookup and portable fasl files. You can find the full
 release notes at:
 
  http://common-lisp.net/project/armedbear/release-notes-0.17.shtml
+
+and the list of changes at:
+
+ http://trac.common-lisp.net/armedbear/browser/trunk/abcl/CHANGES
+
 
 If you have questions regarding use or licensing, or you find issues, please
 report back to the development list:
@@ -26,21 +32,21 @@ report back to the development list:
 
 Source distribution archives can be downloaded in ZIP or gzipped tar form:
 
- http://common-lisp.net/project/armedbear/releases/abcl-src-0.17.0.tar.gz
- http://common-lisp.net/project/armedbear/releases/abcl-src-0.17.0.zip
+ http://common-lisp.net/project/armedbear/releases/abcl-src-0.18.0.tar.gz
+ http://common-lisp.net/project/armedbear/releases/abcl-src-0.18.0.zip
 
 Signatures are available under:
- http://common-lisp.net/project/armedbear/releases/abcl-src-0.17.0.tar.gz.asc
- http://common-lisp.net/project/armedbear/releases/abcl-src-0.17.0.zip.asc
+ http://common-lisp.net/project/armedbear/releases/abcl-src-0.18.0.tar.gz.asc
+ http://common-lisp.net/project/armedbear/releases/abcl-src-0.18.0.zip.asc
 
 
 
 In addition, binaries are also available:
 
- http://common-lisp.net/project/armedbear/releases/abcl-bin-0.17.0.tar.gz
- http://common-lisp.net/project/armedbear/releases/abcl-bin-0.17.0.zip
+ http://common-lisp.net/project/armedbear/releases/abcl-bin-0.18.0.tar.gz
+ http://common-lisp.net/project/armedbear/releases/abcl-bin-0.18.0.zip
 
 With associated signatures:
- http://common-lisp.net/project/armedbear/releases/abcl-bin-0.17.0.tar.gz.asc
- http://common-lisp.net/project/armedbear/releases/abcl-bin-0.17.0.zip.asc
+ http://common-lisp.net/project/armedbear/releases/abcl-bin-0.18.0.tar.gz.asc
+ http://common-lisp.net/project/armedbear/releases/abcl-bin-0.18.0.zip.asc
 
