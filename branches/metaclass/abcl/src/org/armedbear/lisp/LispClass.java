@@ -98,20 +98,24 @@ public abstract class LispClass extends StandardObject
   public LispObject documentation = NIL; // FIXME! Should be private!
   private boolean finalized;
 
-  protected LispClass()
+  protected LispClass(Layout layout)
   {
+    super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
   }
 
-  protected LispClass(Symbol symbol)
+  protected LispClass(Layout layout, Symbol symbol)
   {
+    super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
     this.symbol = symbol;
     this.directSuperclasses = NIL;
   }
 
-  protected LispClass(Symbol symbol, LispObject directSuperclasses)
+  protected LispClass(Layout layout,
+                      Symbol symbol, LispObject directSuperclasses)
   {
+    super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
     this.symbol = symbol;
     this.directSuperclasses = directSuperclasses;

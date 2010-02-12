@@ -42,13 +42,15 @@ public class SlotClass extends LispClass
     private LispObject directDefaultInitargs = NIL;
     private LispObject defaultInitargs = NIL;
 
-    public SlotClass()
+    public SlotClass(Layout layout)
     {
+      super(layout);
     }
 
-    public SlotClass(Symbol symbol, LispObject directSuperclasses)
+    public SlotClass(Layout layout,
+                     Symbol symbol, LispObject directSuperclasses)
     {
-        super(symbol, directSuperclasses);
+        super(layout, symbol, directSuperclasses);
     }
 
     @Override

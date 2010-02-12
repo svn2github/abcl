@@ -37,21 +37,38 @@ import static org.armedbear.lisp.Lisp.*;
 
 public class StandardClass extends SlotClass
 {
+
+  static Layout layoutStandardClass =
+      new Layout(null,
+                 list(PACKAGE_MOP.intern("NAME"),
+                      PACKAGE_MOP.intern("LAYOUT"),
+                      PACKAGE_MOP.intern("DIRECT-SUPERCLASSES"),
+                      PACKAGE_MOP.intern("DIRECT-SUBCLASSES"),
+                      PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST"),
+                      PACKAGE_MOP.intern("DIRECT-METHODS"),
+                      PACKAGE_MOP.intern("DOCUMENTATION"),
+                      PACKAGE_MOP.intern("DIRECT-SLOTS"),
+                      PACKAGE_MOP.intern("SLOTS"),
+                      PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS"),
+                      PACKAGE_MOP.intern("DEFAULT-INITARGS")),
+                 NIL)
+      {
+        @Override
+        public LispClass getLispClass()
+        {
+          return STANDARD_CLASS;
+        }
+      };
+
   public StandardClass()
   {
-    setClassLayout(new Layout(this, NIL, NIL));
+      super(layoutStandardClass);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
   {
-    super(symbol, directSuperclasses);
-    setClassLayout(new Layout(this, NIL, NIL));
-  }
-
-  @Override
-  public LispObject typeOf()
-  {
-    return Symbol.STANDARD_CLASS;
+      super(layoutStandardClass,
+          symbol, directSuperclasses);
   }
 
   @Override
@@ -113,6 +130,16 @@ public class StandardClass extends SlotClass
     addStandardClass(Symbol.STANDARD_CLASS, list(BuiltInClass.CLASS_T));
   public static final StandardClass STANDARD_OBJECT =
     addStandardClass(Symbol.STANDARD_OBJECT, list(BuiltInClass.CLASS_T));
+
+  public static final StandardClass SLOT_DEFINITION =
+    new SlotDefinitionClass();
+  static
+  {
+    addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
+
+    STANDARD_CLASS.setClassLayout(layoutStandardClass);
+    STANDARD_CLASS.setDirectSlotDefinitions(STANDARD_CLASS.getClassLayout().generateSlotDefinitions());
+  }
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
   public static final StandardClass GENERIC_FUNCTION =
@@ -257,13 +284,6 @@ public class StandardClass extends SlotClass
   static
   {
     addClass(Symbol.STANDARD_GENERIC_FUNCTION, STANDARD_GENERIC_FUNCTION);
-  }
-
-  public static final StandardClass SLOT_DEFINITION =
-    new SlotDefinitionClass();
-  static
-  {
-    addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
   }
 
   public static void initializeStandardClasses()
