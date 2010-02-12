@@ -1792,6 +1792,7 @@
                    )))
 
 (fmakunbound 'class-name)
+(fmakunbound '(setf class-name))
 
 (defgeneric class-name (class))
 
@@ -1811,6 +1812,9 @@
 (defmethod class-precedence-list ((class class))
   (%class-precedence-list class))
 
+
+
+(fmakunbound 'documentation)
 (defgeneric documentation (x doc-type))
 
 (defgeneric (setf documentation) (new-value x doc-type))
@@ -2399,5 +2403,6 @@
 
 ;; FIXME
 (defgeneric function-keywords (method))
+
 
 (provide 'clos)
