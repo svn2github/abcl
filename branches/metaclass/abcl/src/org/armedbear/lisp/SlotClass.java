@@ -47,6 +47,13 @@ public class SlotClass extends LispClass
       super(layout);
     }
 
+    public SlotClass(Symbol symbol, LispObject directSuperclasses)
+
+
+    {
+        this(null, symbol, directSuperclasses);
+    }
+
     public SlotClass(Layout layout,
                      Symbol symbol, LispObject directSuperclasses)
     {

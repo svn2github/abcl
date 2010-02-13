@@ -113,13 +113,13 @@ public class StandardObject extends LispObject
     final LispClass c1 = layout.getLispClass();
     // The proper name of a class is "a symbol that names the class whose
     // name is that symbol".
-    final Symbol symbol = c1.getSymbol();
-    if (symbol != NIL)
+    final LispObject name = c1.getName();
+    if (name != NIL && name != UNBOUND_VALUE)
       {
         // TYPE-OF.9
-        final LispObject c2 = LispClass.findClass(symbol);
+        final LispObject c2 = LispClass.findClass(checkSymbol(name));
         if (c2 == c1)
-          return symbol;
+          return name;
       }
     return c1;
   }
@@ -142,14 +142,14 @@ public class StandardObject extends LispObject
       {
         if (type == cls)
           return T;
-        if (type == cls.getSymbol())
+        if (type == cls.getName())
           return T;
         LispObject cpl = cls.getCPL();
         while (cpl != NIL)
           {
             if (type == cpl.car())
               return T;
-            if (type == ((LispClass)cpl.car()).getSymbol())
+            if (type == ((LispClass)cpl.car()).getName())
               return T;
             cpl = cpl.cdr();
           }

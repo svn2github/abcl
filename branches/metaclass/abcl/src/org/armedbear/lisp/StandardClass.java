@@ -38,9 +38,11 @@ import static org.armedbear.lisp.Lisp.*;
 public class StandardClass extends SlotClass
 {
 
+  private static Symbol name = PACKAGE_MOP.intern("NAME");
+
   static Layout layoutStandardClass =
       new Layout(null,
-                 list(PACKAGE_MOP.intern("NAME"),
+                 list(name,
                       PACKAGE_MOP.intern("LAYOUT"),
                       PACKAGE_MOP.intern("DIRECT-SUPERCLASSES"),
                       PACKAGE_MOP.intern("DIRECT-SUBCLASSES"),
@@ -68,7 +70,19 @@ public class StandardClass extends SlotClass
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
   {
       super(layoutStandardClass,
-          symbol, directSuperclasses);
+            symbol, directSuperclasses);
+  }
+
+  @Override
+  public LispObject getName()
+  {
+    return getInstanceSlotValue(name);
+  }
+
+  @Override
+  public void setName(LispObject newName)
+  {
+    setInstanceSlotValue(name, newName);
   }
 
   @Override
@@ -106,10 +120,10 @@ public class StandardClass extends SlotClass
   {
     StringBuilder sb =
       new StringBuilder(Symbol.STANDARD_CLASS.writeToString());
-    if (symbol != null)
+    if (getName() != null)
       {
         sb.append(' ');
-        sb.append(symbol.writeToString());
+        sb.append(getName().writeToString());
       }
     return unreadableString(sb.toString());
   }
@@ -295,6 +309,7 @@ public class StandardClass extends SlotClass
     STANDARD_OBJECT.setDirectSuperclass(BuiltInClass.CLASS_T);
     GENERIC_FUNCTION.setDirectSuperclasses(list(BuiltInClass.FUNCTION,
                                                  STANDARD_OBJECT));
+    //    GENERIC_FUNCTION.setSlots();
 
     ARITHMETIC_ERROR.setCPL(ARITHMETIC_ERROR, ERROR, SERIOUS_CONDITION,
                             CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
@@ -305,8 +320,10 @@ public class StandardClass extends SlotClass
                                list(PACKAGE_CL.intern("ARITHMETIC-ERROR-OPERANDS")))));
     BUILT_IN_CLASS.setCPL(BUILT_IN_CLASS, CLASS, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
+    //    BUILT_IN_CLASS.setSlots();
     JAVA_CLASS.setCPL(JAVA_CLASS, CLASS, STANDARD_OBJECT,
             BuiltInClass.CLASS_T);
+    //    JAVA_CLASS.setSlots();
     CELL_ERROR.setCPL(CELL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                       STANDARD_OBJECT, BuiltInClass.CLASS_T);
     CELL_ERROR.setDirectSlotDefinitions(
@@ -315,9 +332,11 @@ public class StandardClass extends SlotClass
     CLASS.setCPL(CLASS, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     COMPILER_ERROR.setCPL(COMPILER_ERROR, CONDITION, STANDARD_OBJECT,
                           BuiltInClass.CLASS_T);
+//    COMPILER_ERROR.setSlots();
     COMPILER_UNSUPPORTED_FEATURE_ERROR.setCPL(COMPILER_UNSUPPORTED_FEATURE_ERROR,
                                               CONDITION, STANDARD_OBJECT,
                                               BuiltInClass.CLASS_T);
+//    COMPILER_UNSUPPORTED_FEATURE_ERROR.setSlots();
     CONDITION.setCPL(CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     CONDITION.setDirectSlotDefinitions(
       list(new SlotDefinition(Symbol.FORMAT_CONTROL,
@@ -331,9 +350,11 @@ public class StandardClass extends SlotClass
                                                          new Environment())));
     CONTROL_ERROR.setCPL(CONTROL_ERROR, ERROR, SERIOUS_CONDITION, CONDITION,
                          STANDARD_OBJECT, BuiltInClass.CLASS_T);
+//    CONTROL_ERROR.setSlots();
     DIVISION_BY_ZERO.setCPL(DIVISION_BY_ZERO, ARITHMETIC_ERROR, ERROR,
                             SERIOUS_CONDITION, CONDITION, STANDARD_OBJECT,
                             BuiltInClass.CLASS_T);
+//    DIVISION_BY_ZERO.setSlots();
     END_OF_FILE.setCPL(END_OF_FILE, STREAM_ERROR, ERROR, SERIOUS_CONDITION,
                        CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
     ERROR.setCPL(ERROR, SERIOUS_CONDITION, CONDITION, STANDARD_OBJECT,

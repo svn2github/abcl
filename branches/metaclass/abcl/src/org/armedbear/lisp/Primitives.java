@@ -5132,7 +5132,7 @@ public final class Primitives
       @Override
       public LispObject execute(LispObject arg)
       {
-          return checkClass(arg).symbol;
+          return checkClass(arg).getName();
       }
     };
 
@@ -5144,7 +5144,7 @@ public final class Primitives
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkClass(first).symbol = checkSymbol(second);
+          checkClass(first).setName(checkSymbol(second));
           return second;
       }
     };

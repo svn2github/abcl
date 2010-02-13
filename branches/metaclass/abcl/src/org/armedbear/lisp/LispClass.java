@@ -88,7 +88,7 @@ public abstract class LispClass extends StandardObject
 
   private final int sxhash;
 
-  protected Symbol symbol;
+  private LispObject name;
   private LispObject propertyList;
   private Layout classLayout;
   private LispObject directSuperclasses = NIL;
@@ -104,12 +104,16 @@ public abstract class LispClass extends StandardObject
     sxhash = hashCode() & 0x7fffffff;
   }
 
+  protected LispClass(Symbol symbol)
+  {
+    this(null, symbol);
+  }
+
   protected LispClass(Layout layout, Symbol symbol)
   {
     super(layout, layout == null ? 0 : layout.getLength());
+    setName(symbol);
     sxhash = hashCode() & 0x7fffffff;
-    this.symbol = symbol;
-    this.directSuperclasses = NIL;
   }
 
   protected LispClass(Layout layout,
@@ -117,7 +121,7 @@ public abstract class LispClass extends StandardObject
   {
     super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
-    this.symbol = symbol;
+    setName(symbol);
     this.directSuperclasses = directSuperclasses;
   }
 
@@ -125,7 +129,7 @@ public abstract class LispClass extends StandardObject
   public LispObject getParts()
   {
     LispObject result = NIL;
-    result = result.push(new Cons("NAME", symbol != null ? symbol : NIL));
+    result = result.push(new Cons("NAME", name != null ? name : NIL));
     result = result.push(new Cons("LAYOUT", classLayout != null ? classLayout : NIL));
     result = result.push(new Cons("DIRECT-SUPERCLASSES", directSuperclasses));
     result = result.push(new Cons("DIRECT-SUBCLASSES", directSubclasses));
@@ -141,9 +145,14 @@ public abstract class LispClass extends StandardObject
     return sxhash;
   }
 
-  public final Symbol getSymbol()
+  public LispObject getName()
   {
-    return symbol;
+    return name;
+  }
+
+  public void setName(LispObject name)
+  {
+    this.name = name;
   }
 
   @Override
@@ -288,11 +297,6 @@ public abstract class LispClass extends StandardObject
     Debug.assertTrue(obj1 == this);
     classPrecedenceList =
       list(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8, obj9);
-  }
-
-  public String getName()
-  {
-    return symbol.getName();
   }
 
   @Override
