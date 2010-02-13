@@ -38,13 +38,16 @@ import static org.armedbear.lisp.Lisp.*;
 public class StandardClass extends SlotClass
 {
 
-  private static Symbol name = PACKAGE_MOP.intern("NAME");
+  private static Symbol symName = PACKAGE_MOP.intern("NAME");
+  private static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
+  private static Symbol symDirectSuperclasses
+    = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
 
   static Layout layoutStandardClass =
       new Layout(null,
-                 list(name,
-                      PACKAGE_MOP.intern("LAYOUT"),
-                      PACKAGE_MOP.intern("DIRECT-SUPERCLASSES"),
+                 list(symName,
+                      symLayout,
+                      symDirectSuperclasses,
                       PACKAGE_MOP.intern("DIRECT-SUBCLASSES"),
                       PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST"),
                       PACKAGE_MOP.intern("DIRECT-METHODS"),
@@ -76,14 +79,41 @@ public class StandardClass extends SlotClass
   @Override
   public LispObject getName()
   {
-    return getInstanceSlotValue(name);
+    return getInstanceSlotValue(symName);
   }
 
   @Override
   public void setName(LispObject newName)
   {
-    setInstanceSlotValue(name, newName);
+    setInstanceSlotValue(symName, newName);
   }
+
+  @Override
+  public Layout getClassLayout()
+  {
+    LispObject layout = getInstanceSlotValue(symLayout);
+    return (layout == UNBOUND_VALUE) ? null : (Layout)layout;
+  }
+
+  @Override
+  public void setClassLayout(Layout newLayout)
+  {
+    setInstanceSlotValue(symLayout, newLayout);
+  }
+
+  @Override
+  public LispObject getDirectSuperclasses()
+  {
+    return getInstanceSlotValue(symDirectSuperclasses);
+  }
+
+  @Override
+  public void setDirectSuperclasses(LispObject directSuperclasses)
+  {
+    setInstanceSlotValue(symDirectSuperclasses, directSuperclasses);
+  }
+
+
 
   @Override
   public LispObject classOf()

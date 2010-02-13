@@ -122,7 +122,7 @@ public abstract class LispClass extends StandardObject
     super(layout, layout == null ? 0 : layout.getLength());
     sxhash = hashCode() & 0x7fffffff;
     setName(symbol);
-    this.directSuperclasses = directSuperclasses;
+    setDirectSuperclasses(directSuperclasses);
   }
 
   @Override
@@ -130,8 +130,11 @@ public abstract class LispClass extends StandardObject
   {
     LispObject result = NIL;
     result = result.push(new Cons("NAME", name != null ? name : NIL));
-    result = result.push(new Cons("LAYOUT", classLayout != null ? classLayout : NIL));
-    result = result.push(new Cons("DIRECT-SUPERCLASSES", directSuperclasses));
+    result = result.push(new Cons("LAYOUT",
+                                  getClassLayout() != null
+                                  ? getClassLayout() : NIL));
+    result = result.push(new Cons("DIRECT-SUPERCLASSES",
+                                  getDirectSuperclasses()));
     result = result.push(new Cons("DIRECT-SUBCLASSES", directSubclasses));
     result = result.push(new Cons("CLASS-PRECEDENCE-LIST", classPrecedenceList));
     result = result.push(new Cons("DIRECT-METHODS", directMethods));
@@ -171,12 +174,12 @@ public abstract class LispClass extends StandardObject
     propertyList = obj;
   }
 
-  public final Layout getClassLayout()
+  public Layout getClassLayout()
   {
     return classLayout;
   }
 
-  public final void setClassLayout(Layout layout)
+  public void setClassLayout(Layout layout)
   {
     classLayout = layout;
   }
@@ -188,12 +191,12 @@ public abstract class LispClass extends StandardObject
     return layout.getLength();
   }
 
-  public final LispObject getDirectSuperclasses()
+  public LispObject getDirectSuperclasses()
   {
     return directSuperclasses;
   }
 
-  public final void setDirectSuperclasses(LispObject directSuperclasses)
+  public void setDirectSuperclasses(LispObject directSuperclasses)
   {
     this.directSuperclasses = directSuperclasses;
   }
@@ -211,7 +214,7 @@ public abstract class LispClass extends StandardObject
   // When there's only one direct superclass...
   public final void setDirectSuperclass(LispObject superclass)
   {
-    directSuperclasses = new Cons(superclass);
+    setDirectSuperclasses(new Cons(superclass));
   }
 
   public final LispObject getDirectSubclasses()
