@@ -42,13 +42,16 @@ public class StandardClass extends SlotClass
   private static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
   private static Symbol symDirectSuperclasses
     = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
+  private static Symbol symDirectSubclasses
+    = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
+
 
   static Layout layoutStandardClass =
       new Layout(null,
                  list(symName,
                       symLayout,
                       symDirectSuperclasses,
-                      PACKAGE_MOP.intern("DIRECT-SUBCLASSES"),
+                      symDirectSubclasses,
                       PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST"),
                       PACKAGE_MOP.intern("DIRECT-METHODS"),
                       PACKAGE_MOP.intern("DOCUMENTATION"),
@@ -68,12 +71,15 @@ public class StandardClass extends SlotClass
   public StandardClass()
   {
       super(layoutStandardClass);
+      setDirectSuperclasses(NIL);
+      setDirectSubclasses(NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
   {
       super(layoutStandardClass,
             symbol, directSuperclasses);
+      setDirectSubclasses(NIL);
   }
 
   @Override
@@ -111,6 +117,18 @@ public class StandardClass extends SlotClass
   public void setDirectSuperclasses(LispObject directSuperclasses)
   {
     setInstanceSlotValue(symDirectSuperclasses, directSuperclasses);
+  }
+
+  @Override
+  public LispObject getDirectSubclasses()
+  {
+    return getInstanceSlotValue(symDirectSubclasses);
+  }
+
+  @Override
+  public void setDirectSubclasses(LispObject directSubclasses)
+  {
+    setInstanceSlotValue(symDirectSubclasses, directSubclasses);
   }
 
 

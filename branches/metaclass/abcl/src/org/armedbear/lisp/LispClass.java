@@ -135,7 +135,7 @@ public abstract class LispClass extends StandardObject
                                   ? getClassLayout() : NIL));
     result = result.push(new Cons("DIRECT-SUPERCLASSES",
                                   getDirectSuperclasses()));
-    result = result.push(new Cons("DIRECT-SUBCLASSES", directSubclasses));
+    result = result.push(new Cons("DIRECT-SUBCLASSES", getDirectSubclasses()));
     result = result.push(new Cons("CLASS-PRECEDENCE-LIST", classPrecedenceList));
     result = result.push(new Cons("DIRECT-METHODS", directMethods));
     result = result.push(new Cons("DOCUMENTATION", documentation));
@@ -217,12 +217,12 @@ public abstract class LispClass extends StandardObject
     setDirectSuperclasses(new Cons(superclass));
   }
 
-  public final LispObject getDirectSubclasses()
+  public LispObject getDirectSubclasses()
   {
     return directSubclasses;
   }
 
-  public final void setDirectSubclasses(LispObject directSubclasses)
+  public void setDirectSubclasses(LispObject directSubclasses)
   {
     this.directSubclasses = directSubclasses;
   }
