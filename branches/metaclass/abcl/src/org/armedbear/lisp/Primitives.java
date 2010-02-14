@@ -5246,7 +5246,7 @@ public final class Primitives
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkClass(first).classPrecedenceList = second;
+          checkClass(first).setCPL(second);
           return second;
       }
     };
@@ -5259,7 +5259,7 @@ public final class Primitives
       public LispObject execute(LispObject arg)
 
       {
-          return checkClass(arg).directMethods;
+          return checkClass(arg).getDirectMethods();
       }
     };
 
@@ -5271,7 +5271,7 @@ public final class Primitives
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkClass(first).directMethods = second;
+          checkClass(first).setDirectMethods(second);
           return second;
       }
     };
@@ -5284,7 +5284,7 @@ public final class Primitives
       public LispObject execute(LispObject arg)
 
       {
-          return checkClass(arg).documentation;
+          return checkClass(arg).getDocumentation();
       }
     };
 
@@ -5296,7 +5296,7 @@ public final class Primitives
       public LispObject execute(LispObject first, LispObject second)
 
       {
-          checkClass(first).documentation = second;
+          checkClass(first).setDocumentation(second);
           return second;
       }
     };

@@ -93,9 +93,9 @@ public abstract class LispClass extends StandardObject
   private Layout classLayout;
   private LispObject directSuperclasses = NIL;
   private LispObject directSubclasses = NIL;
-  public LispObject classPrecedenceList = NIL; // FIXME! Should be private!
-  public LispObject directMethods = NIL; // FIXME! Should be private!
-  public LispObject documentation = NIL; // FIXME! Should be private!
+  private LispObject classPrecedenceList = NIL;
+  private LispObject directMethods = NIL;
+  private LispObject documentation = NIL;
   private boolean finalized;
 
   protected LispClass(Layout layout)
@@ -245,6 +245,26 @@ public abstract class LispClass extends StandardObject
             l = new Cons(cpl[i], l);
         classPrecedenceList = l;
       }
+  }
+
+  public LispObject getDirectMethods()
+  {
+    return directMethods;
+  }
+
+  public void setDirectMethods(LispObject methods)
+  {
+    directMethods = methods;
+  }
+
+  public LispObject getDocumentation()
+  {
+    return documentation;
+  }
+
+  public void setDocumentation(LispObject doc)
+  {
+    documentation = doc;
   }
 
   @Override
