@@ -74,10 +74,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass);
       setDirectSuperclasses(NIL);
       setDirectSubclasses(NIL);
-
-      // because of the assert below, we need to set the slot directly
-      // and can't use setCPL()
-      setInstanceSlotValue(symClassPrecedenceList, NIL);
+      setCPL(NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -85,10 +82,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass,
             symbol, directSuperclasses);
       setDirectSubclasses(NIL);
-
-      // because of the assert below, we need to set the slot directly
-      // and can't use setCPL()
-      setInstanceSlotValue(symClassPrecedenceList, NIL);
+      setCPL(NIL);
   }
 
   @Override
@@ -150,7 +144,7 @@ public class StandardClass extends SlotClass
   public void setCPL(LispObject... cpl)
   {
     LispObject obj1 = cpl[0];
-    if (obj1 instanceof Cons && cpl.length == 1)
+    if (obj1.listp() && cpl.length == 1)
       setInstanceSlotValue(symClassPrecedenceList, obj1);
     else
       {
