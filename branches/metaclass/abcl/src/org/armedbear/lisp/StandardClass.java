@@ -54,6 +54,10 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-SLOTS");
   private static Symbol symSlots
     = PACKAGE_MOP.intern("SLOTS");
+  private static Symbol symDirectDefaultInitargs
+    = PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS");
+  private static Symbol symDefaultInitargs
+    = PACKAGE_MOP.intern("DEFAULT-INITARGS");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -66,8 +70,8 @@ public class StandardClass extends SlotClass
                       symDocumentation,
                       symDirectSlots,
                       symSlots,
-                      PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS"),
-                      PACKAGE_MOP.intern("DEFAULT-INITARGS")),
+                      symDirectDefaultInitargs,
+                      symDefaultInitargs),
                  NIL)
       {
         @Override
@@ -87,6 +91,8 @@ public class StandardClass extends SlotClass
       setDocumentation(NIL);
       setDirectSlotDefinitions(NIL);
       setSlotDefinitions(NIL);
+      setDirectDefaultInitargs(NIL);
+      setDefaultInitargs(NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -99,6 +105,8 @@ public class StandardClass extends SlotClass
       setDocumentation(NIL);
       setDirectSlotDefinitions(NIL);
       setSlotDefinitions(NIL);
+      setDirectDefaultInitargs(NIL);
+      setDefaultInitargs(NIL);
   }
 
   @Override
@@ -218,6 +226,30 @@ public class StandardClass extends SlotClass
   public void setSlotDefinitions(LispObject slotDefinitions)
   {
      setInstanceSlotValue(symSlots, slotDefinitions);
+  }
+
+  @Override
+  public LispObject getDirectDefaultInitargs()
+  {
+    return getInstanceSlotValue(symDirectDefaultInitargs);
+  }
+
+  @Override
+  public void setDirectDefaultInitargs(LispObject directDefaultInitargs)
+  {
+    setInstanceSlotValue(symDirectDefaultInitargs, directDefaultInitargs);
+  }
+
+  @Override
+  public LispObject getDefaultInitargs()
+  {
+    return getInstanceSlotValue(symDefaultInitargs);
+  }
+
+  @Override
+  public void setDefaultInitargs(LispObject defaultInitargs)
+  {
+    setInstanceSlotValue(symDefaultInitargs, defaultInitargs);
   }
 
 
