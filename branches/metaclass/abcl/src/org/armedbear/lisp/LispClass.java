@@ -227,12 +227,12 @@ public abstract class LispClass extends StandardObject
     this.directSubclasses = directSubclasses;
   }
 
-  public final LispObject getCPL()
+  public LispObject getCPL()
   {
     return classPrecedenceList;
   }
 
-  public final void setCPL(LispObject... cpl)
+  public void setCPL(LispObject... cpl)
   {
     LispObject obj1 = cpl[0];
     if (obj1 instanceof Cons && cpl.length == 1)

@@ -44,7 +44,8 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
   private static Symbol symDirectSubclasses
     = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
-
+  private static Symbol symClassPrecedenceList
+    = PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -52,7 +53,7 @@ public class StandardClass extends SlotClass
                       symLayout,
                       symDirectSuperclasses,
                       symDirectSubclasses,
-                      PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST"),
+                      symClassPrecedenceList,
                       PACKAGE_MOP.intern("DIRECT-METHODS"),
                       PACKAGE_MOP.intern("DOCUMENTATION"),
                       PACKAGE_MOP.intern("DIRECT-SLOTS"),
@@ -73,6 +74,10 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass);
       setDirectSuperclasses(NIL);
       setDirectSubclasses(NIL);
+
+      // because of the assert below, we need to set the slot directly
+      // and can't use setCPL()
+      setInstanceSlotValue(symClassPrecedenceList, NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -80,6 +85,10 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass,
             symbol, directSuperclasses);
       setDirectSubclasses(NIL);
+
+      // because of the assert below, we need to set the slot directly
+      // and can't use setCPL()
+      setInstanceSlotValue(symClassPrecedenceList, NIL);
   }
 
   @Override
@@ -129,6 +138,28 @@ public class StandardClass extends SlotClass
   public void setDirectSubclasses(LispObject directSubclasses)
   {
     setInstanceSlotValue(symDirectSubclasses, directSubclasses);
+  }
+
+  @Override
+  public LispObject getCPL()
+  {
+    return getInstanceSlotValue(symClassPrecedenceList);
+  }
+
+  @Override
+  public void setCPL(LispObject... cpl)
+  {
+    LispObject obj1 = cpl[0];
+    if (obj1 instanceof Cons && cpl.length == 1)
+      setInstanceSlotValue(symClassPrecedenceList, obj1);
+    else
+      {
+        Debug.assertTrue(obj1 == this);
+        LispObject l = NIL;
+        for (int i = cpl.length; i-- > 0;)
+            l = new Cons(cpl[i], l);
+        setInstanceSlotValue(symClassPrecedenceList, l);
+      }
   }
 
 
