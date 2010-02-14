@@ -136,7 +136,7 @@ public abstract class LispClass extends StandardObject
     result = result.push(new Cons("DIRECT-SUPERCLASSES",
                                   getDirectSuperclasses()));
     result = result.push(new Cons("DIRECT-SUBCLASSES", getDirectSubclasses()));
-    result = result.push(new Cons("CLASS-PRECEDENCE-LIST", classPrecedenceList));
+    result = result.push(new Cons("CLASS-PRECEDENCE-LIST", getCPL()));
     result = result.push(new Cons("DIRECT-METHODS", directMethods));
     result = result.push(new Cons("DOCUMENTATION", documentation));
     return result.nreverse();
@@ -291,7 +291,7 @@ public abstract class LispClass extends StandardObject
 
   public boolean subclassp(LispObject obj)
   {
-    LispObject cpl = classPrecedenceList;
+    LispObject cpl = getCPL();
     while (cpl != NIL)
       {
         if (cpl.car() == obj)
