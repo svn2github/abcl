@@ -46,6 +46,10 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
   private static Symbol symClassPrecedenceList
     = PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST");
+  private static Symbol symDirectMethods
+    = PACKAGE_MOP.intern("DIRECT-METHODS");
+  private static Symbol symDocumentation
+    = PACKAGE_MOP.intern("DOCUMENTATION");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -54,8 +58,8 @@ public class StandardClass extends SlotClass
                       symDirectSuperclasses,
                       symDirectSubclasses,
                       symClassPrecedenceList,
-                      PACKAGE_MOP.intern("DIRECT-METHODS"),
-                      PACKAGE_MOP.intern("DOCUMENTATION"),
+                      symDirectMethods,
+                      symDocumentation,
                       PACKAGE_MOP.intern("DIRECT-SLOTS"),
                       PACKAGE_MOP.intern("SLOTS"),
                       PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS"),
@@ -75,6 +79,8 @@ public class StandardClass extends SlotClass
       setDirectSuperclasses(NIL);
       setDirectSubclasses(NIL);
       setCPL(NIL);
+      setDirectMethods(NIL);
+      setDocumentation(NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -83,6 +89,8 @@ public class StandardClass extends SlotClass
             symbol, directSuperclasses);
       setDirectSubclasses(NIL);
       setCPL(NIL);
+      setDirectMethods(NIL);
+      setDocumentation(NIL);
   }
 
   @Override
@@ -154,6 +162,30 @@ public class StandardClass extends SlotClass
             l = new Cons(cpl[i], l);
         setInstanceSlotValue(symClassPrecedenceList, l);
       }
+  }
+
+  @Override
+  public LispObject getDirectMethods()
+  {
+    return getInstanceSlotValue(symDirectMethods);
+  }
+
+  @Override
+  public void setDirectMethods(LispObject methods)
+  {
+    setInstanceSlotValue(symDirectMethods, methods);
+  }
+
+  @Override
+  public LispObject getDocumentation()
+  {
+    return getInstanceSlotValue(symDocumentation);
+  }
+
+  @Override
+  public void setDocumentation(LispObject doc)
+  {
+    setInstanceSlotValue(symDocumentation, doc);
   }
 
 

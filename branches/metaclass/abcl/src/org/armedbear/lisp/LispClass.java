@@ -137,8 +137,8 @@ public abstract class LispClass extends StandardObject
                                   getDirectSuperclasses()));
     result = result.push(new Cons("DIRECT-SUBCLASSES", getDirectSubclasses()));
     result = result.push(new Cons("CLASS-PRECEDENCE-LIST", getCPL()));
-    result = result.push(new Cons("DIRECT-METHODS", directMethods));
-    result = result.push(new Cons("DOCUMENTATION", documentation));
+    result = result.push(new Cons("DIRECT-METHODS", getDirectMethods()));
+    result = result.push(new Cons("DOCUMENTATION", getDocumentation()));
     return result.nreverse();
   }
 
