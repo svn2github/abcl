@@ -90,7 +90,7 @@ public class SlotClass extends LispClass
         this.directSlotDefinitions = directSlotDefinitions;
     }
 
-    public final LispObject getSlotDefinitions()
+    public LispObject getSlotDefinitions()
     {
         return slotDefinitions;
     }

@@ -50,6 +50,10 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-METHODS");
   private static Symbol symDocumentation
     = PACKAGE_MOP.intern("DOCUMENTATION");
+  private static Symbol symDirectSlots
+    = PACKAGE_MOP.intern("DIRECT-SLOTS");
+  private static Symbol symSlots
+    = PACKAGE_MOP.intern("SLOTS");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -60,8 +64,8 @@ public class StandardClass extends SlotClass
                       symClassPrecedenceList,
                       symDirectMethods,
                       symDocumentation,
-                      PACKAGE_MOP.intern("DIRECT-SLOTS"),
-                      PACKAGE_MOP.intern("SLOTS"),
+                      symDirectSlots,
+                      symSlots,
                       PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS"),
                       PACKAGE_MOP.intern("DEFAULT-INITARGS")),
                  NIL)
@@ -81,6 +85,8 @@ public class StandardClass extends SlotClass
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
+      setDirectSlotDefinitions(NIL);
+      setSlotDefinitions(NIL);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -91,6 +97,8 @@ public class StandardClass extends SlotClass
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
+      setDirectSlotDefinitions(NIL);
+      setSlotDefinitions(NIL);
   }
 
   @Override
@@ -186,6 +194,30 @@ public class StandardClass extends SlotClass
   public void setDocumentation(LispObject doc)
   {
     setInstanceSlotValue(symDocumentation, doc);
+  }
+
+  @Override
+  public LispObject getDirectSlotDefinitions()
+  {
+    return getInstanceSlotValue(symDirectSlots);
+  }
+
+  @Override
+  public void setDirectSlotDefinitions(LispObject directSlotDefinitions)
+  {
+    setInstanceSlotValue(symDirectSlots, directSlotDefinitions);
+  }
+
+  @Override
+  public LispObject getSlotDefinitions()
+  {
+    return getInstanceSlotValue(symSlots);
+  }
+
+  @Override
+  public void setSlotDefinitions(LispObject slotDefinitions)
+  {
+     setInstanceSlotValue(symSlots, slotDefinitions);
   }
 
 
