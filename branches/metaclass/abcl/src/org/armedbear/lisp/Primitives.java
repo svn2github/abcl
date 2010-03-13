@@ -5603,7 +5603,7 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return arg instanceof LispClass ? T : NIL;
+            return (arg instanceof LispClass) ? T : arg.typep(Symbol.CLASS);
         }
     };
 
