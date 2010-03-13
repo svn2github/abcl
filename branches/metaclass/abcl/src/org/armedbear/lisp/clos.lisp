@@ -288,6 +288,12 @@
 
 ;;; finalize-inheritance
 
+(defun std-compute-class-default-initargs (class)
+  (mapcan #'(lambda (c)
+              (copy-list
+               (class-direct-default-initargs c)))
+          (class-precedence-list class)))
+
 (defun std-finalize-inheritance (class)
   (setf (class-precedence-list class)
    (funcall (if (eq (class-of class) (find-class 'standard-class))
@@ -331,7 +337,8 @@
                 (setf (cdr location) (funcall initfunction))))))))
     (setf (class-layout class)
           (make-layout class (nreverse instance-slots) (nreverse shared-slots))))
-  (setf (class-default-initargs class) (compute-class-default-initargs class))
+  (setf (class-default-initargs class)
+        (std-compute-class-default-initargs class))
   (setf (class-finalized-p class) t))
 
 ;;; Class precedence lists

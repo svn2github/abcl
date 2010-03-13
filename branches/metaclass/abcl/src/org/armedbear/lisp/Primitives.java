@@ -5316,7 +5316,10 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).getName();
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).getName();
+
+            return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symName);
         }
     };
 
@@ -5331,7 +5334,11 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(second).setName(checkSymbol(first));
+            if (second instanceof LispClass)
+                ((LispClass)second).setName(checkSymbol(first));
+            else
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symName,
+                                                           checkSymbol(first));
             return first;
         }
     };
@@ -5345,7 +5352,12 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            Layout layout = checkClass(arg).getClassLayout();
+            Layout layout;
+            if (arg instanceof LispClass)
+              layout = ((LispClass)arg).getClassLayout();
+            else
+              layout = (Layout)((StandardObject)arg).getInstanceSlotValue(StandardClass.symLayout);
+
             return layout != null ? layout : NIL;
         }
     };
@@ -5362,7 +5374,10 @@ for (LispObject a : args)
 
         {
             if (first == NIL || first instanceof Layout) {
-                checkClass(second).setClassLayout(first);
+                if (second instanceof LispClass)
+                  ((LispClass)second).setClassLayout(first);
+                else
+                  ((StandardObject)second).setInstanceSlotValue(StandardClass.symLayout, first);
                 return first;
             }
             return type_error(first, Symbol.LAYOUT);
@@ -5378,7 +5393,10 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).getDirectSuperclasses();
+            if (arg instanceof LispClass)
+              return ((LispClass)arg).getDirectSuperclasses();
+            else
+              return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symDirectSuperclasses);
         }
     };
 
@@ -5391,9 +5409,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(second).setDirectSuperclasses(first);
+            if (second instanceof LispClass)
+              ((LispClass)second).setDirectSuperclasses(first);
+            else
+              ((StandardObject)second).setInstanceSlotValue(StandardClass.symDirectSuperclasses, first);
             return first;
         }
     };
@@ -5407,7 +5427,10 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).getDirectSubclasses();
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).getDirectSubclasses();
+            else
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symDirectSubclasses);
         }
     };
 
@@ -5421,9 +5444,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(second).setDirectSubclasses(first);
+            if (second instanceof LispClass)
+                ((LispClass)second).setDirectSubclasses(first);
+            else
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symDirectSubclasses, first);
             return first;
         }
     };
@@ -5437,7 +5462,10 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).getCPL();
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).getCPL();
+            else
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symClassPrecedenceList);
         }
     };
 
@@ -5450,9 +5478,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(second).setCPL(first);
+            if (second instanceof LispClass)
+                ((LispClass)second).setCPL(first);
+            else
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symClassPrecedenceList, first);
             return first;
         }
     };
@@ -5466,9 +5496,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg)
-
         {
-            return checkClass(arg).getDirectMethods();
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).getDirectMethods();
+            else
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symDirectMethods);
         }
     };
 
@@ -5481,9 +5513,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(second).setDirectMethods(first);
+            if (second instanceof LispClass)
+                ((LispClass)second).setDirectMethods(first);
+            else
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symDirectMethods, first);
             return first;
         }
     };
@@ -5500,7 +5534,10 @@ for (LispObject a : args)
         public LispObject execute(LispObject arg)
 
         {
-            return checkClass(arg).getDocumentation();
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).getDocumentation();
+            else
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symDocumentation);
         }
     };
 
@@ -5514,9 +5551,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(first).setDocumentation(second);
+            if (first instanceof LispClass)
+                ((LispClass)first).setDocumentation(second);
+            else
+                ((StandardObject)first).setInstanceSlotValue(StandardClass.symDocumentation, second);
             return second;
         }
     };
@@ -5530,7 +5569,10 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject arg) {
-            return checkClass(arg).isFinalized() ? T : NIL;
+            if (arg instanceof LispClass)
+                return ((LispClass)arg).isFinalized() ? T : NIL;
+            else
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symFinalizedP);
         }
     };
 
@@ -5543,9 +5585,11 @@ for (LispObject a : args)
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
-
         {
-            checkClass(second).setFinalized(first != NIL);
+            if (second instanceof LispClass)
+                ((LispClass)second).setFinalized(first != NIL);
+            else
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symFinalizedP, first);
             return first;
         }
     };

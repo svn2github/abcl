@@ -38,27 +38,27 @@ import static org.armedbear.lisp.Lisp.*;
 public class StandardClass extends SlotClass
 {
 
-  private static Symbol symName = PACKAGE_MOP.intern("NAME");
-  private static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
-  private static Symbol symDirectSuperclasses
+  public static Symbol symName = PACKAGE_MOP.intern("NAME");
+  public static Symbol symLayout = PACKAGE_MOP.intern("LAYOUT");
+  public static Symbol symDirectSuperclasses
     = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
-  private static Symbol symDirectSubclasses
+  public static Symbol symDirectSubclasses
     = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
-  private static Symbol symClassPrecedenceList
+  public static Symbol symClassPrecedenceList
     = PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST");
-  private static Symbol symDirectMethods
+  public static Symbol symDirectMethods
     = PACKAGE_MOP.intern("DIRECT-METHODS");
-  private static Symbol symDocumentation
+  public static Symbol symDocumentation
     = PACKAGE_MOP.intern("DOCUMENTATION");
-  private static Symbol symDirectSlots
+  public static Symbol symDirectSlots
     = PACKAGE_MOP.intern("DIRECT-SLOTS");
-  private static Symbol symSlots
+  public static Symbol symSlots
     = PACKAGE_MOP.intern("SLOTS");
-  private static Symbol symDirectDefaultInitargs
+  public static Symbol symDirectDefaultInitargs
     = PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS");
-  private static Symbol symDefaultInitargs
+  public static Symbol symDefaultInitargs
     = PACKAGE_MOP.intern("DEFAULT-INITARGS");
-  private static Symbol symFinalizedP
+  public static Symbol symFinalizedP
     = PACKAGE_MOP.intern("FINALIZED-P");
 
   static Layout layoutStandardClass =

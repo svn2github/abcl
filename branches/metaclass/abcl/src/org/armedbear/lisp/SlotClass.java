@@ -308,22 +308,4 @@ public class SlotClass extends LispClass
         }
     };
 
-    // ### compute-class-default-initargs
-    private static final Primitive COMPUTE_CLASS_DEFAULT_INITARGS =
-        new Primitive("compute-class-default-initargs", PACKAGE_SYS, true)
-    {
-        @Override
-        public LispObject execute(LispObject arg)
-
-        {
-            final SlotClass c;
-            if (arg instanceof SlotClass) {
-                c = (SlotClass) arg;
-            }
-            else {
-                return type_error(arg, Symbol.STANDARD_CLASS);
-            }
-            return c.computeDefaultInitargs();
-        }
-    };
 }
