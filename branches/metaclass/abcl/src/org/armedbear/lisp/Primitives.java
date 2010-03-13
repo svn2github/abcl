@@ -5331,16 +5331,16 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setName(checkSymbol(second));
-            return second;
+            checkClass(second).setName(checkSymbol(first));
+            return first;
         }
     };
 
     // ### class-layout
-    private static final Primitive CLASS_LAYOUT = new pf_class_layout();
-    private static final class pf_class_layout extends Primitive {
-        pf_class_layout() {
-            super("class-layout", PACKAGE_SYS, true, "class");
+    private static final Primitive CLASS_LAYOUT = new pf__class_layout();
+    private static final class pf__class_layout extends Primitive {
+        pf__class_layout() {
+            super("%class-layout", PACKAGE_SYS, true, "class");
         }
 
         @Override
@@ -5361,19 +5361,19 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            if (second instanceof Layout) {
-                checkClass(first).setClassLayout((Layout)second);
-                return second;
+            if (first == NIL || first instanceof Layout) {
+                checkClass(second).setClassLayout(first);
+                return first;
             }
-            return type_error(second, Symbol.LAYOUT);
+            return type_error(first, Symbol.LAYOUT);
         }
     };
 
-    // ### class-direct-superclasses
-    private static final Primitive CLASS_DIRECT_SUPERCLASSES = new pf_class_direct_superclasses();
-    private static final class pf_class_direct_superclasses extends Primitive {
-        pf_class_direct_superclasses() {
-            super("class-direct-superclasses", PACKAGE_SYS, true);
+    // ### %class-direct-superclasses
+    private static final Primitive _CLASS_DIRECT_SUPERCLASSES = new pf__class_direct_superclasses();
+    private static final class pf__class_direct_superclasses extends Primitive {
+        pf__class_direct_superclasses() {
+            super("%class-direct-superclasses", PACKAGE_SYS, true);
         }
 
         @Override
@@ -5393,16 +5393,16 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setDirectSuperclasses(second);
-            return second;
+            checkClass(second).setDirectSuperclasses(first);
+            return first;
         }
     };
 
-    // ### class-direct-subclasses
-    private static final Primitive CLASS_DIRECT_SUBCLASSES = new pf_class_direct_subclasses();
-    private static final class pf_class_direct_subclasses extends Primitive {
-        pf_class_direct_subclasses() {
-            super("class-direct-subclasses", PACKAGE_SYS, true);
+    // ### %class-direct-subclasses
+    private static final Primitive _CLASS_DIRECT_SUBCLASSES = new pf__class_direct_subclasses();
+    private static final class pf__class_direct_subclasses extends Primitive {
+        pf__class_direct_subclasses() {
+            super("%class-direct-subclasses", PACKAGE_SYS, true);
         }
 
         @Override
@@ -5423,8 +5423,8 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setDirectSubclasses(second);
-            return second;
+            checkClass(second).setDirectSubclasses(first);
+            return first;
         }
     };
 
@@ -5441,27 +5441,27 @@ for (LispObject a : args)
         }
     };
 
-    // ### set-class-precedence-list
-    private static final Primitive SET_CLASS_PRECEDENCE_LIST = new pf_set_class_precedence_list();
-    private static final class pf_set_class_precedence_list extends Primitive {
-        pf_set_class_precedence_list() {
-            super("set-class-precedence-list", PACKAGE_SYS, true);
+    // ### %set-class-precedence-list
+    private static final Primitive _SET_CLASS_PRECEDENCE_LIST = new pf__set_class_precedence_list();
+    private static final class pf__set_class_precedence_list extends Primitive {
+        pf__set_class_precedence_list() {
+            super("%set-class-precedence-list", PACKAGE_SYS, true);
         }
 
         @Override
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setCPL(second);
-            return second;
+            checkClass(second).setCPL(first);
+            return first;
         }
     };
 
-    // ### class-direct-methods
-    private static final Primitive CLASS_DIRECT_METHODS = new pf_class_direct_methods();
-    private static final class pf_class_direct_methods extends Primitive {
-        pf_class_direct_methods() {
-            super("class-direct-methods", PACKAGE_SYS, true);
+    // ### %class-direct-methods
+    private static final Primitive _CLASS_DIRECT_METHODS = new pf__class_direct_methods();
+    private static final class pf__class_direct_methods extends Primitive {
+        pf__class_direct_methods() {
+            super("%class-direct-methods", PACKAGE_SYS, true);
         }
 
         @Override
@@ -5483,8 +5483,8 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setDirectMethods(second);
-            return second;
+            checkClass(second).setDirectMethods(first);
+            return first;
         }
     };
 
@@ -5521,11 +5521,11 @@ for (LispObject a : args)
         }
     };
 
-    // ### class-finalized-p
-    private static final Primitive CLASS_FINALIZED_P = new pf_class_finalized_p();
-    private static final class pf_class_finalized_p extends Primitive {
-        pf_class_finalized_p() {
-            super("class-finalized-p", PACKAGE_SYS, true);
+    // ### %class-finalized-p
+    private static final Primitive _CLASS_FINALIZED_P = new pf__class_finalized_p();
+    private static final class pf__class_finalized_p extends Primitive {
+        pf__class_finalized_p() {
+            super("%class-finalized-p", PACKAGE_SYS, true);
         }
 
         @Override
@@ -5545,8 +5545,8 @@ for (LispObject a : args)
         public LispObject execute(LispObject first, LispObject second)
 
         {
-            checkClass(first).setFinalized(second != NIL);
-            return second;
+            checkClass(second).setFinalized(first != NIL);
+            return first;
         }
     };
 

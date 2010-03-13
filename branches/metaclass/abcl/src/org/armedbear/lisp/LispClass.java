@@ -179,9 +179,9 @@ public abstract class LispClass extends StandardObject
     return classLayout;
   }
 
-  public void setClassLayout(Layout layout)
+  public void setClassLayout(LispObject layout)
   {
-    classLayout = layout;
+    classLayout = layout == NIL ? null : (Layout)layout;
   }
 
   public final int getLayoutLength()
@@ -201,12 +201,12 @@ public abstract class LispClass extends StandardObject
     this.directSuperclasses = directSuperclasses;
   }
 
-  public final boolean isFinalized()
+  public boolean isFinalized()
   {
     return finalized;
   }
 
-  public final void setFinalized(boolean b)
+  public void setFinalized(boolean b)
   {
     finalized = b;
   }

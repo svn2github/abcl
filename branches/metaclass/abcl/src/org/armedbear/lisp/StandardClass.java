@@ -58,6 +58,8 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-DEFAULT-INITARGS");
   private static Symbol symDefaultInitargs
     = PACKAGE_MOP.intern("DEFAULT-INITARGS");
+  private static Symbol symFinalizedP
+    = PACKAGE_MOP.intern("FINALIZED-P");
 
   static Layout layoutStandardClass =
       new Layout(null,
@@ -71,7 +73,8 @@ public class StandardClass extends SlotClass
                       symDirectSlots,
                       symSlots,
                       symDirectDefaultInitargs,
-                      symDefaultInitargs),
+                      symDefaultInitargs,
+                      symFinalizedP),
                  NIL)
       {
         @Override
@@ -86,6 +89,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass);
       setDirectSuperclasses(NIL);
       setDirectSubclasses(NIL);
+      setClassLayout(layoutStandardClass);
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
@@ -93,6 +97,7 @@ public class StandardClass extends SlotClass
       setSlotDefinitions(NIL);
       setDirectDefaultInitargs(NIL);
       setDefaultInitargs(NIL);
+      setFinalized(false);
   }
 
   public StandardClass(Symbol symbol, LispObject directSuperclasses)
@@ -100,6 +105,7 @@ public class StandardClass extends SlotClass
       super(layoutStandardClass,
             symbol, directSuperclasses);
       setDirectSubclasses(NIL);
+      setClassLayout(layoutStandardClass);
       setCPL(NIL);
       setDirectMethods(NIL);
       setDocumentation(NIL);
@@ -107,6 +113,7 @@ public class StandardClass extends SlotClass
       setSlotDefinitions(NIL);
       setDirectDefaultInitargs(NIL);
       setDefaultInitargs(NIL);
+      setFinalized(false);
   }
 
   @Override
@@ -129,7 +136,7 @@ public class StandardClass extends SlotClass
   }
 
   @Override
-  public void setClassLayout(Layout newLayout)
+  public void setClassLayout(LispObject newLayout)
   {
     setInstanceSlotValue(symLayout, newLayout);
   }
@@ -144,6 +151,18 @@ public class StandardClass extends SlotClass
   public void setDirectSuperclasses(LispObject directSuperclasses)
   {
     setInstanceSlotValue(symDirectSuperclasses, directSuperclasses);
+  }
+
+  @Override
+  public final boolean isFinalized()
+  {
+    return getInstanceSlotValue(symFinalizedP) != NIL;
+  }
+
+  @Override
+  public final void setFinalized(boolean b)
+  {
+    setInstanceSlotValue(symFinalizedP, b ? T : NIL);
   }
 
   @Override
@@ -322,6 +341,20 @@ public class StandardClass extends SlotClass
 
     STANDARD_CLASS.setClassLayout(layoutStandardClass);
     STANDARD_CLASS.setDirectSlotDefinitions(STANDARD_CLASS.getClassLayout().generateSlotDefinitions());
+    LispObject slots = STANDARD_CLASS.getDirectSlotDefinitions();
+    while (slots != NIL) {
+      SlotDefinition slot = (SlotDefinition)slots.car();
+      if (slot.getName() == symLayout)
+          SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(slot,
+                                                                  new Function() {
+@Override
+    public LispObject execute() {
+    return NIL;
+}
+                                                                  });
+      slots = slots.cdr();
+    }
+    
   }
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
@@ -616,6 +649,7 @@ public class StandardClass extends SlotClass
     WARNING.setCPL(WARNING, CONDITION, STANDARD_OBJECT, BuiltInClass.CLASS_T);
 
     // Condition classes.
+    STANDARD_CLASS.finalizeClass();
     ARITHMETIC_ERROR.finalizeClass();
     CELL_ERROR.finalizeClass();
     COMPILER_ERROR.finalizeClass();

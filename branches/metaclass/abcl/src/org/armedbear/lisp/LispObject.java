@@ -668,6 +668,16 @@ public class LispObject //extends Lisp
     return type_error(this, Symbol.SYMBOL);
   }
 
+  public LispObject getSymbolSetfFunction()
+  {
+    return type_error(this, Symbol.SYMBOL);
+  }
+
+  public LispObject getSymbolSetfFunctionOrDie()
+  {
+    return type_error(this, Symbol.SYMBOL);
+  }
+
   public String writeToString()
   {
     return toString();
