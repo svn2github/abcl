@@ -69,7 +69,21 @@ public final class SlotDefinition extends StandardObject
     slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
     slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
   }
-  
+
+  public SlotDefinition(LispObject name, LispObject readers,
+                        Function initFunction)
+  {
+    this();
+    Debug.assertTrue(name instanceof Symbol);
+    slots[SlotDefinitionClass.SLOT_INDEX_NAME] = name;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFUNCTION] = initFunction;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITFORM] = NIL;
+    slots[SlotDefinitionClass.SLOT_INDEX_INITARGS] =
+      new Cons(PACKAGE_KEYWORD.intern(((Symbol)name).getName()));
+    slots[SlotDefinitionClass.SLOT_INDEX_READERS] = readers;
+    slots[SlotDefinitionClass.SLOT_INDEX_ALLOCATION] = Keyword.INSTANCE;
+  }
+
   public static SlotDefinition checkSlotDefinition(LispObject obj) {
           if (obj instanceof SlotDefinition) return (SlotDefinition)obj;
       return (SlotDefinition)type_error(obj, Symbol.SLOT_DEFINITION);     

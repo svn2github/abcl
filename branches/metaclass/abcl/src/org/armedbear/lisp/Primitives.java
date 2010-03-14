@@ -5465,7 +5465,7 @@ for (LispObject a : args)
             if (arg instanceof LispClass)
                 return ((LispClass)arg).getCPL();
             else
-                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symClassPrecedenceList);
+                return ((StandardObject)arg).getInstanceSlotValue(StandardClass.symPrecedenceList);
         }
     };
 
@@ -5482,7 +5482,7 @@ for (LispObject a : args)
             if (second instanceof LispClass)
                 ((LispClass)second).setCPL(first);
             else
-                ((StandardObject)second).setInstanceSlotValue(StandardClass.symClassPrecedenceList, first);
+                ((StandardObject)second).setInstanceSlotValue(StandardClass.symPrecedenceList, first);
             return first;
         }
     };

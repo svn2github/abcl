@@ -44,8 +44,8 @@ public class StandardClass extends SlotClass
     = PACKAGE_MOP.intern("DIRECT-SUPERCLASSES");
   public static Symbol symDirectSubclasses
     = PACKAGE_MOP.intern("DIRECT-SUBCLASSES");
-  public static Symbol symClassPrecedenceList
-    = PACKAGE_MOP.intern("CLASS-PRECEDENCE-LIST");
+  public static Symbol symPrecedenceList
+    = PACKAGE_MOP.intern("PRECEDENCE-LIST");
   public static Symbol symDirectMethods
     = PACKAGE_MOP.intern("DIRECT-METHODS");
   public static Symbol symDocumentation
@@ -67,7 +67,7 @@ public class StandardClass extends SlotClass
                       symLayout,
                       symDirectSuperclasses,
                       symDirectSubclasses,
-                      symClassPrecedenceList,
+                      symPrecedenceList,
                       symDirectMethods,
                       symDocumentation,
                       symDirectSlots,
@@ -180,7 +180,7 @@ public class StandardClass extends SlotClass
   @Override
   public LispObject getCPL()
   {
-    return getInstanceSlotValue(symClassPrecedenceList);
+    return getInstanceSlotValue(symPrecedenceList);
   }
 
   @Override
@@ -188,14 +188,14 @@ public class StandardClass extends SlotClass
   {
     LispObject obj1 = cpl[0];
     if (obj1.listp() && cpl.length == 1)
-      setInstanceSlotValue(symClassPrecedenceList, obj1);
+      setInstanceSlotValue(symPrecedenceList, obj1);
     else
       {
         Debug.assertTrue(obj1 == this);
         LispObject l = NIL;
         for (int i = cpl.length; i-- > 0;)
             l = new Cons(cpl[i], l);
-        setInstanceSlotValue(symClassPrecedenceList, l);
+        setInstanceSlotValue(symPrecedenceList, l);
       }
   }
 
@@ -316,6 +316,42 @@ public class StandardClass extends SlotClass
     return unreadableString(sb.toString());
   }
 
+  private static final LispObject standardClassSlotDefinitions()
+  {
+      // (CONSTANTLY NIL)
+    Function initFunction = new Function() {
+      @Override
+      public LispObject execute()
+      {
+         return NIL;
+      }
+    };
+
+    return
+        list(helperMakeSlotDefinition("NAME", initFunction),
+             helperMakeSlotDefinition("LAYOUT", initFunction),
+             helperMakeSlotDefinition("DIRECT-SUPERCLASSES", initFunction),
+             helperMakeSlotDefinition("DIRECT-SUBCLASSES", initFunction),
+             helperMakeSlotDefinition("PRECEDENCE-LIST", initFunction),
+             helperMakeSlotDefinition("DIRECT-METHODS", initFunction),
+             helperMakeSlotDefinition("DIRECT-SLOTS", initFunction),
+             helperMakeSlotDefinition("SLOTS", initFunction),
+             helperMakeSlotDefinition("DIRECT-DEFAULT-INITARGS", initFunction),
+             helperMakeSlotDefinition("DEFAULT-INITARGS", initFunction),
+             helperMakeSlotDefinition("FINALIZED-P", initFunction));
+  }
+
+
+
+  private static final SlotDefinition helperMakeSlotDefinition(String name,
+                                                               Function init)
+  {
+    return
+        new SlotDefinition(PACKAGE_MOP.intern(name),   // name
+             list(PACKAGE_MOP.intern("CLASS-" + name)), // readers
+             init);
+  }
+
   private static final StandardClass addStandardClass(Symbol name,
                                                       LispObject directSuperclasses)
   {
@@ -340,21 +376,7 @@ public class StandardClass extends SlotClass
     addClass(Symbol.SLOT_DEFINITION, SLOT_DEFINITION);
 
     STANDARD_CLASS.setClassLayout(layoutStandardClass);
-    STANDARD_CLASS.setDirectSlotDefinitions(STANDARD_CLASS.getClassLayout().generateSlotDefinitions());
-    LispObject slots = STANDARD_CLASS.getDirectSlotDefinitions();
-    while (slots != NIL) {
-      SlotDefinition slot = (SlotDefinition)slots.car();
-      if (slot.getName() == symLayout)
-          SlotDefinition.SET_SLOT_DEFINITION_INITFUNCTION.execute(slot,
-                                                                  new Function() {
-@Override
-    public LispObject execute() {
-    return NIL;
-}
-                                                                  });
-      slots = slots.cdr();
-    }
-    
+    STANDARD_CLASS.setDirectSlotDefinitions(standardClassSlotDefinitions());
   }
 
   // BuiltInClass.FUNCTION is also null here (see previous comment).
