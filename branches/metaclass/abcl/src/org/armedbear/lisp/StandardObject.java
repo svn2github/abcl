@@ -145,7 +145,7 @@ public class StandardObject extends LispObject
     if (name != NIL && name != UNBOUND_VALUE)
       {
         // TYPE-OF.9
-        final LispObject c2 = LispClass.findClass(checkSymbol(name));
+        final LispObject c2 = LispClass.findClass(name, false);
         if (c2 == c1)
           return name;
       }
