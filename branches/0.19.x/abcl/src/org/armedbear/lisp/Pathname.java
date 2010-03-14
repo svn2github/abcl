@@ -287,7 +287,7 @@ public class Pathname extends LispObject {
             } else {
                 device = d.device;
             }
-            s = s.substring(separatorIndex + jarSeparator.length());
+            s = "/" + s.substring(separatorIndex + jarSeparator.length());
             Pathname p = new Pathname(s);
             directory = p.directory;
             name = p.name;
@@ -523,7 +523,14 @@ public class Pathname extends LispObject {
         } else {
             Debug.assertTrue(false);
         }
-        sb.append(getDirectoryNamestring());
+        String directoryNamestring = getDirectoryNamestring();
+        if (isJar()) {
+            if (directoryNamestring.startsWith(File.separator)) {
+                sb.append(directoryNamestring.substring(1));
+            }
+        } else {
+            sb.append(directoryNamestring);
+        }
         if (name instanceof AbstractString) {
             String n = name.getStringValue();
             if (n.indexOf(File.separatorChar) >= 0) {
@@ -626,8 +633,8 @@ public class Pathname extends LispObject {
         p.name = name;
         p.type = type;
         String path = p.getNamestring();
+        StringBuilder result = new StringBuilder();
         if (Utilities.isPlatformWindows) {
-	    StringBuilder result = new StringBuilder();
 	    for (int i = 0; i < path.length(); i++) {
 		char c = path.charAt(i);
 		if (c == '\\') {
@@ -637,8 +644,16 @@ public class Pathname extends LispObject {
 		}
 	    }
 	    return result.toString();
+        } else  {
+            result.append(path);
         }
-        return path;
+        // Entries in jar files are always relative, but Pathname
+        // directories are :ABSOLUTE.
+        if (result.length() > 1
+          && result.substring(0, 1).equals("/")) {
+            return result.substring(1);
+        }
+        return result.toString();
     }
 
     @Override
@@ -1580,16 +1595,16 @@ public class Pathname extends LispObject {
             result.directory = mergeDirectories(p.directory, d.directory);
         }
 
-        // A JAR always has relative directories
-        if (result.isJar()
-            && result.directory instanceof Cons
-            && result.directory.car().equals(Keyword.ABSOLUTE)) {
-            if (result.directory.cdr().equals(NIL)) {
-                result.directory = NIL;
-            } else {
-                ((Cons)result.directory).car = Keyword.RELATIVE;
-            }
-        }
+        // A JAR always has absolute directories
+        // if (result.isJar()
+        //     && result.directory instanceof Cons
+        //     && result.directory.car().equals(Keyword.ABSOLUTE)) {
+        //     if (result.directory.cdr().equals(NIL)) {
+        //         result.directory = NIL;
+        //     } else {
+        //         ((Cons)result.directory).car = Keyword.RELATIVE;
+        //     }
+        // }
 
         if (pathname.name != NIL) {
             result.name = p.name;
@@ -1698,7 +1713,7 @@ public class Pathname extends LispObject {
         }
         if (pathname.isWild()) {
             return error(new FileError("Bad place for a wild pathname.",
-              pathname));
+                                       pathname));
         }
         if (!(pathname.device instanceof Cons)) {
             pathname
