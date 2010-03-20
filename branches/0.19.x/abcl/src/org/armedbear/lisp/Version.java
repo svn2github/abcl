@@ -41,7 +41,7 @@ public final class Version
 
   public static String getVersion()
   {
-    return "0.19.1-dev";
+    return "0.19.2-dev";
   }
   
   public static void main(String args[]) {
