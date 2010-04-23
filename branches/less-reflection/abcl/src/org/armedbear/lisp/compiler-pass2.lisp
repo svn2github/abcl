@@ -198,6 +198,8 @@
   (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
           n)))
 
+(defconstant +fasl-loader-class+
+  "org/armedbear/lisp/FaslClassLoader")
 (defconstant +java-string+ "Ljava/lang/String;")
 (defconstant +java-object+ "Ljava/lang/Object;")
 (defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
@@ -2174,12 +2176,22 @@ the Java object representing SYMBOL can be retrieved."
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
    (let* ((pathname (abcl-class-file-pathname (local-function-class-file local-function)))
+	  (class-name (concatenate 'string "org/armedbear/lisp/" (pathname-name pathname)))
 	  (*code* *static-code*))
      ;; fixme *declare-inline*
      (declare-field g +lisp-object+ +field-access-default+)
-     (emit 'ldc (pool-string (file-namestring pathname)))
-     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
-			(list +java-string+) +lisp-object+)
+     (emit 'new class-name)
+     (emit 'dup)
+     (emit-invokespecial-init class-name '())
+
+     ;(emit 'ldc (pool-string (pathname-name pathname)))
+     ;(emit-invokestatic +fasl-loader-class+ "faslLoadFunction"
+     ;(list +java-string+) +lisp-object+)
+
+;     (emit 'ldc (pool-string (file-namestring pathname)))
+     
+;     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
+;			(list +java-string+) +lisp-object+)
      (emit 'putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
@@ -2330,6 +2342,7 @@ the Java object representing SYMBOL can be retrieved."
             (java:java-object-p obj)))
   (let ((g (symbol-name (gensym "INSTANCE")))
         saved-code)
+    (sys::%format t "OBJ = ~A ~S~%" (type-of obj) obj)
     (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
            (*code* (if *declare-inline* *code* *static-code*)))
       ;; The readObjectFromString call may require evaluation of
@@ -5315,7 +5328,8 @@ given a specific common representation.")
                            (local-function-function local-function)))))
                (emit 'getstatic *this-class*
                      g +lisp-object+))))) ; Stack: template-function
-         ((member name *functions-defined-in-current-file* :test #'equal)
+         ((and (member name *functions-defined-in-current-file* :test #'equal)
+	       (not (notinline-p name)))
           (emit 'getstatic *this-class*
                 (declare-setf-function name) +lisp-object+)
           (emit-move-from-stack target))
@@ -7891,6 +7905,32 @@ We need more thought here.
       ;; delay resolving the method to run-time; it's unavailable now
       (compile-function-call form target representation))))
 
+#|(defknown p2-java-jcall (t t t) t)
+(define-inlined-function p2-java-jcall (form target representation)
+  ((and (> *speed* *safety*)
+	(< 1 (length form))
+	(eq 'jmethod (car (cadr form)))
+	(every #'stringp (cdr (cadr form)))))
+  (let ((m (ignore-errors (eval (cadr form)))))
+    (if m 
+	(let ((must-clear-values nil)
+	      (arg-types (raw-arg-types (jmethod-params m))))
+	  (declare (type boolean must-clear-values))
+	  (dolist (arg (cddr form))
+	    (compile-form arg 'stack nil)
+	    (unless must-clear-values
+	      (unless (single-valued-p arg)
+		(setf must-clear-values t))))
+	  (when must-clear-values
+	    (emit-clear-values))
+	  (dotimes (i (jarray-length raw-arg-types))
+	    (push (jarray-ref raw-arg-types i) arg-types))
+	  (emit-invokevirtual (jclass-name (jmethod-declaring-class m))
+			      (jmethod-name m)
+			      (nreverse arg-types)
+			      (jmethod-return-type m)))
+      ;; delay resolving the method to run-time; it's unavailable now
+      (compile-function-call form target representation))))|#
 
 (defknown p2-char= (t t t) t)
 (defun p2-char= (form target representation)
@@ -8861,6 +8901,7 @@ to derive a Java class name from."
   (install-p2-handler 'java:jclass         'p2-java-jclass)
   (install-p2-handler 'java:jconstructor   'p2-java-jconstructor)
   (install-p2-handler 'java:jmethod        'p2-java-jmethod)
+;  (install-p2-handler 'java:jcall          'p2-java-jcall)
   (install-p2-handler 'char=               'p2-char=)
   (install-p2-handler 'characterp          'p2-characterp)
   (install-p2-handler 'coerce-to-function  'p2-coerce-to-function)

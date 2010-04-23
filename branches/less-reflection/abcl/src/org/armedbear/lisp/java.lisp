@@ -336,16 +336,18 @@
     (if class
 	class
 	(%register-java-class
-	 jclass (mop::ensure-class (make-symbol (jclass-name jclass))
-				   :metaclass (find-class 'java-class)
-				   :direct-superclasses (if (jclass-superclass-p jclass (jclass "java.lang.Object"))
-							    (list (find-class 'java-object))
-							    (mapcar #'ensure-java-class
-								    (delete nil
-									    (concatenate 'list (list (jclass-superclass jclass))
-											 (jclass-interfaces jclass)))))
-				   :java-class jclass)))))
-	  
+	 jclass (mop::ensure-class
+		 (make-symbol (jclass-name jclass))
+		 :metaclass (find-class 'java-class)
+		 :direct-superclasses
+		 (if (jclass-superclass-p jclass (jclass "java.lang.Object"))
+		     (list (find-class 'java-object))
+		     (mapcar #'ensure-java-class
+			     (delete nil
+				     (concatenate 'list (list (jclass-superclass jclass))
+						  (jclass-interfaces jclass)))))
+		 :java-class jclass)))))
+
 (defmethod make-instance ((class java-class) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
   (error "make-instance not supported for ~S" class))

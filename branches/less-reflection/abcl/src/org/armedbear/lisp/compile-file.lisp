@@ -45,11 +45,20 @@
                                             *output-file-pathname*))
   "Computes the name of the class file associated with number `n'."
   (let ((name
-         (%format nil "~A-~D"
-                  (substitute #\_ #\.
-                              (pathname-name output-file-pathname)) n)))
+         (sanitize-class-name
+	  (%format nil "~A_~D" (pathname-name output-file-pathname) n))))
     (namestring (merge-pathnames (make-pathname :name name :type "cls")
                                  output-file-pathname))))
+
+(defun sanitize-class-name (name)
+  (dotimes (i (length name))
+      (declare (type fixnum i))
+      (when (or (char= (char name i) #\-)
+		(char= (char name i) #\.)
+		(char= (char name i) #\Space))
+        (setf (char name i) #\_)))
+  name)
+  
 
 (declaim (ftype (function () t) next-classfile-name))
 (defun next-classfile-name ()
@@ -69,12 +78,15 @@
 
 (declaim (ftype (function (t) t) verify-load))
 (defun verify-load (classfile)
-  (if (> *safety* 0) 
-    (and classfile
+  
+  #|(if (> *safety* 0) 
+      (and classfile
          (let ((*load-truename* *output-file-pathname*))
            (report-error
             (load-compiled-function classfile))))
-    t))
+    t)|#
+  (declare (ignore classfile))
+  t)
     
 (declaim (ftype (function (t) t) process-defconstant))
 (defun process-defconstant (form)
@@ -168,7 +180,9 @@
                            compiled-function)
                       (setf form
                             `(fset ',name
-                                   (proxy-preloaded-function ',name ,(file-namestring classfile))
+				   (sys::get-fasl-function *fasl-loader*
+					       ,(pathname-name classfile))
+;                                   (proxy-preloaded-function ',name ,(file-namestring classfile))
                                    ,*source-position*
                                    ',lambda-list
                                    ,doc))
@@ -241,14 +255,16 @@
                          (if (special-operator-p name)
                              `(put ',name 'macroexpand-macro
                                    (make-macro ',name
-                                               (proxy-preloaded-function
-                                                '(macro-function ,name)
-                                                ,(file-namestring classfile))))
+                                               ;(proxy-preloaded-function
+                                               ; '(macro-function ,name)
+                                               ; ,(file-namestring classfile))
+					       (sys::get-fasl-function *fasl-loader* ,(pathname-name classfile))))
                              `(fset ',name
                                     (make-macro ',name
-                                                (proxy-preloaded-function
-                                                 '(macro-function ,name)
-                                                 ,(file-namestring classfile)))
+                                                ;(proxy-preloaded-function
+                                                ; '(macro-function ,name)
+                                                ; ,(file-namestring classfile))
+						(sys::get-fasl-function *fasl-loader* ,(pathname-name classfile)))
                                     ,*source-position*
                                     ',(third form)))))))))
           (DEFTYPE
@@ -348,8 +364,9 @@
   ;; to load the compiled functions. Note that this trickery
   ;; was already used in verify-load before I used it,
   ;; however, binding *load-truename* isn't fully compliant, I think.
-  (let ((*load-truename* *output-file-pathname*))
-    (when compile-time-too
+  (when compile-time-too
+    (let ((*load-truename* *output-file-pathname*)
+	  (*fasl-loader* (make-fasl-class-loader)))
       (eval form))))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
@@ -379,7 +396,8 @@
 	    (declare (ignore result))
             (cond (compiled-function
                    (setf (getf tail key)
-                         `(load-compiled-function ,(file-namestring classfile))))
+			 `(sys::get-fasl-function *fasl-loader* ,(pathname-name classfile))))
+;;                         `(load-compiled-function ,(file-namestring classfile))))
                   (t
                    ;; FIXME This should be a warning or error of some sort...
                    (format *error-output* "; Unable to compile method~%")))))))))
@@ -425,7 +443,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (declare (ignore result))
     (setf form
           (if compiled-function
-              `(funcall (load-compiled-function ,(file-namestring classfile)))
+              `(funcall (sys::get-fasl-function *fasl-loader* ,(pathname-name classfile)));(load-compiled-function ,(file-namestring classfile)))
               (precompiler:precompile-form form nil *compile-file-environment*)))))
 
 
@@ -565,19 +583,38 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
             ;; write header
             (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
             (%stream-terpri out)
-            (let ((*package* (find-package '#:cl))
-                  (count-sym (gensym)))
+            (let ((*package* (find-package '#:cl)))
+                  ;(count-sym (gensym)))
               (write (list 'init-fasl :version *fasl-version*)
                      :stream out)
               (%stream-terpri out)
               (write (list 'setq '*source* *compile-file-truename*)
                      :stream out)
               (%stream-terpri out)
-              (dump-form `(dotimes (,count-sym ,*class-number*)
+
+	      ;;TODO FAKE TEST ONLY!!!
+	      (when (> *class-number* 0)
+		(write (list 'setq '*fasl-loader*
+			     '(sys::make-fasl-class-loader)) :stream out)
+		(%stream-terpri out))
+#|	      (dump-form
+	       `(dotimes (,count-sym ,*class-number*)
+		  (java:jcall "loadFunction" *fasl-loader*
+			      (%format nil "~A_~D"
+				       ,(sanitize-class-name
+					 (pathname-name output-file))
+				       (1+ ,count-sym))))
+	       out)|#
+
+	      ;;END TODO
+
+#|              (dump-form `(dotimes (,count-sym ,*class-number*)
                             (function-preload
-                             (%format nil "~A-~D.cls" 
-                                      ,(substitute #\_ #\. (pathname-name output-file))
-                                      (1+ ,count-sym)))) out)
+                             (%format nil "~A_~D.cls"
+                                      ,(sanitize-class-name
+					(pathname-name output-file))
+                                      (1+ ,count-sym))))
+			 out)|#
               (%stream-terpri out))
 
 

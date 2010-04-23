@@ -1298,7 +1298,7 @@ the args causes a Java exception handler to be installed, which
                      (format t ";   inlining call to local function ~S~%" op)))
                  (return-from p1-function-call
 		   (let ((*inline-declarations*
-			  (remove op *inline-declarations* :key #'car)))
+			  (remove op *inline-declarations* :key #'car :test #'equal)))
 		     (p1 expansion))))))
 
            ;; FIXME

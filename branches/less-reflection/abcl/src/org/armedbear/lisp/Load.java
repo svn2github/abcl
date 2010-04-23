@@ -278,7 +278,7 @@ public final class Load
             String path = pathname.asEntryPath();
             url = Lisp.class.getResource(path);
             if (url == null || url.toString().endsWith("/")) {
-                url = Lisp.class.getResource(path + ".abcl");
+                url = Lisp.class.getResource(path.replace('-', '_') + ".abcl");
                 if (url == null) {
                     url = Lisp.class.getResource(path + ".lisp");
                 }

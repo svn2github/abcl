@@ -67,6 +67,7 @@
                  (GENERIC-FUNCTION FUNCTION)
                  (HASH-TABLE)
                  (INTEGER RATIONAL)
+		 (JAVA-CLASS STANDARD-CLASS)
                  (KEYWORD SYMBOL)
                  (LIST SEQUENCE)
                  (LONG-FLOAT FLOAT)

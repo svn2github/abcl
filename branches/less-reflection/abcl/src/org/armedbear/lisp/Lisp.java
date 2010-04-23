@@ -2362,6 +2362,10 @@ public final class Lisp
   public static final Symbol _LOAD_STREAM_ =
     internSpecial("*LOAD-STREAM*", PACKAGE_SYS, NIL);
 
+    // ### *fasl-loader*
+    public static final Symbol _FASL_LOADER_ =
+	exportSpecial("*FASL-LOADER*", PACKAGE_SYS, NIL);
+
   // ### *source*
   // internal symbol
   public static final Symbol _SOURCE_ =

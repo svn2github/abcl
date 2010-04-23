@@ -32,12 +32,9 @@
 (in-package "SYSTEM")
 
 
-(export '(*inline-declarations*
-          process-optimization-declarations
+(export '(process-optimization-declarations
           inline-p notinline-p inline-expansion expand-inline
           *defined-functions* *undefined-functions* note-name-defined))
-
-(defvar *inline-declarations* nil)
 
 (declaim (ftype (function (t) t) process-optimization-declarations))
 (defun process-optimization-declarations (forms)
@@ -86,7 +83,7 @@
 (declaim (ftype (function (t) t) inline-p))
 (defun inline-p (name)
   (declare (optimize speed))
-  (let ((entry (assoc name *inline-declarations*)))
+  (let ((entry (assoc name *inline-declarations* :test #'equal)))
     (if entry
         (eq (cdr entry) 'INLINE)
         (and (symbolp name) (eq (get name '%inline) 'INLINE)))))
@@ -94,7 +91,7 @@
 (declaim (ftype (function (t) t) notinline-p))
 (defun notinline-p (name)
   (declare (optimize speed))
-  (let ((entry (assoc name *inline-declarations*)))
+  (let ((entry (assoc name *inline-declarations* :test #'equal)))
     (if entry
         (eq (cdr entry) 'NOTINLINE)
         (and (symbolp name) (eq (get name '%inline) 'NOTINLINE)))))
