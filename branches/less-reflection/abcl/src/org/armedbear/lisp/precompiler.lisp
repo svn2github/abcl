@@ -1021,7 +1021,9 @@
                   (TRULY-THE            precompile-truly-the)
 
                   (THREADS:SYNCHRONIZED-ON
-                                        precompile-threads-synchronized-on)))
+                                        precompile-threads-synchronized-on)
+		  
+		  (JVM::WITH-INLINE-CODE precompile-identity)))
     (install-handler (first pair) (second pair))))
 
 (install-handlers)

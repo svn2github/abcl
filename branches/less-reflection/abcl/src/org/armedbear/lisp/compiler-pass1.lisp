@@ -1432,7 +1432,8 @@ the args causes a Java exception handler to be installed, which
                   (TRULY-THE            p1-truly-the)
                   (UNWIND-PROTECT       p1-unwind-protect)
                   (THREADS:SYNCHRONIZED-ON
-                                        p1-threads-synchronized-on)))
+                                        p1-threads-synchronized-on)
+		  (JVM::WITH-INLINE-CODE identity)))
     (install-p1-handler (%car pair) (%cadr pair))))
 
 (initialize-p1-handlers)

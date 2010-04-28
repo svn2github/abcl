@@ -2739,4 +2739,16 @@ public final class Lisp
     Symbol.DEBUG_IO.initializeSpecial(new TwoWayStream(stdin, stdout, true));
   }
 
+  private static final SpecialOperator WITH_INLINE_CODE = new with_inline_code();
+  private static class with_inline_code extends SpecialOperator {
+    with_inline_code() {
+      super("with-inline-code", PACKAGE_JVM, true, "(&optional target repr) &body body");
+    }
+    @Override
+    public LispObject execute(LispObject args, Environment env)
+    {
+	return error(new SimpleError("This is a placeholder. It should only be called in compiled code, and tranformed by the compiler using special form handlers."));
+    }
+  }
+
 }

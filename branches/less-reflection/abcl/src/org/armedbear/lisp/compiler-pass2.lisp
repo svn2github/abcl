@@ -2179,7 +2179,7 @@ the Java object representing SYMBOL can be retrieved."
 	  (class-name (concatenate 'string "org/armedbear/lisp/" (pathname-name pathname)))
 	  (*code* *static-code*))
      ;; fixme *declare-inline*
-     (declare-field g +lisp-object+ +field-access-default+)
+     (declare-field g +lisp-object+ +field-access-private+)
      (emit 'new class-name)
      (emit 'dup)
      (emit-invokespecial-init class-name '())
@@ -8608,6 +8608,13 @@ We need more thought here.
     (push execute-method (abcl-class-file-methods class-file)))
   t)
 
+(defun p2-with-inline-code (form target representation)
+  ;;form = (with-inline-code (&optional target-var repr-var) ...body...)
+  (destructuring-bind (&optional target-var repr-var) (cadr form)
+    (eval `(let (,@(when target-var `((,target-var ,target)))
+		 ,@(when repr-var `((,repr-var ,representation))))
+	     ,@(cddr form)))))
+
 (defun compile-1 (compiland stream)
   (let ((*all-variables* nil)
         (*closure-variables* nil)
@@ -8986,6 +8993,7 @@ to derive a Java class name from."
   (install-p2-handler 'vector-push-extend  'p2-vector-push-extend)
   (install-p2-handler 'write-8-bits        'p2-write-8-bits)
   (install-p2-handler 'zerop               'p2-zerop)
+  (install-p2-handler 'with-inline-code    'p2-with-inline-code)
   t)
 
 (initialize-p2-handlers)
