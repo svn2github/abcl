@@ -97,7 +97,7 @@ public class Autoload extends Function
             symbol.setSymbolFunction(new Autoload(symbol, null,
                                                   "org.armedbear.lisp.".concat(className)));
     }
-
+    
     public void load()
     {
         if (className != null) {

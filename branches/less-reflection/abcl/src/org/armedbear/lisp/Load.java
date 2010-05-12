@@ -252,6 +252,7 @@ public final class Load
         }
     }
 
+    private static final Symbol FASL_LOADER = PACKAGE_SYS.intern("*FASL-LOADER*");
     static final LispObject COMPILE_FILE_INIT_FASL_TYPE = new SimpleString("_");
 
     public static final LispObject loadSystemFile(final String filename,
@@ -332,6 +333,7 @@ public final class Load
             final LispThread thread = LispThread.currentThread();
             final SpecialBindingsMark mark = thread.markSpecialBindings();
             thread.bindSpecial(_WARN_ON_REDEFINITION_, NIL);
+	    thread.bindSpecial(FASL_LOADER, NIL);
             try {
                 Stream stream = new Stream(Symbol.SYSTEM_STREAM, in, Symbol.CHARACTER);
                 return loadFileFromStream(pathname, truename, stream,
@@ -557,7 +559,7 @@ public final class Load
                                          thread, Stream.currentReadtable);
                 if (obj == EOF)
                     break;
-                result = eval(obj, env, thread);
+		result = eval(obj, env, thread);
                 if (print) {
                     Stream out =
                         checkCharacterOutputStream(Symbol.STANDARD_OUTPUT.symbolValue(thread));

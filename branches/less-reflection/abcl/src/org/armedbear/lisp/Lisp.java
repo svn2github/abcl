@@ -1243,6 +1243,7 @@ public final class Lisp
               url = Lisp.class.getResource(name.getNamestring());
               input = url.openStream();
           } catch (IOException e) {
+	      System.err.println("Failed to read class bytes from boot class " + url);
               error(new LispError("Failed to read class bytes from boot class " + url));
           }
       }

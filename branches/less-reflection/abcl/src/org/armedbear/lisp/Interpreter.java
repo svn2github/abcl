@@ -281,6 +281,8 @@ public final class Interpreter
                             sb.append(c.getCondition().writeToString());
                             sb.append(separator);
                             System.err.print(sb.toString());
+			    System.err.println("backtrace: ");
+			    evaluate("(princ (sys::backtrace))");
                             System.exit(2);
                         }
                         ++i;

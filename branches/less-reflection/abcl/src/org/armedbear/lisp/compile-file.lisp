@@ -40,6 +40,14 @@
 
 (defvar *output-file-pathname*)
 
+(defvar *function-packages* nil "An alist containing mappings (function-number . package). Every time an (IN-PACKAGE pkg) form is found at top-level, (*class-number* . pkg) is pushed onto this list.")
+
+(defun base-classname (&optional (output-file-pathname *output-file-pathname*))
+  (sanitize-class-name (pathname-name output-file-pathname)))
+
+(defun fasl-loader-classname (&optional (output-file-pathname *output-file-pathname*))
+  (%format nil "~A_0" (base-classname output-file-pathname)))
+
 (declaim (ftype (function (t) t) compute-classfile-name))
 (defun compute-classfile-name (n &optional (output-file-pathname
                                             *output-file-pathname*))
@@ -51,13 +59,14 @@
                                  output-file-pathname))))
 
 (defun sanitize-class-name (name)
-  (dotimes (i (length name))
+  (let ((name (copy-seq name)))
+    (dotimes (i (length name))
       (declare (type fixnum i))
       (when (or (char= (char name i) #\-)
 		(char= (char name i) #\.)
 		(char= (char name i) #\Space))
         (setf (char name i) #\_)))
-  name)
+    name))
   
 
 (declaim (ftype (function () t) next-classfile-name))
@@ -124,6 +133,8 @@
            (return-from process-toplevel-form))
           ((IN-PACKAGE DEFPACKAGE)
            (note-toplevel-form form)
+	   (if (eq operator 'in-package)
+	       (push (cons (1+ *class-number*) (cadr form)) *function-packages*))
            (setf form (precompiler:precompile-form form nil *compile-file-environment*))
            (eval form)
            ;; Force package prefix to be used when dumping form.
@@ -156,6 +167,7 @@
                    (parse-body body)
                  (let* ((expr `(lambda ,lambda-list
                                  ,@decls (block ,block-name ,@body)))
+			(saved-class-number *class-number*)
                         (classfile (next-classfile-name))
                         (internal-compiler-errors nil)
                         (result (with-open-file
@@ -181,7 +193,7 @@
                       (setf form
                             `(fset ',name
 				   (sys::get-fasl-function *fasl-loader*
-					       ,(pathname-name classfile))
+							   ,saved-class-number)
 ;                                   (proxy-preloaded-function ',name ,(file-namestring classfile))
                                    ,*source-position*
                                    ',lambda-list
@@ -239,6 +251,7 @@
            (let ((name (second form)))
              (eval form)
              (let* ((expr (function-lambda-expression (macro-function name)))
+		    (saved-class-number *class-number*)
                     (classfile (next-classfile-name)))
 	       (with-open-file
 		   (f classfile
@@ -258,13 +271,13 @@
                                                ;(proxy-preloaded-function
                                                ; '(macro-function ,name)
                                                ; ,(file-namestring classfile))
-					       (sys::get-fasl-function *fasl-loader* ,(pathname-name classfile))))
+					       (sys::get-fasl-function *fasl-loader* ,saved-class-number)))
                              `(fset ',name
                                     (make-macro ',name
                                                 ;(proxy-preloaded-function
                                                 ; '(macro-function ,name)
                                                 ; ,(file-namestring classfile))
-						(sys::get-fasl-function *fasl-loader* ,(pathname-name classfile)))
+						(sys::get-fasl-function *fasl-loader* ,saved-class-number))
                                     ,*source-position*
                                     ',(third form)))))))))
           (DEFTYPE
@@ -366,7 +379,10 @@
   ;; however, binding *load-truename* isn't fully compliant, I think.
   (when compile-time-too
     (let ((*load-truename* *output-file-pathname*)
-	  (*fasl-loader* (make-fasl-class-loader)))
+	  (*fasl-loader* (make-fasl-class-loader
+			  *class-number*
+			  (concatenate 'string "org.armedbear.lisp." (base-classname))
+			  nil)))
       (eval form))))
 
 (declaim (ftype (function (t) t) convert-ensure-method))
@@ -383,7 +399,8 @@
                (eq (%car function-form) 'FUNCTION))
       (let ((lambda-expression (cadr function-form)))
         (jvm::with-saved-compiler-policy
-          (let* ((classfile (next-classfile-name))
+          (let* ((saved-class-number *class-number*)
+		 (classfile (next-classfile-name))
                  (result
 		  (with-open-file
 		      (f classfile
@@ -396,7 +413,7 @@
 	    (declare (ignore result))
             (cond (compiled-function
                    (setf (getf tail key)
-			 `(sys::get-fasl-function *fasl-loader* ,(pathname-name classfile))))
+			 `(sys::get-fasl-function *fasl-loader* ,saved-class-number)))
 ;;                         `(load-compiled-function ,(file-namestring classfile))))
                   (t
                    ;; FIXME This should be a warning or error of some sort...
@@ -430,6 +447,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (return-from convert-toplevel-form
       (precompiler:precompile-form form nil *compile-file-environment*)))
   (let* ((expr `(lambda () ,form))
+	 (saved-class-number *class-number*)
          (classfile (next-classfile-name))
          (result
 	  (with-open-file
@@ -443,7 +461,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
     (declare (ignore result))
     (setf form
           (if compiled-function
-              `(funcall (sys::get-fasl-function *fasl-loader* ,(pathname-name classfile)));(load-compiled-function ,(file-namestring classfile)))
+              `(funcall (sys::get-fasl-function *fasl-loader* ,saved-class-number))
               (precompiler:precompile-form form nil *compile-file-environment*)))))
 
 
@@ -530,6 +548,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
              (*compile-file-truename* (truename in))
              (*source* *compile-file-truename*)
              (*class-number* 0)
+	     (*function-packages* nil)
              (namestring (namestring *compile-file-truename*))
              (start (get-internal-real-time))
              elapsed)
@@ -592,10 +611,57 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                      :stream out)
               (%stream-terpri out)
 
-	      ;;TODO FAKE TEST ONLY!!!
 	      (when (> *class-number* 0)
+		(let* ((basename (base-classname))
+		       (expr `(lambda (fasl-loader fn-index)
+				(identity fasl-loader) ;;to avoid unused arg
+				;;Ugly: should export & import JVM:: symbols
+				#|(let ((*package* *package*))
+				,(let ((x (cdr (assoc 0 *function-packages*)))) ;;in-package before any function was defined
+					(when x
+					  `(in-package ,(string x))))|#
+				(ecase fn-index
+				  ,@(loop
+				       :for i :from 1 :to *class-number*
+				       :collect
+					 (let ((class (%format nil "org/armedbear/lisp/~A_~A" basename i)))
+					   `(,(1- i) (jvm::with-inline-code ()
+					;(jvm::emit 'jvm::ldc (jvm::pool-string (symbol-name 'sys::*fasl-loader*)))
+					;(jvm::emit 'jvm::ldc (jvm::pool-string (string :system)))
+					;(jvm::emit-invokestatic jvm::+lisp-class+ "internInPackage"
+					;(list jvm::+java-string+ jvm::+java-string+) jvm::+lisp-symbol+)
+					;(jvm::emit-push-current-thread)
+					;				    (jvm::emit-invokevirtual jvm::+lisp-symbol-class+ "symbolValue"
+					;							     (list jvm::+lisp-thread+) jvm::+lisp-object+)
+						  (jvm::emit 'jvm::aload 1)
+						  (jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
+									   nil jvm::+java-object+)
+						  (jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
+						  (jvm::emit 'jvm::dup)
+						  (jvm::emit-push-constant-int ,(1- i))
+						  (jvm::emit 'jvm::new ,class)
+						  (jvm::emit 'jvm::dup)
+						  (jvm::emit-invokespecial-init ,class '())
+						  (jvm::emit-invokevirtual "org/armedbear/lisp/FaslClassLoader" "putFunction"
+									   (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
+						  (jvm::emit 'jvm::pop))
+						t))))))
+		       (classname (fasl-loader-classname))
+		       (classfile (namestring (merge-pathnames (make-pathname :name classname :type "cls")
+							       *output-file-pathname*))))
+		  (jvm::with-saved-compiler-policy
+		      (jvm::with-file-compilation
+			  (with-open-file
+			      (f classfile
+				 :direction :output
+				 :element-type '(unsigned-byte 8)
+				 :if-exists :supersede)
+			    (jvm:compile-defun nil expr nil
+					       classfile f nil)))))
 		(write (list 'setq '*fasl-loader*
-			     '(sys::make-fasl-class-loader)) :stream out)
+			     `(sys::make-fasl-class-loader
+			       ,*class-number*
+			       ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out)
 		(%stream-terpri out))
 #|	      (dump-form
 	       `(dotimes (,count-sym ,*class-number*)
@@ -633,7 +699,8 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                  (zipfile (namestring
                            (merge-pathnames (make-pathname :type type)
                                             output-file)))
-                 (pathnames ()))
+                 (pathnames (list (namestring (merge-pathnames (make-pathname :name (fasl-loader-classname) :type "cls")
+							       output-file)))))
             (dotimes (i *class-number*)
               (let* ((pathname (compute-classfile-name (1+ i))))
                 (when (probe-file pathname)

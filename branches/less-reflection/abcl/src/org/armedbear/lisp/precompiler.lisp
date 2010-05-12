@@ -958,7 +958,8 @@
                                                 (symbol-name symbol))
                                   'precompiler))))
     (unless (and handler (fboundp handler))
-      (error "No handler for ~S." symbol))
+      (error "No handler for ~S." (let ((*package* (find-package :keyword)))
+				    (format nil "~S" symbol))))
     (setf (get symbol 'precompile-handler) handler)))
 
 (defun install-handlers ()

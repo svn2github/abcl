@@ -178,20 +178,20 @@ public abstract class Function extends Operator
     @Override
     public LispObject execute()
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 0));
     }
 
     @Override
     public LispObject execute(LispObject arg)
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 1));
     }
 
     @Override
     public LispObject execute(LispObject first, LispObject second)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 2));
     }
 
     @Override
@@ -199,7 +199,7 @@ public abstract class Function extends Operator
                               LispObject third)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 3));
     }
 
     @Override
@@ -207,7 +207,7 @@ public abstract class Function extends Operator
                               LispObject third, LispObject fourth)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 4));
     }
 
     @Override
@@ -216,7 +216,7 @@ public abstract class Function extends Operator
                               LispObject fifth)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 5));
     }
 
     @Override
@@ -225,7 +225,7 @@ public abstract class Function extends Operator
                               LispObject fifth, LispObject sixth)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 6));
     }
 
     @Override
@@ -235,7 +235,7 @@ public abstract class Function extends Operator
                               LispObject seventh)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 7));
     }
 
     @Override
@@ -245,7 +245,7 @@ public abstract class Function extends Operator
                               LispObject seventh, LispObject eighth)
 
     {
-        return error(new WrongNumberOfArgumentsException(this));
+        return error(new WrongNumberOfArgumentsException(this, 8));
     }
 
     @Override
