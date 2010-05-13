@@ -650,8 +650,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 				 :element-type '(unsigned-byte 8)
 				 :if-exists :supersede)
 			    (jvm:compile-defun nil expr nil
-					       classfile f nil))))
-		  (format t "~&; Wrote fasl loader ~A~%" classfile))
+					       classfile f nil)))))
 		(write (list 'setq '*fasl-loader*
 			     `(sys::make-fasl-class-loader
 			       ,*class-number*
