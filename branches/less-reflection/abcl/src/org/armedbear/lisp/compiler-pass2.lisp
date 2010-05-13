@@ -2342,7 +2342,6 @@ the Java object representing SYMBOL can be retrieved."
             (java:java-object-p obj)))
   (let ((g (symbol-name (gensym "INSTANCE")))
         saved-code)
-    (sys::%format t "OBJ = ~A ~S~%" (type-of obj) obj)
     (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
            (*code* (if *declare-inline* *code* *static-code*)))
       ;; The readObjectFromString call may require evaluation of
@@ -5019,7 +5018,6 @@ given a specific common representation.")
          (compile-constant (eval (second form)) target representation))))
 
 (defun p2-progv-node (block target representation)
-  (declare (ignore representation))
   (let* ((form (progv-form block))
          (symbols-form (cadr form))
          (values-form (caddr form))
@@ -5040,7 +5038,7 @@ given a specific common representation.")
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
-      (compile-progn-body (cdddr form) target))
+      (compile-progn-body (cdddr form) target representation))
     (restore-environment-and-make-handler environment-register label-START)))
 
 (defun p2-quote (form target representation)
@@ -6124,8 +6122,7 @@ given a specific common representation.")
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream-class+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
-                (when target
-                  (emit-move-from-stack target)))
+                (emit-move-from-stack target))
                (t
                 (compile-function-call form target representation)))))
       (2
@@ -6140,8 +6137,7 @@ given a specific common representation.")
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream-class+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
-                (when target
-                  (emit-move-from-stack target))
+                (emit-move-from-stack target)
                 )
                (t
                 (compile-function-call form target representation)))))
@@ -8580,6 +8576,18 @@ We need more thought here.
       (maybe-initialize-thread-var)
       (setf *code* (nconc code *code*)))
 
+    (setf (abcl-class-file-superclass class-file)
+          (if (or *hairy-arglist-p*
+		  (and *child-p* *closure-variables*))
+	      +lisp-compiled-closure-class+
+	    +lisp-primitive-class+))
+
+    (setf (abcl-class-file-lambda-list class-file) args)
+    (setf (method-max-locals execute-method) *registers-allocated*)
+    (push execute-method (abcl-class-file-methods class-file))
+
+
+    ;;;  Move here
     (finalize-code)
     (optimize-code)
 
@@ -8593,19 +8601,12 @@ We need more thought here.
                        (eql (symbol-value (handler-from handler))
                             (symbol-value (handler-to handler))))
                      *handlers*))
+    ;;; to here
+    ;;; To a separate function which is part of class file finalization
+    ;;;  when we have a section of class-file-generation centered code
 
-    (setf (method-max-locals execute-method) *registers-allocated*)
-    (setf (method-handlers execute-method) (nreverse *handlers*))
 
-    (setf (abcl-class-file-superclass class-file)
-          (if (or *hairy-arglist-p*
-		  (and *child-p* *closure-variables*))
-	      +lisp-compiled-closure-class+
-	    +lisp-primitive-class+))
-
-    (setf (abcl-class-file-lambda-list class-file) args)
-
-    (push execute-method (abcl-class-file-methods class-file)))
+    (setf (method-handlers execute-method) (nreverse *handlers*)))
   t)
 
 (defun p2-with-inline-code (form target representation)
@@ -8805,7 +8806,6 @@ to derive a Java class name from."
         (*visible-variables* nil)
         (*local-functions* nil)
         (*pathnames-generator* (constantly nil))
-        (sys::*fasl-anonymous-package* (sys::%make-package))
         environment)
     (unless (and (consp definition) (eq (car definition) 'LAMBDA))
       (let ((function definition))

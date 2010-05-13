@@ -101,7 +101,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <target name="abcl.compile" depends="abcl.clean.maybe,abcl.compile.lisp">
       <echo>Compiled ABCL with Java version: ${java.version}</echo>
     </target>
-    
+
     <target name="abcl.clean.maybe" unless="abcl.build.incremental">
       <echo>Cleaning all intermediate compilation artifacts.</echo>
       <echo>Setting 'abcl.build.incremental' enables incremental compilation.</echo>
@@ -143,7 +143,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <condition property="abcl.java.version.p">
 	<or>
 	  <matches string="${java.version}" pattern="1\.5"/>
-	  <matches string="${java.version}" pattern="1\.6\.0_1[0-9]"/>
+	  <matches string="${java.version}" pattern="1\.6\.0_[12][0-9]"/>
 	</or>  
       </condition>
 
@@ -176,6 +176,7 @@ For help on the automatic tests available, use the Ant target 'help.test'.
       <javac destdir="${build.classes.dir}"
 	     debug="true"
 	     target="1.5"
+             includeantruntime="false"
 	     failonerror="true">
 	<src path="${src.dir}"/>
 	<patternset refid="abcl.source.java"/>
@@ -223,9 +224,12 @@ For help on the automatic tests available, use the Ant target 'help.test'.
     <path id="abcl.lisp.output.path"
           location="${build.classes.dir}/org/armedbear/lisp/"/>
     <pathconvert dirsep="/" property="abcl.lisp.output" refid="abcl.lisp.output.path"/>
+
+    <property name="system.lisp.file" 
+              value="${build.classes.dir}/org/armedbear/lisp/system.lisp"/>
     
     <target name="abcl.compile.lisp" 
-	    depends="abcl.copy.lisp,abcl.compile.java,abcl.fasls.uptodate"
+	    depends="abcl.copy.lisp,abcl.compile.java,abcl.system.update.maybe,abcl.fasls.uptodate"
 	    unless="abcl.fasls.uptodate.p">
       <echo>
 Compiling Lisp system 
@@ -238,9 +242,13 @@ to   ${abcl.lisp.output}</echo>
 	    classname="org.armedbear.lisp.Main">
         <jvmarg value="-Dabcl.home=${abcl.home.dir}${file.separator}"/>
 	<arg value="--noinit"/>
+        <arg value="--nosystem"/>
         <arg value="--eval"/>
         <arg value="(setf *load-verbose* t)"/>
       </java>
+      <concat destfile="${system.lisp.file}" append="true">
+        <fileset file="${abcl.startup.file}"/>
+      </concat>
     </target>
 
     <property name="abcl.build.path"
@@ -269,6 +277,23 @@ to   ${abcl.lisp.output}</echo>
     <target name="abcl.stamp.hostname" if="unix">
       <exec executable="hostname" outputproperty="abcl.hostname"/>
       <echo>abcl.hostname: ${abcl.hostname}</echo>
+    </target>
+
+    <target name="abcl.system.uptodate">
+      <condition property="abcl.system.needs-update.p">
+        <and>
+          <available file="${system.lisp.file}"/>
+          <available file="${abcl.startup.file}"/>
+          <uptodate
+                srcfile="${system.lisp.file}"
+                targetfile="${abcl.startup.file}"/>
+        </and>
+      </condition>
+    </target>
+    
+    <target name="abcl.system.update.maybe" depends="abcl.system.uptodate" 
+            if="abcl.system.needs-update.p">
+      <touch file="${src.dir}/org/armedbear/lisp/compile-system.lisp"/>
     </target>
 
     <target name="abcl.jar.uptodate" depends="abcl.compile">
@@ -671,9 +696,9 @@ ${basedir}/../cl-bench
       <java fork="true"
 	    classpathref="abcl.test.run.classpath"
 	    classname="org.junit.runner.JUnitCore">
-	<arg value="org.armedbear.lisp.FastStringBufferTest"/>
         <arg value="org.armedbear.lisp.PathnameTest"/>
         <arg value="org.armedbear.lisp.StreamTest"/>
+        <arg value="org.armedbear.lisp.UtilitiesTest"/>
       </java>
     </target>
 
@@ -705,7 +730,7 @@ ${basedir}/../cl-bench
 	<arg value="--noinit"/> 
 	<arg value="--eval"/><arg value="(require (quote asdf))"/>
 	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:load-op) :abcl)"/>
-	<arg value="--eval"/><arg value="(asdf:operate (quote asdf:test-op) :ansi-compiled)"/>
+	<arg value="--eval"/><arg value="(let ((*compile-verbose* t)) (asdf:operate (quote asdf:test-op) :ansi-compiled))"/>
         <arg value="--eval"/><arg value="(ext:exit)"/>
       </java>
       <record name="${abcl.test.log.file}" emacsmode="true" action="stop"/>

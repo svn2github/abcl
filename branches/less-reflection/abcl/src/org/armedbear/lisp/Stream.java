@@ -481,7 +481,7 @@ public class Stream extends StructureObject {
                 char c = (char) n; // ### BUG: Codepoint conversion
                 if (rt.isWhitespace(c))
                     continue;
-                LispObject result = processChar(c, rt);
+                LispObject result = processChar(thread, c, rt);
                 if (result != null)
                     return result;
             }
@@ -497,15 +497,36 @@ public class Stream extends StructureObject {
         }
     }
 
-    private final LispObject processChar(char c, Readtable rt)
-
+    /** Dispatch macro function if 'c' has one associated,
+     * read a token otherwise.
+     *
+     * When the macro function returns zero values, this function
+     * returns null or the token or returned value otherwise.
+     */
+    private final LispObject processChar(LispThread thread,
+                                         char c, Readtable rt)
     {
         final LispObject handler = rt.getReaderMacroFunction(c);
-        if (handler instanceof ReaderMacroFunction)
-            return ((ReaderMacroFunction)handler).execute(this, c);
-        if (handler != null && handler != NIL)
-            return handler.execute(this, LispCharacter.getInstance(c));
-        return readToken(c, rt);
+        LispObject value;
+
+        if (handler instanceof ReaderMacroFunction) {
+            thread._values = null;
+            value = ((ReaderMacroFunction)handler).execute(this, c);
+        }
+        else if (handler != null && handler != NIL) {
+            thread._values = null;
+            value = handler.execute(this, LispCharacter.getInstance(c));
+        }
+        else
+            return readToken(c, rt);
+
+        // If we're looking at zero return values, set 'value' to null
+        if (value == NIL) {
+            LispObject[] values = thread._values;
+            if (values != null && values.length == 0)
+                value = null;
+        }
+        return value;
     }
 
     public LispObject readPathname(ReadtableAccessor rta) {
@@ -583,20 +604,16 @@ public class Stream extends StructureObject {
       {
         while (true) {
           int n = _readChar();
-          if (n < 0) {
-            error(new EndOfFile(this));
-            // Not reached.
-            return null;
-          }
+          if (n < 0)
+            return error(new EndOfFile(this));
+
           char c = (char) n; // ### BUG: Codepoint conversion
           if (rt.getSyntaxType(c) == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
             // Single escape.
             n = _readChar();
-            if (n < 0) {
-              error(new EndOfFile(this));
-              // Not reached.
-              return null;
-            }
+            if (n < 0)
+              return error(new EndOfFile(this));
+
             sb.append((char)n); // ### BUG: Codepoint conversion
             continue;
           }
@@ -657,11 +674,12 @@ public class Stream extends StructureObject {
                     // normal token beginning with '.'
                     _unreadChar(nextChar);
                 }
-                LispObject obj = processChar(c, rt);
-                if (obj == null) {
-                    // A comment.
+
+                LispObject obj = processChar(thread, c, rt);
+                if (obj == null)
                     continue;
-                }
+
+
                 if (first == null) {
                     first = new Cons(obj);
                     last = first;
@@ -948,20 +966,16 @@ public class Stream extends StructureObject {
         try {
             while (true) {
                 int n = _readChar();
-                if (n < 0) {
-                    error(new EndOfFile(this));
-                    // Not reached.
-                    return null;
-                }
+                if (n < 0)
+                    return serror(new EndOfFile(this));
+
                 char c = (char) n; // ### BUG: Codepoint conversion
                 byte syntaxType = rt.getSyntaxType(c);
                 if (syntaxType == Readtable.SYNTAX_TYPE_SINGLE_ESCAPE) {
                     n = _readChar();
-                    if (n < 0) {
-                        error(new EndOfFile(this));
-                        // Not reached.
-                        return null;
-                    }
+                    if (n < 0)
+                        return serror(new EndOfFile(this));
+
                     sb.append((char)n); // ### BUG: Codepoint conversion
                     continue;
                 }
@@ -970,7 +984,7 @@ public class Stream extends StructureObject {
                 sb.append(c);
             }
         } catch (IOException e) {
-            error(new StreamError(this, e));
+            return serror(new StreamError(this, e));
         }
         return sb.toString();
     }
@@ -1114,9 +1128,9 @@ public class Stream extends StructureObject {
                 }
                 if (n < 0) {
                     error(new EndOfFile(this));
-                    // Not reached.
-                    return flags;
+                    return null; // Not reached
                 }
+
                 sb.setCharAt(0, (char) n); // ### BUG: Codepoint conversion
                 flags = new BitSet(1);
                 flags.set(0);
@@ -1230,22 +1244,19 @@ public class Stream extends StructureObject {
         final LispObject readBaseObject = Symbol.READ_BASE.symbolValue(thread);
         if (readBaseObject instanceof Fixnum) {
             readBase = ((Fixnum)readBaseObject).value;
-        } else {
+        } else
             // The value of *READ-BASE* is not a Fixnum.
-            error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
-            // Not reached.
-            return 10;
-        }
-        if (readBase < 2 || readBase > 36) {
-            error(new LispError("The value of *READ-BASE* is not of type '(INTEGER 2 36)."));
-            // Not reached.
-            return 10;
-        }
+            return ierror(new LispError("The value of *READ-BASE* is not " +
+                                        "of type '(INTEGER 2 36)."));
+
+        if (readBase < 2 || readBase > 36)
+            return ierror(new LispError("The value of *READ-BASE* is not " +
+                                        "of type '(INTEGER 2 36)."));
+
         return readBase;
     }
 
     private final LispObject makeNumber(String token, int length, int radix)
-
     {
         if (length == 0)
             return null;
@@ -1414,11 +1425,9 @@ public class Stream extends StructureObject {
         try {
             while (true) {
                 int n = _readChar();
-                if (n < 0) {
-                    error(new EndOfFile(this));
-                    // Not reached.
-                    return 0;
-                }
+                if (n < 0)
+                    return (char)ierror(new EndOfFile(this));
+
                 char c = (char) n; // ### BUG: Codepoint conversion
                 if (!rt.isWhitespace(c))
                     return c;
@@ -1439,7 +1448,8 @@ public class Stream extends StructureObject {
             char c = flushWhitespace(rt);
             if (c == delimiter)
                 break;
-            LispObject obj = processChar(c, rt);
+
+            LispObject obj = processChar(thread, c, rt);
             if (obj != null)
                 result = new Cons(obj, result);
         }
@@ -1839,9 +1849,7 @@ public class Stream extends StructureObject {
 
             return n; // Reads an 8-bit byte.
         } catch (IOException e) {
-            error(new StreamError(this, e));
-            // Not reached.
-            return -1;
+            return ierror(new StreamError(this, e));
         }
     }
 

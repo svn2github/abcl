@@ -345,7 +345,7 @@ public class Pathname extends LispObject {
             }
             String scheme = url.getProtocol();
             if (scheme.equals("file")) {
-                Pathname p = new Pathname(s);
+                Pathname p = new Pathname(url.getFile());
                 this.host = p.host;
                 this.device = p.device;
                 this.directory = p.directory;
@@ -680,10 +680,13 @@ public class Pathname extends LispObject {
             sb.append('.');
             if (type instanceof AbstractString) {
                 String t = type.getStringValue();
-                if (t.indexOf('.') >= 0) {
-                    Debug.assertTrue(namestring == null);
-                    return null;
-                }
+		// Allow Windows shortcuts to include TYPE
+		if (!(t.endsWith(".lnk") && Utilities.isPlatformWindows)) {
+		    if (t.indexOf('.') >= 0) {
+			Debug.assertTrue(namestring == null);
+			return null;
+		    }
+		}
                 sb.append(t);
             } else if (type == Keyword.WILD) {
                 sb.append('*');
@@ -737,8 +740,8 @@ public class Pathname extends LispObject {
         // the namestring." 19.2.2.2.3.1
         if (directory != NIL) {
             final char separatorChar;
-            if (device instanceof Cons) {
-                separatorChar = '/'; // Jar file.
+            if (isJar() || isURL()) {
+                separatorChar = '/'; 
             } else {
                 separatorChar = File.separatorChar;
             }
@@ -1669,12 +1672,35 @@ public class Pathname extends LispObject {
             if (memq(Keyword.WILD_INFERIORS, directory)) {
                 return true;
             }
+            Cons d = (Cons) directory;
+            while (true) {
+                if (d.car() instanceof AbstractString) {
+                    String s = d.car().writeToString();
+                    if (s.contains("*")) {
+                        return true;
+                    }
+                }
+                if (d.cdr() == NIL || ! (d.cdr() instanceof Cons)) {
+                    break;
+                }
+                d = (Cons)d.cdr();
+            }
         }
         if (name == Keyword.WILD || name == Keyword.WILD_INFERIORS) {
             return true;
         }
+        if (name instanceof AbstractString) {
+            if (name.writeToString().contains("*")) {
+                return true;
+            }
+        }
         if (type == Keyword.WILD || type == Keyword.WILD_INFERIORS) {
             return true;
+        }
+        if (type instanceof AbstractString) {
+            if (type.writeToString().contains("*")) {
+                return true;
+            }
         }
         if (version == Keyword.WILD || version == Keyword.WILD_INFERIORS) {
             return true;
@@ -1792,7 +1818,9 @@ public class Pathname extends LispObject {
         if (pathname.device != NIL) { // XXX if device represent JARs we want to merge
             result.device = p.device;
         } else {
-            result.device = d.device;
+            if (!p.isURL()) {
+                result.device = d.device;
+            }
         }
 
         if (pathname.isJar()) {

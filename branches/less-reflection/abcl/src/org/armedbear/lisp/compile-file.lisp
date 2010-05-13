@@ -40,8 +40,6 @@
 
 (defvar *output-file-pathname*)
 
-(defvar *function-packages* nil "An alist containing mappings (function-number . package). Every time an (IN-PACKAGE pkg) form is found at top-level, (*class-number* . pkg) is pushed onto this list.")
-
 (defun base-classname (&optional (output-file-pathname *output-file-pathname*))
   (sanitize-class-name (pathname-name output-file-pathname)))
 
@@ -133,8 +131,6 @@
            (return-from process-toplevel-form))
           ((IN-PACKAGE DEFPACKAGE)
            (note-toplevel-form form)
-	   (if (eq operator 'in-package)
-	       (push (cons (1+ *class-number*) (cadr form)) *function-packages*))
            (setf form (precompiler:precompile-form form nil *compile-file-environment*))
            (eval form)
            ;; Force package prefix to be used when dumping form.
@@ -548,10 +544,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
              (*compile-file-truename* (truename in))
              (*source* *compile-file-truename*)
              (*class-number* 0)
-	     (*function-packages* nil)
              (namestring (namestring *compile-file-truename*))
              (start (get-internal-real-time))
-             elapsed)
+             elapsed
+             *fasl-uninterned-symbols*)
         (when *compile-verbose*
           (format t "; Compiling ~A ...~%" namestring))
         (with-compilation-unit ()
@@ -564,7 +560,6 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (*package* *package*)
                   (jvm::*functions-defined-in-current-file* '())
                   (*fbound-names* '())
-                  (*fasl-anonymous-package* (%make-package))
                   (*fasl-stream* out)
                   *forms-for-output*)
               (jvm::with-saved-compiler-policy
@@ -603,49 +598,47 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
             (write "; -*- Mode: Lisp -*-" :escape nil :stream out)
             (%stream-terpri out)
             (let ((*package* (find-package '#:cl)))
-                  ;(count-sym (gensym)))
               (write (list 'init-fasl :version *fasl-version*)
                      :stream out)
               (%stream-terpri out)
               (write (list 'setq '*source* *compile-file-truename*)
                      :stream out)
               (%stream-terpri out)
+	      ;; Note: Beyond this point, you can't use DUMP-FORM,
+	      ;; because the list of uninterned symbols has been fixed now.
+	      (when *fasl-uninterned-symbols*
+		(write (list 'setq '*fasl-uninterned-symbols*
+			     (coerce (mapcar #'car
+					     (nreverse *fasl-uninterned-symbols*))
+				     'vector))
+		       :stream out))
+	      (%stream-terpri out)
 
 	      (when (> *class-number* 0)
 		(let* ((basename (base-classname))
 		       (expr `(lambda (fasl-loader fn-index)
 				(identity fasl-loader) ;;to avoid unused arg
 				;;Ugly: should export & import JVM:: symbols
-				#|(let ((*package* *package*))
-				,(let ((x (cdr (assoc 0 *function-packages*)))) ;;in-package before any function was defined
-					(when x
-					  `(in-package ,(string x))))|#
 				(ecase fn-index
 				  ,@(loop
 				       :for i :from 1 :to *class-number*
 				       :collect
 					 (let ((class (%format nil "org/armedbear/lisp/~A_~A" basename i)))
-					   `(,(1- i) (jvm::with-inline-code ()
-					;(jvm::emit 'jvm::ldc (jvm::pool-string (symbol-name 'sys::*fasl-loader*)))
-					;(jvm::emit 'jvm::ldc (jvm::pool-string (string :system)))
-					;(jvm::emit-invokestatic jvm::+lisp-class+ "internInPackage"
-					;(list jvm::+java-string+ jvm::+java-string+) jvm::+lisp-symbol+)
-					;(jvm::emit-push-current-thread)
-					;				    (jvm::emit-invokevirtual jvm::+lisp-symbol-class+ "symbolValue"
-					;							     (list jvm::+lisp-thread+) jvm::+lisp-object+)
-						  (jvm::emit 'jvm::aload 1)
-						  (jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
-									   nil jvm::+java-object+)
-						  (jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
-						  (jvm::emit 'jvm::dup)
-						  (jvm::emit-push-constant-int ,(1- i))
-						  (jvm::emit 'jvm::new ,class)
-						  (jvm::emit 'jvm::dup)
-						  (jvm::emit-invokespecial-init ,class '())
-						  (jvm::emit-invokevirtual "org/armedbear/lisp/FaslClassLoader" "putFunction"
-									   (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
-						  (jvm::emit 'jvm::pop))
-						t))))))
+					   `(,(1- i)
+					      (jvm::with-inline-code ()
+						(jvm::emit 'jvm::aload 1)
+						(jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
+									 nil jvm::+java-object+)
+						(jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
+						(jvm::emit 'jvm::dup)
+						(jvm::emit-push-constant-int ,(1- i))
+						(jvm::emit 'jvm::new ,class)
+						(jvm::emit 'jvm::dup)
+						(jvm::emit-invokespecial-init ,class '())
+						(jvm::emit-invokevirtual "org/armedbear/lisp/FaslClassLoader" "putFunction"
+									 (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
+						(jvm::emit 'jvm::pop))
+					      t))))))
 		       (classname (fasl-loader-classname))
 		       (classfile (namestring (merge-pathnames (make-pathname :name classname :type "cls")
 							       *output-file-pathname*))))
@@ -657,30 +650,12 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 				 :element-type '(unsigned-byte 8)
 				 :if-exists :supersede)
 			    (jvm:compile-defun nil expr nil
-					       classfile f nil)))))
+					       classfile f nil))))
+		  (format t "~&; Wrote fasl loader ~A~%" classfile))
 		(write (list 'setq '*fasl-loader*
 			     `(sys::make-fasl-class-loader
 			       ,*class-number*
-			       ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out)
-		(%stream-terpri out))
-#|	      (dump-form
-	       `(dotimes (,count-sym ,*class-number*)
-		  (java:jcall "loadFunction" *fasl-loader*
-			      (%format nil "~A_~D"
-				       ,(sanitize-class-name
-					 (pathname-name output-file))
-				       (1+ ,count-sym))))
-	       out)|#
-
-	      ;;END TODO
-
-#|              (dump-form `(dotimes (,count-sym ,*class-number*)
-                            (function-preload
-                             (%format nil "~A_~D.cls"
-                                      ,(sanitize-class-name
-					(pathname-name output-file))
-                                      (1+ ,count-sym))))
-			 out)|#
+			       ,(concatenate 'string "org.armedbear.lisp." (base-classname)))) :stream out))
               (%stream-terpri out))
 
 
@@ -699,8 +674,11 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                  (zipfile (namestring
                            (merge-pathnames (make-pathname :type type)
                                             output-file)))
-                 (pathnames (list (namestring (merge-pathnames (make-pathname :name (fasl-loader-classname) :type "cls")
-							       output-file)))))
+                 (pathnames nil)
+		 (fasl-loader (namestring (merge-pathnames (make-pathname :name (fasl-loader-classname) :type "cls")
+							   output-file))))
+	    (when (probe-file fasl-loader)
+	      (push fasl-loader pathnames))
             (dotimes (i *class-number*)
               (let* ((pathname (compute-classfile-name (1+ i))))
                 (when (probe-file pathname)

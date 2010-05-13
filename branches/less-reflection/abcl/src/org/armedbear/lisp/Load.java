@@ -84,14 +84,14 @@ public final class Load
             abclPathname.invalidateNamestring();
             LispObject abcl = Pathname.truename(abclPathname, false);
             if (lisp instanceof Pathname && abcl instanceof Pathname) {
-                lispPathname = (Pathname)lisp;
-                abclPathname = (Pathname)abcl;
-                long lispLastModified = lispPathname.getLastModified();
-                long abclLastModified = abclPathname.getLastModified();
+              lispPathname = (Pathname)lisp;
+              abclPathname = (Pathname)abcl;
+              long lispLastModified = lispPathname.getLastModified();
+              long abclLastModified = abclPathname.getLastModified();
               if (abclLastModified > lispLastModified) {
-                  return lispPathname;
+                  return abclPathname;  // fasl file is newer
               } else {
-                  return abclPathname;
+                  return lispPathname;
               }
             } else if (abcl instanceof Pathname) {
                 return (Pathname) abcl;
@@ -363,7 +363,7 @@ public final class Load
     // ### *fasl-version*
     // internal symbol
     static final Symbol _FASL_VERSION_ =
-        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(35));
+        exportConstant("*FASL-VERSION*", PACKAGE_SYS, Fixnum.getInstance(36));
 
     // ### *fasl-external-format*
     // internal symbol
@@ -371,15 +371,16 @@ public final class Load
         internConstant("*FASL-EXTERNAL-FORMAT*", PACKAGE_SYS,
                        new SimpleString("UTF-8"));
 
-    // ### *fasl-anonymous-package*
+    // ### *fasl-uninterned-symbols*
     // internal symbol
     /**
-     * This variable gets bound to a package with no name in which the
-     * reader can intern its uninterned symbols.
+     * This variable gets bound to NIL upon loading a FASL, but
+     * gets set to a vector of symbols as one of the first actions
+     * by the FASL itself.
      *
      */
-    public static final Symbol _FASL_ANONYMOUS_PACKAGE_ =
-        internSpecial("*FASL-ANONYMOUS-PACKAGE*", PACKAGE_SYS, NIL);
+    public static final Symbol _FASL_UNINTERNED_SYMBOLS_ =
+        internSpecial("*FASL-UNINTERNED-SYMBOLS*", PACKAGE_SYS, NIL);
 
     // ### init-fasl &key version
     private static final Primitive INIT_FASL = new init_fasl();
@@ -395,7 +396,7 @@ public final class Load
                 if (second.eql(_FASL_VERSION_.getSymbolValue())) {
                     // OK
                     final LispThread thread = LispThread.currentThread();
-                    thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, NIL);
+                    thread.bindSpecial(_FASL_UNINTERNED_SYMBOLS_, NIL);
                     thread.bindSpecial(_SOURCE_, NIL);
                     return faslLoadStream(thread);
                 }
@@ -411,8 +412,8 @@ public final class Load
                                                        boolean print,
                                                        boolean auto)
         {
-            return loadFileFromStream(pathname == null ? NIL : pathname, 
-                                      truename == null ? NIL : truename, 
+            return loadFileFromStream(pathname == null ? NIL : pathname,
+                                      truename == null ? NIL : truename,
                                       in, verbose, print, auto, false);
     }
 
@@ -585,7 +586,6 @@ public final class Load
         final SpecialBindingsMark mark = thread.markSpecialBindings();
         LispObject result = NIL;
         try {
-            thread.bindSpecial(_FASL_ANONYMOUS_PACKAGE_, new Package());
             thread.bindSpecial(AUTOLOADING_CACHE,
                                AutoloadedFunctionProxy.makePreloadingContext());
             in.setExternalFormat(_FASL_EXTERNAL_FORMAT_.symbolValue(thread));

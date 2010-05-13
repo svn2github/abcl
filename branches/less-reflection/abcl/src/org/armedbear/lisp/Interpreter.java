@@ -52,6 +52,7 @@ public final class Interpreter
     private final OutputStream outputStream;
 
     private static boolean noinit = false;
+    private static boolean nosystem = false;
     private static boolean noinform = false;
 
     public static synchronized Interpreter getInstance()
@@ -92,6 +93,8 @@ public final class Interpreter
         }
         initializeLisp();
         initializeTopLevel();
+        if (!nosystem) 
+            initializeSystem();
         if (!noinit)
             processInitializationFile();
         if (args != null)
@@ -117,6 +120,7 @@ public final class Interpreter
 
         initializeJLisp();
         initializeTopLevel();
+        initializeSystem();
         processInitializationFile();
         return interpreter;
     }
@@ -211,6 +215,11 @@ public final class Interpreter
         }
     }
 
+    private static synchronized void initializeSystem() 
+    {
+        Load.loadSystemFile("system");
+    }
+
     // Check for --noinit; verify that arguments are supplied for --load and
     // --eval options.  Copy all unrecognized arguments into
     // ext:*command-line-argument-list*
@@ -224,6 +233,8 @@ public final class Interpreter
                 String arg = args[i];
                 if (arg.equals("--noinit")) {
                     noinit = true;
+                } else if (arg.equals("--nosystem")) {
+                    nosystem = true;
                 } else if (arg.equals("--noinform")) {
                     noinform = true;
                 } else if (arg.equals("--batch")) {
@@ -280,9 +291,8 @@ public final class Interpreter
                             thread.bindSpecial(Symbol.PRINT_ESCAPE, NIL);
                             sb.append(c.getCondition().writeToString());
                             sb.append(separator);
-                            System.err.print(sb.toString());
-			    System.err.println("backtrace: ");
-			    evaluate("(princ (sys::backtrace))");
+                            System.err.println(sb);
+			    //evaluate("(pprint (sys::backtrace))");
                             System.exit(2);
                         }
                         ++i;
@@ -465,7 +475,7 @@ public final class Interpreter
         public LispObject execute(LispObject first, LispObject second)
             throws UnhandledCondition
         {
-            final Condition condition = (Condition) first;
+            final LispObject condition = first;
             if (interpreter == null) {
                 final LispThread thread = LispThread.currentThread();
                 final SpecialBindingsMark mark = thread.markSpecialBindings();
