@@ -615,42 +615,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 	      (%stream-terpri out)
 
 	      (when (> *class-number* 0)
-		(let* ((basename (base-classname))
-		       (expr `(lambda (fasl-loader fn-index)
-				(identity fasl-loader) ;;to avoid unused arg
-				;;Ugly: should export & import JVM:: symbols
-				(ecase fn-index
-				  ,@(loop
-				       :for i :from 1 :to *class-number*
-				       :collect
-					 (let ((class (%format nil "org/armedbear/lisp/~A_~A" basename i)))
-					   `(,(1- i)
-					      (jvm::with-inline-code ()
-						(jvm::emit 'jvm::aload 1)
-						(jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
-									 nil jvm::+java-object+)
-						(jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
-						(jvm::emit 'jvm::dup)
-						(jvm::emit-push-constant-int ,(1- i))
-						(jvm::emit 'jvm::new ,class)
-						(jvm::emit 'jvm::dup)
-						(jvm::emit-invokespecial-init ,class '())
-						(jvm::emit-invokevirtual "org/armedbear/lisp/FaslClassLoader" "putFunction"
-									 (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
-						(jvm::emit 'jvm::pop))
-					      t))))))
-		       (classname (fasl-loader-classname))
-		       (classfile (namestring (merge-pathnames (make-pathname :name classname :type "cls")
-							       *output-file-pathname*))))
-		  (jvm::with-saved-compiler-policy
-		      (jvm::with-file-compilation
-			  (with-open-file
-			      (f classfile
-				 :direction :output
-				 :element-type '(unsigned-byte 8)
-				 :if-exists :supersede)
-			    (jvm:compile-defun nil expr nil
-					       classfile f nil)))))
+		(generate-loader-function)
 		(write (list 'setq '*fasl-loader*
 			     `(sys::make-fasl-class-loader
 			       ,*class-number*
@@ -699,6 +664,43 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
           (format t "~&; Wrote ~A (~A seconds)~%"
                   (namestring output-file) elapsed))))
     (values (truename output-file) warnings-p failure-p)))
+
+(defun generate-loader-function ()
+  (let* ((basename (base-classname))
+	 (expr `(lambda (fasl-loader fn-index)
+		  (identity fasl-loader) ;;to avoid unused arg
+		  (ecase fn-index
+		    ,@(loop
+			 :for i :from 1 :to *class-number*
+			 :collect
+			 (let ((class (%format nil "org/armedbear/lisp/~A_~A" basename i)))
+			   `(,(1- i)
+			      (jvm::with-inline-code ()
+				(jvm::emit 'jvm::aload 1)
+				(jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
+							 nil jvm::+java-object+)
+				(jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
+				(jvm::emit 'jvm::dup)
+				(jvm::emit-push-constant-int ,(1- i))
+				(jvm::emit 'jvm::new ,class)
+				(jvm::emit 'jvm::dup)
+				(jvm::emit-invokespecial-init ,class '())
+				(jvm::emit-invokevirtual "org/armedbear/lisp/FaslClassLoader" "putFunction"
+							 (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
+				(jvm::emit 'jvm::pop))
+			      t))))))
+	 (classname (fasl-loader-classname))
+	 (classfile (namestring (merge-pathnames (make-pathname :name classname :type "cls")
+						 *output-file-pathname*))))
+    (jvm::with-saved-compiler-policy
+	(jvm::with-file-compilation
+	    (with-open-file
+		(f classfile
+		   :direction :output
+		   :element-type '(unsigned-byte 8)
+		   :if-exists :supersede)
+	      (jvm:compile-defun nil expr nil
+				 classfile f nil))))))
 
 (defun compile-file-if-needed (input-file &rest allargs &key force-compile
                                &allow-other-keys)

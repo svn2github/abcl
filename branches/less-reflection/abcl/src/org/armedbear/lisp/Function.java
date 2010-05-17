@@ -175,6 +175,34 @@ public abstract class Function extends Operator
                             new JavaObject(bytes));
     }
 
+    public final LispObject getClassBytes() {
+	LispObject o = getf(propertyList, Symbol.CLASS_BYTES, NIL);
+	if(o != NIL) {
+	    return o;
+	} else {
+	    ClassLoader c = getClass().getClassLoader();
+	    if(c instanceof FaslClassLoader) {
+		return new JavaObject(((FaslClassLoader) c).getFunctionClassBytes(this));
+	    } else {
+		return NIL;
+	    }
+	}
+    }
+
+    public static final Primitive FUNCTION_CLASS_BYTES = new pf_function_class_bytes();
+    public static final class pf_function_class_bytes extends Primitive {
+	public pf_function_class_bytes() {
+	    super("function-class-bytes", PACKAGE_SYS, false, "function");
+        }
+        @Override
+        public LispObject execute(LispObject arg) {
+            if (arg instanceof Function) {
+                return ((Function) arg).getClassBytes();
+	    }
+            return type_error(arg, Symbol.FUNCTION);
+        }
+    }
+
     @Override
     public LispObject execute()
     {

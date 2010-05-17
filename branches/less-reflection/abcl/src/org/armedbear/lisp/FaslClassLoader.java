@@ -59,14 +59,28 @@ public class FaslClassLoader extends JavaClassLoader {
 
     protected Class<?> findClass(String name) throws ClassNotFoundException {
 	try {
-	    Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
-	    byte[] b = readFunctionBytes(pathname);
+	    byte[] b = getFunctionClassBytes(name);
 	    return defineClass(name, b, 0, b.length);
 	} catch(Throwable e) { //TODO handle this better, readFunctionBytes uses Debug.assert() but should return null
 	    e.printStackTrace();
 	    if(e instanceof ControlTransfer) { throw (ControlTransfer) e; }
 	    throw new ClassNotFoundException("Function class not found: " + name, e);
 	}
+    }
+
+    public byte[] getFunctionClassBytes(String name) {
+	Pathname pathname = new Pathname(name.substring("org/armedbear/lisp/".length()) + ".cls");
+	return readFunctionBytes(pathname);
+    }
+    
+    public byte[] getFunctionClassBytes(Class<?> functionClass) {
+	return getFunctionClassBytes(functionClass.getName());
+    }
+
+    public byte[] getFunctionClassBytes(Function f) {
+	byte[] b = getFunctionClassBytes(f.getClass());
+	f.setClassBytes(b);
+	return b;
     }
 
     public LispObject loadFunction(int fnNumber) {
