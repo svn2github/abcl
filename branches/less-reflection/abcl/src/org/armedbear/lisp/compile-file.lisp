@@ -665,11 +665,23 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
                   (namestring output-file) elapsed))))
     (values (truename output-file) warnings-p failure-p)))
 
+(defmacro ncase (expr min max &rest clauses)
+  "A CASE where all test clauses are numbers ranging from a minimum to a maximum."
+  ;;Expr is subject to multiple evaluation, but since we only use ncase for
+  ;;fn-index below, let's ignore it.
+  (let* ((half (floor (/ (- max min) 2)))
+	 (middle (+ min half)))
+    (if (> (- max min) 10)
+	`(if (< ,expr ,middle)
+	     (ncase ,expr ,min ,middle ,@(subseq clauses 0 half))
+	     (ncase ,expr ,middle ,max ,@(subseq clauses half)))
+	`(case ,expr ,@clauses))))
+
 (defun generate-loader-function ()
   (let* ((basename (base-classname))
 	 (expr `(lambda (fasl-loader fn-index)
 		  (identity fasl-loader) ;;to avoid unused arg
-		  (ecase fn-index
+		  (ncase fn-index 0 ,(1- *class-number*)
 		    ,@(loop
 			 :for i :from 1 :to *class-number*
 			 :collect
