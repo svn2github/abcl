@@ -24,7 +24,7 @@
 
 <dl>
   <dt>Support for metaclasses</dt>
-  <dd>ABCL now supports user-defined CLOS metaclasses. The MOP has been improved and extended to accomodate for this new feature. This is the first funded feature added to ABCL: funds were provided to implement it and the relative tests. As a consequence of the addition of this important feature, the JAVA-CLASS built-in metaclass has been reimplemented in Lisp and has been improved in the process.</dd>
+  <dd>ABCL now supports user-defined CLOS metaclasses. The MOP has been improved and extended to accomodate for this new feature. This is the first funded feature added to ABCL: funds were provided to implement it and the relevant tests. As a consequence of the addition of this important feature, the JAVA-CLASS built-in metaclass has been reimplemented in Lisp and has been improved in the process.</dd>
   <dt>Support for URLs as pathnames</dt>
   <dd>Pathnames can now be used to represent URLs: PATHNAME-JAR and PATHNAME-URL subtypes now handle Jar and URL references working for OPEN, LOAD, PROBE-FILE, FILE-WRITE-DATE, DIRECTORY, et. al. See <a href="http://trac.common-lisp.net/armedbear/ticket/95">Ticket #95</a> for more details.</dd>
   <dt>ASDF2</dt>
