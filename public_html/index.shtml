@@ -61,24 +61,24 @@ td ul { margin:0 }
     <tr>
       <td style="font-weight: bold">Binary</td>
       <td>
-        <a href="releases/abcl-bin-0.19.1.tar.gz">abcl-bin-0.19.1.tar.gz</a>
-        <a href="releases/abcl-bin-0.19.1.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/abcl-bin-0.20.0.tar.gz">abcl-bin-0.20.0.tar.gz</a>
+        <a href="releases/abcl-bin-0.20.0.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/abcl-bin-0.19.1.zip">abcl-bin-0.19.1.zip</a>
-        <a href="releases/abcl-bin-0.19.1.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/abcl-bin-0.20.0.zip">abcl-bin-0.20.0.zip</a>
+        <a href="releases/abcl-bin-0.20.0.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
 
     <tr>
       <td style="font-weight: bold">Source</td>
       <td>
-        <a href="releases/abcl-src-0.19.1.tar.gz">abcl-src-0.19.1.tar.gz</a>
-        <a href="releases/abcl-src-0.19.1.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/abcl-src-0.20.0.tar.gz">abcl-src-0.20.0.tar.gz</a>
+        <a href="releases/abcl-src-0.20.0.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/abcl-src-0.19.1.zip">abcl-src-0.19.1.zip</a>
-        <a href="releases/abcl-src-0.19.1.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/abcl-src-0.20.0.zip">abcl-src-0.20.0.zip</a>
+        <a href="releases/abcl-src-0.20.0.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
       
