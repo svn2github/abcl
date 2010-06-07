@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0076)http://www.automatous-monk.com/jvmlanguages/abcl/Armed_Bear_Common_Lisp.html -->
+<HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Armed Bear Common Lisp User Documentation</TITLE>
+<META name="Description" content="Introductory user documentation on Armed Bear Common Lisp.">
+  <LINK rel="stylesheet" type="text/css" href="./abcl-user_files/style.css">
+</HEAD><BODY>
+ <DIV class="header">
+   <H1>Armed Bear Common Lisp (ABCL) - User Documentation</H1>
+<H2> "It's the right to arm bears" —Paul Westerberg </H2>
+ </DIV>
+<H1>Overview</H1>
+<UL>
+  <LI> Supports interoperability both ways between Java and Lisp. </LI>
+  <LI> ABCL is distributed under the GNU General Public License with Classpath exception. 
+    <UL>
+      <LI>Basically this means you can use ABCL from your application without the need to make your own application open source. 
+      </LI>
+    </UL>
+  </LI>
+</UL>
+<H1> Benefits of using ABCL </H1>
+<UL>
+  <LI> Java has great GUI libraries, <BR>
+    <CODE>&lt;religious-statement&gt;</CODE><BR>
+    &nbsp;&nbsp; &nbsp; but it's not the world's greatest programming language<BR>
+    <CODE>&lt;/religious-statement&gt;</CODE>. </LI>
+  <LI> <CODE>&lt;religious-statement&gt;</CODE><BR>
+    &nbsp;&nbsp; &nbsp;Lisp is the world's greatest programming language<BR>
+    <CODE>&lt;/religious-statement&gt;</CODE>,<BR>
+    but has no standard GUI libraries. </LI>
+  <LI> Therefore: Write great applications using Java for your front-end GUI backed with Lisp code and get the best of both worlds. </LI>
+</UL>
+<H1> Installing ABCL </H1>
+<UL>
+  <LI> Go to the <A href="http://common-lisp.net/project/armedbear/">ABCL page</A> and find the download link. </LI>
+  <LI> Download the Zip of the Latest Build. </LI>
+  <LI> Upzip the files. </LI>
+  <LI> Build according to instructions <A href="http://common-lisp.net/project/armedbear/doc/abcl-install-with-java.html">here</A>. </LI>
+  <LI> In the end, you will end up with a file called<BR>
+    <CODE>&nbsp;&nbsp;&nbsp;&nbsp; &lt;abcl-dir&gt;\dist\abcl.jar</CODE> </LI>
+  <LI> You will need to add <CODE>abcl.jar</CODE> to your class path for ABCL projects. </LI>
+  <LI> That's it! </LI>
+</UL>
+<H1> Hello, world! </H1>
+<UL>
+  <LI> Type the following at the command line (adjust the path as necessary):
+    <PRE>     C:\abcl-src-0.15.0&gt;cd dist
+     C:\abcl-src-0.15.0\dist&gt;java -jar abcl.jar
+</PRE>
+    This will run the Lisp REPL. </LI>
+  <LI> At the REPL prompt, type:
+    <PRE>     CL-USER(1): (format t "Hello, world!")
+     Hello, world!
+     NIL
+</PRE>
+  </LI>
+  <LI> To exit the REPL, type:
+    <PRE>     CL-USER(2): (exit)
+</PRE>
+  </LI>
+</UL>
+<H1> ABCL <CODE>Cons</CODE> and <CODE>LispObject</CODE> classes </H1>
+<UL>
+  <LI><CODE>Cons</CODE>
+    <UL>
+      <LI>Corresponds to a Lisp cons or list </LI>
+      <LI> Has <CODE>car()</CODE> and <CODE>cdr()</CODE> methods if you want to write Java code in a Lisp style. </LI>
+      <LI> Can also unbox <CODE>Cons</CODE> objects into arrays, if you wish by using the <CODE>copyToArray()</CODE> method which returns <CODE>LispObject[]</CODE>. </LI>
+    </UL>
+  </LI>
+  <LI><CODE>LispObject</CODE> 
+    <UL>
+  <LI>A Lisp S-expression</LI>
+      <LI> Can unbox <CODE>LispObject</CODE>s to Java primitives with methods such as <CODE>intValue()</CODE> which returns (surprise!) an <CODE>int</CODE>. </LI>
+    </UL>
+  </LI>
+</UL>
+<H1>Other important ABCL classes </H1>
+All the classes below are in the <CODE>org.armedbear.lisp</CODE> package:
+<UL>
+  <LI> <CODE>Interpreter</CODE>
+    <UL>
+      <LI><CODE>createInstance()</CODE>: Creates a Lisp interpreter. </LI>
+      <LI><CODE>eval(String expression)</CODE>: Evaluates a Lisp expression. Often used with <CODE>load</CODE> to load a Lisp file.</LI>
+    </UL>
+  </LI>
+  <LI><CODE>Packages</CODE>
+    <UL>
+      <LI><CODE>findPackage(String packageName)</CODE>: Finds a Lisp package. </LI>
+    </UL>
+  </LI>
+  <LI> <CODE>Package</CODE>
+    <UL>
+      <LI><CODE> findAccessibleSymbol(String symbolName)</CODE>: Finds a symbol such as that for a function. </LI>
+    </UL>
+  </LI>
+  <LI> <CODE>Symbol</CODE>
+    <UL>
+      <LI> <CODE> getSymbolFunction()</CODE>: Returns the function for a corresponding symbol. </LI>
+    </UL>
+  </LI>
+  <LI> <CODE> Function </CODE>
+    <UL>
+      <LI> <CODE>execute()</CODE>: Executes a function taking a variable number of <CODE>LispObject</CODE>s as arguments. </LI>
+    </UL>
+  </LI>
+  <LI> <CODE>JavaObject</CODE>: A subclass of <CODE>LispObject</CODE> for objects coming from Java. </LI>
+</UL>
+<H1> Getting a Lisp package from Java </H1>
+<UL>
+  <LI> To load a file of Lisp functions from Java, you do the following:
+    <PRE>     Interpreter interpreter = Interpreter.createInstance();
+     interpreter.eval("(load \"my-lisp-code.lisp\")");
+</PRE>
+  </LI>
+  <LI> You can then load the package containing a function you want to call.&nbsp; In this case, our function is in the default Lisp package:
+    <PRE>     Package defaultPackage = 
+          Packages.findPackage("CL-USER");
+</PRE>
+  </LI>
+</UL>
+<H1> Getting a Lisp function from Java </H1>
+<UL>
+  <LI> Suppose we have a function called <CODE>my-function</CODE> defined in <CODE>my-lisp-code.lisp </CODE>(which was loaded above). We obtain it in two steps like this:
+  <PRE>     Symbol myFunctionSym =
+          defaultPackage.findAccessibleSymbol(
+               "MY-FUNCTION");
+     Function myFunction =
+          myFunctionSym.getSymbolFunction();</PRE></LI>
+</UL>
+<H1> Calling a Lisp function from Java </H1>
+<UL>
+  <LI> Call a Lisp function like this:
+    <PRE>&nbsp;&nbsp;&nbsp;&nbsp; Cons list = 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Cons)&nbsp;myFunction.execute(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fixnum.getInstance(64),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fixnum.getInstance(64));
+</PRE>
+  </LI>
+  <LI> Our original Lisp function returned a list.&nbsp; ABCL's <CODE>Cons</CODE> Java class corresponds to a Lisp list.&nbsp; Note also that we wrap the <CODE>int</CODE>s (in this example) as <CODE>Fixnum</CODE>s. </LI>
+  <LI> On the Lisp side, we can access these integers  as if they came from directly from another Lisp method:
+    <PRE>&nbsp;&nbsp;&nbsp;&nbsp; (defun my-function (n1 n2)
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ...)
+</PRE>
+  </LI>
+</UL>
+<H1> Converting Java objects to Lisp values and vice-versa</H1>
+<P>Since the user can't be expected to know how to map every Java type to Lisp and vice-versa, there are a couple<BR>
+  of nice methods you can use in all cases:</P>
+<UL>
+  <LI><CODE>public static LispObject JavaObject.getInstance(Object, boolean)</CODE>: Converts (or wraps) a Java object to a Lisp object, if the boolean is true (else it just wraps it in a <CODE>JavaObject</CODE>).</LI>
+  <LI><CODE>public Object LispObject.javaInstance()</CODE>: Converts (or unwraps) a Lisp object to Java. You can invoke this on any Lisp object; if it can't be converted, it will be returned as-is.</LI>
+</UL>
+<H1>
+Calling Java from Lisp
+</H1>
+<P>This code sample is by Ville Voutilainen.</P>
+<H2>Java code</H2>
+  <PRE>public class Main {
+    public int addTwoNumbers(int a, int b) {
+        return a + b;
+    }
+}
+</PRE>
+  See the entire code sample <A href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl/javacall_from_lisp/Main.java">here</A>.
+<H2>Lisp code</H2>
+<P>
+We need to get the
+</P>
+<OL>
+  <LI>
+class (<CODE>Main</CODE>)
+  </LI>
+  <LI>
+classes of the parameters (<CODE>int</CODE>)
+  </LI>
+  <LI>
+method reference (getting that requires the class of our object and the classes of the parameters)
+  </LI>
+  </OL>
+<P>
+After that we can invoke the function with <CODE>jcall</CODE>,
+giving the method reference, the object and the parameters.
+The result is a Lisp object (no need to do <CODE>jobject-lisp-value</CODE>,
+unless we invoke the method
+with <CODE>jcall-raw</CODE>).
+</P>
+<PRE>(defun void-function (param)
+  (let* ((class (jclass "Main"))
+         (intclass (jclass "int"))
+         (method (jmethod class "addTwoNumbers" intclass intclass))
+         (result (jcall method param 2 4)))
+    (format t "in void-function, result of calling addTwoNumbers(2, 4): ~a~%" result)))
+</PRE>
+  See the entire code sample <A href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl/javacall_from_lisp/lispfunctions.lisp">here</A>.
+<H1>Sample Code</H1>
+<UL>
+  <LI>
+  Code examples can be found <A href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">here</A>.
+  </LI>
+  <LI>Conway's Game of Life: This example shows how to call Lisp code from Java.
+<UL>
+  <LI> <A href="http://www.automatous-monk.com/jvmlanguages/abcl/life.lisp"><CODE>life.lisp</CODE></A>: Lisp code for simulating Conway's Game of Life cellular automaton. </LI>
+  <LI> <A href="http://www.automatous-monk.com/jvmlanguages/abcl/LifeGUI.java"><CODE>LifeGUI.java</CODE></A>: A subclass of JApplet for showing a Life universe. &nbsp;Calls <CODE>life.lisp</CODE> for all Life functionality. </LI>
+</UL>
+  </LI>
+</UL>
+<H1> References </H1>
+<UL>
+  <LI> <A href="http://common-lisp.net/project/armedbear/">Armed Bear Common Lisp website</A> </LI>
+  <LI><A href="http://gigamonkeys.com/book/">Practical Common Lisp by Peter Seibel</A></LI>
+  <LI> <A href="http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewAlbum?id=192190026&s=143441"><I>Open Season</I> soundtrack by Paul Westerberg</A></LI>
+</UL>
+<HR>
+<P>This documentation was written by Paul Reiners (except where otherwise noted). Helpful suggestions and corrections were given by Alessio Stalla and others on the ABCL mailing list. Please<A href="mailto:paul.reiners@gmail.com"> email me</A> with any suggestions or corrections.</P>
+<HR>
+<A rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/"><IMG alt="Creative Commons License" style="border-width:0" src="./abcl-user_files/88x31.png"></A><BR><SPAN xmlns:dc="http://purl.org/dc/elements/1.1/" href="http://purl.org/dc/dcmitype/Text" property="dc:title" rel="dc:type">Armed Bear Common Lisp Tutorial</SPAN> by <A xmlns:cc="http://creativecommons.org/ns#" href="./abcl-user_files/abcl-user.html" property="cc:attributionName" rel="cc:attributionURL">Paul Reiners</A> is licensed under a <A rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/">Creative Commons Attribution-Noncommercial-Share Alike 3.0 United States License</A>.  Code samples are released under the GNU General Public License.
+
+
+</BODY></HTML>
