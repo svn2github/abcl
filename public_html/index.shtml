@@ -99,7 +99,7 @@ td ul { margin:0 }
 <li> <a href="faq.shtml">FAQ</a> </li>
 <li> Introduction: <a href="doc/abcl-install-with-java.html">building &amp; running</a> </li>
 <li> Documentation </li>
-<li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples/abcl">Examples</a> </li>
+<li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/examples/abcl">Examples</a> </li>
 <li> <a href="testimonials.shtml">Testimonials</a> </li>
 <li> Bug reporting </li>
 </ul>
