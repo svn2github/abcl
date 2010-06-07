@@ -29,6 +29,18 @@ dd { margin-top: 0.3cm;
 <h1>Testimonials</h1>
 
 <dl>
+<dt>David Kirkman (Astronomer at University of California, San Diego)
+  - June 7, 2010</dt>
+<dd>
+"I've been using ABCL to help position the Keck telescope on targets
+that are too faint to see with the slit guider.  I used code I
+created in 1994 - in Lisp - for the exact calculations and combined it
+with Java libraries for getting images in and displaying things. The
+Lisp code ran unmodified. And what's more: I can run it all on my
+Windows laptop!<br /> <br />
+The original project went so well that I stared to do new work in Lisp again."
+</dd>
+
 <dt>Brad Garton (Columbia University Computer Music Center)
 </dt>
 <dd>
@@ -87,29 +99,6 @@ out the Maxima source code and following the instructions in INSTALL.lisp."
 <dd>I am in the process of integrating ABCL with <a href="http://mathrider.org">MathRider</a> in preparation for when Maxima is able to run on it.
 </dd>
 
-<dt>Alex Mizhari
-</dt>
-<dd>
-
-I'm using ABCL for various web projects since aproximately 2004. None of them have gone public (so far), so i can't give a link.
-I released sort of framework for building web apps with ABCL was released into
-open source: <a href="http://abcl-web.sourceforge.net/">abcl-web</a>.
-Another thing probably worth mentioning -- bindings to Jena2 RDF/SPARQL library:
-http://abcl-web.sourceforge.net/rdf.html (it's sort of incomplete but usable, i think).
-<br />
-What i like in ABCL is that it has reasonably stable multithreading, does
-not crash unpredictably (unlike some other implementations) and can be
-fixed in more-or-less easy way if something goes bad, and access to Java
-libs, of course. I had some problems with it, though, to name some:
-<ul>
-<li>SLIME being botched (i suspect due to CLOS invoking compiler which is not
-reentrant),</li>
-<li>CLOS not thread safe,</li>
-<li>compiler producing wrong code.</li>
-</ul>
-That certainly made experience with ABCL less pleasant that it could be,
-but in general it was more-or-less good.
-</dd>
 
 </dl>
 </div>
