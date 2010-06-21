@@ -97,6 +97,7 @@
       (load (do-compile "precompiler.lisp"))
       (load (do-compile "compiler-pass1.lisp"))
       (load (do-compile "compiler-pass2.lisp"))
+      (load (do-compile "jvm-class-file.lisp"))
       (load (do-compile "jvm.lisp"))
       (load (do-compile "source-transform.lisp"))
       (load (do-compile "compiler-macro.lisp"))

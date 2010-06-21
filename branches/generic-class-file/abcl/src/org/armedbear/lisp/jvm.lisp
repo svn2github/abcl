@@ -45,6 +45,7 @@
   (require "KNOWN-SYMBOLS")
   (require "DUMP-FORM")
   (require "OPCODES")
+  (require "JVM-CLASS-FILE")
   (require "JAVA")
   (require "COMPILER-PASS1")
   (require "COMPILER-PASS2"))
@@ -85,17 +86,14 @@
 (defvar *externalized-objects* nil)
 (defvar *declared-functions* nil)
 
-(defstruct (abcl-class-file (:constructor %make-abcl-class-file))
+(defstruct (abcl-class-file (:include class-file)
+                            (:constructor %make-abcl-class-file))
   pathname ; pathname of output file
   lambda-name
-  class
-  superclass
   lambda-list ; as advertised
   pool
   (pool-count 1)
   (pool-entries (make-hash-table :test #'equal))
-  fields
-  methods
   static-code
   objects ;; an alist of externalized objects and their field names
   (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions

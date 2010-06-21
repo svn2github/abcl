@@ -1751,10 +1751,9 @@ representation, based on the derived type of the LispObject."
   name-index
   descriptor-index)
 
-(defstruct (java-method (:conc-name method-) (:constructor %make-method))
-  access-flags
-  name
-  descriptor
+(defstruct (java-method (:include method)
+                        (:conc-name method-)
+                        (:constructor %make-method))
   name-index
   descriptor-index
   max-stack
@@ -4905,7 +4904,7 @@ given a specific common representation.")
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
   `(let* ((,pathname (make-temp-file))
 	  (,class-file (make-class-file :pathname ,pathname
-				       :lambda-list ,lambda-list)))
+                                             :lambda-list ,lambda-list)))
      (unwind-protect
 	  (progn ,@body)
        (delete-file pathname))))
