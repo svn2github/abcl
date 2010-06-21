@@ -1,0 +1,45 @@
+
+This file describes the goals and current status of the
+branch it pertains to. In this case the generic-class-file branch.
+
+
+Goal(s)
+=======
+
+The goal of the branch is to replace the existing class file writer which
+is restricted to writing 2 methods in a class file with an extremely
+restricted set of signatures.
+
+The new writer will allow any number of methods with no limitation on the
+signatures to be used. This allows a number of things impossible today:
+
+ 1. Eliminating the external dependency of 'runtime-class.lisp' on ASM
+ 2. Moving initialization of 'final static' fields to the '<clinit>'
+      to make 100% sure they get initialized exactly once
+ 3. Using the Java-paradigm of having multiple methods with different
+      numbers of parameters to fill in default values
+
+--------------- example to go with item (3)
+final public LispObject execute() {
+  return execute(<default value>);
+}
+
+final public LispObject execute(LispObject arg1) {
+  return execute(arg1, <default value>);
+}
+
+final public LispObject execute(LispObject arg1, LispObject arg2) {
+  ...  do actual work ...;
+}
+--------------- end of example
+
+
+
+
+Status
+======
+
+The replacement code is located in the java-class-file.lisp file.
+
+The rest of the status is still to be described.
+
