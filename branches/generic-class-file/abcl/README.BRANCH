@@ -35,11 +35,34 @@ final public LispObject execute(LispObject arg1, LispObject arg2) {
 
 
 
+Design
+======
+
+
+
 
 Status
 ======
 
 The replacement code is located in the java-class-file.lisp file.
+
+TODO:
+
+ * All methods preceded by an exclamation mark have equal names in
+   compiler-pass2; this situation is to be resolved eventually.
+   Preferrably even before merging back to trunk.
+
+ * Move 'code-bytes' to opcodes.lisp
+
+ * Rename opcodes.lisp to jvm-opcodes.lisp [probably more an action for trunk/]
+
+ * Writing unit-tests
+
+ * Write compiler-pass2.lisp to use WITH-CODE-TO-METHOD to select the
+   method to send output to
+
+ * 
+
 
 The rest of the status is still to be described.
 
