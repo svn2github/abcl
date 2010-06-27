@@ -372,19 +372,27 @@ ABCL doesn't use interfaces, so don't implement it here at this time
 (defun make-field (name type &key (flags '(:public)))
   (%make-field :access-flags flags
                :name name
-               :descriptor (map-primitive-type type)))
+               :descriptor type))
 
 (defun add-field-attribute (field attribute)
   (push attribute (field-attributes field)))
 
 
 (defun finalize-field (field class)
-  (declare (ignore class field))
-  (error "Not implemented"))
+  (let ((pool (class-file-constants class)))
+    (setf (field-access-flags field)
+          (map-flags (field-access-flags field))
+          (field-descriptor field)
+          (pool-add-utf8 pool (internal-field-type (field-descriptor field)))
+          (field-name field)
+          (pool-add-utf8 pool (field-name field))))
+  (finalize-attributes (field-attributes field) nil class))
 
 (defun !write-field (field stream)
-  (declare (ignore field stream))
-  (error "Not implemented"))
+  (write-u2 (field-access-flags field) stream)
+  (write-u2 (field-name field) stream)
+  (write-u2 (field-descriptor field) stream)
+  (write-attributes (field-attributes field) stream))
 
 
 (defstruct (method (:constructor %!make-method))
@@ -429,18 +437,21 @@ ABCL doesn't use interfaces, so don't implement it here at this time
 
 
 (defun finalize-method (method class)
-  (setf (method-access-flags method)
-        (map-flags (method-access-flags method))
-        (method-descriptor method)
-        (pool-add-utf8 (apply #'descriptor (method-descriptor method)))
-        (method-name method)
-        (pool-add-utf8 (map-method-name (method-name method))))
-  (finalize-attributes attributes nil class))
+  (let ((pool (class-file-constants class)))
+    (setf (method-access-flags method)
+          (map-flags (method-access-flags method))
+          (method-descriptor method)
+          (pool-add-utf8 pool (apply #'descriptor (method-descriptor method)))
+          (method-name method)
+          (pool-add-utf8 pool (map-method-name (method-name method)))))
+  (finalize-attributes (method-attributes method) nil class))
 
 
 (defun !write-method (method stream)
-  (declare (ignore method stream))
-  (error "Not implemented"))
+  (write-u2 (method-access-flags method) stream)
+  (write-u2 (method-name method) stream)
+  (write-u2 (method-descriptor method) stream)
+  (write-attributes (method-attributes method) stream))
 
 (defstruct attribute
   name
