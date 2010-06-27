@@ -137,6 +137,20 @@ representation to use.
     "org.armedbear.lisp.Closure$Parameter")
 (define-class-name +!fasl-loader+ "org.armedbear.lisp.FaslClassLoader")
 
+#|
+
+Lisp-side descriptor representation:
+
+ - list: a list starting with a method return value, followed by
+     the argument types
+ - keyword: the primitive type associated with that keyword
+ - class-name structure instance: the class-ref value
+
+The latter two can be converted to a Java representation using
+the `internal-field-ref' function, the former is to be fed to
+`descriptor'.
+
+|#
 
 (defun internal-field-type (field-type)
   (if (keywordp field-type)
@@ -178,27 +192,47 @@ representation to use.
     (:name-and-type 12 1)
     (:utf8           1 1)))
 
-(defstruct (constant-class (:include constant
+(defstruct (constant-class (:constructor make-constant-class (index name-index))
+                           (:include constant
                                      (tag 7)))
-  name)
+  name-index)
 
 (defstruct (constant-member-ref (:include constant))
   class
   name/type)
 
-(defstruct (constant-string (:constructor make-constant-string
-                                          (index value-index))
+(defstruct (constant-string (:constructor
+                             make-constant-string (index value-index))
                             (:include constant
                                       (tag 8)))
   value-index) ;;; #### is this the value or the value index???
 
-(defstruct (constant-float/int (:include constant))
+(defstruct (constant-float/int (:constructor
+                                %make-constant-float/int (tag index value))
+                               (:include constant))
   value)
 
-(defstruct (constant-double/long (:include constant))
+(declaim (inline make-constant-float make-constant-int))
+(defun make-constant-float (index value)
+  (%make-constant-float/int 4 index value))
+
+(defun make-constant-int (index value)
+  (%make-constant-float/int 3 index value))
+
+(defstruct (constant-double/long (:constructor
+                                  %make-constant-double/long (tag index value))
+                                 (:include constant))
   value)
 
-(defstruct (constant-name/type (:include constant))
+(declaim (inline make-constant-double make-constant-float))
+(defun make-constant-double (index value)
+  (%make-constant-double/long 6 index value))
+
+(defun make-constant-long (index value)
+  (%make-constant-double/long 5 index value))
+
+(defstruct (constant-name/type (:include constant
+                                         (tag 12)))
   name-index
   descriptor-index)
 
@@ -208,13 +242,48 @@ representation to use.
   value)
 
 
+(defun pool-add-class (pool class)
+  ;; ### do we make class a string or class-name structure?
+  (let ((entry (gethash class (pool-entries pool))))
+    (unless entry
+      (setf entry
+            (make-constant-class (incf (pool-count pool))
+                                 (pool-add-utf8 pool
+                                                (class-name-internal class)))
+            (gethash class (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-member-ref (pool class name type)
+  (let ((entry (gethash (acons name type class) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-member-ref (incf (pool-count pool))
+                                            (pool-add-class pool class)
+                                            (pool-add-name/type pool name type))
+            (gethash (acons name type class) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
 (defun pool-add-string (pool string)
   (let ((entry (gethash (cons 8 string) ;; 8 == string-tag
                         (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-string (pool-add-utf8 pool string))
+      (setf entry (make-constant-string (incf (pool-count pool))
+                                        (pool-add-utf8 pool string))
             (gethash (cons 8 string) (pool-entries pool)) entry)
-      (incf (pool-count pool))
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-name/type (pool name type)
+  (let ((entry (gethash (cons name type) (pool-entries pool)))
+        (internal-type (if (listp type)
+                           (apply #'descriptor type)
+                           (internal-field-ref type))))
+    (unless entry
+      (setf entry (make-constant-name/type (incf (pool-count pool))
+                                           (pool-add-utf8 pool name)
+                                           (pool-add-utf8 pool internal-type))
+            (gethash (cons name type) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
 
@@ -222,9 +291,8 @@ representation to use.
   (let ((entry (gethash (cons 11 utf8-as-string) ;; 11 == utf8
                         (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-utf8 (pool-count pool) utf8-as-string)
+      (setf entry (make-constant-utf8 (incf (pool-count pool)) utf8-as-string)
             (gethash (cons 11 utf8-as-string) (pool-entries pool)) entry)
-      (incf (pool-count pool))
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
 
@@ -328,7 +396,7 @@ representation to use.
        (write-u2 (second entry) stream)
        (write-u2 (third entry) stream))
       ((7 8) ; class string
-       (write-u2 (constant-class-name entry) stream))
+       (write-u2 (constant-class-name-index entry) stream))
       (t
        (error "write-constant-pool-entry unhandled tag ~D~%" tag))))))
 
