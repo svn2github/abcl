@@ -38,7 +38,14 @@ final public LispObject execute(LispObject arg1, LispObject arg2) {
 Design
 ======
 
+The code uses structures and structure inclusion for the class file and
+class file attributes. Each attribute type has an associated specific
+finalizer and writer function. This should allow for future ease of
+extension.
 
+There are three phases in the design. Read about that in the file itself.
+
+Structure inclusion is used as a means of single inheritance.
 
 
 Status

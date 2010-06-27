@@ -1,7 +1,7 @@
 ;;; jvm-class-file.lisp
 ;;;
 ;;; Copyright (C) 2010 Erik Huelsmann
-;;; $Id: compiler-pass2.lisp 12311 2009-12-28 23:11:35Z ehuelsmann $
+;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
@@ -59,15 +59,15 @@ The reason to do so is that the exceptions need to refer to labels
 
 (defun map-primitive-type (type)
   (case type
-    (:int      "I")
-    (:long     "J")
-    (:float    "F")
-    (:double   "D")
-    (:boolean  "Z")
-    (:char     "C")
-    (:byte     "B")
-    (:short    "S")
-    (:void     "V")))
+    (:int        "I")
+    (:long       "J")
+    (:float      "F")
+    (:double     "D")
+    (:boolean    "Z")
+    (:char       "C")
+    (:byte       "B")
+    (:short      "S")
+    ((nil :void) "V")))
 
 
 #|
@@ -138,24 +138,27 @@ representation to use.
 (define-class-name +!fasl-loader+ "org.armedbear.lisp.FaslClassLoader")
 
 
-(defun descriptor (method-name return-type &rest argument-types)
-  (format nil "~A(~{~A~}~A)" method-name
-          (mapcar #'(lambda (arg-type)
-                      (if (keywordp arg-type)
-                          (map-primitive-type arg-type)
-                          (class-ref arg-type)))
-                  argument-types)
-          (if (keywordp return-type)
-              (map-primitive-type return-type)
-              (class-name-internal return-type))))
+(defun internal-field-type (field-type)
+  (if (keywordp field-type)
+      (map-primitive-type field-type)
+      (class-name-internal field-type)))
 
+(defun internal-field-ref (field-type)
+  (if (keywordp field-type)
+      (map-primitive-type field-type)
+      (class-ref field-type)))
 
-
+(defun descriptor (return-type &rest argument-types)
+  (format nil "(~{~A~}~A)" (mapcar #'internal-field-ref argument-types)
+          (internal-field-type return-type)))
 
 
 (defstruct pool
-  (count 1)  ;; ####  why count 1???
+  (count 1)  ;; "A constant pool entry is considered valid if it has
+             ;; an index greater than 0 (zero) and less than pool-count"
   entries-list
+  ;; the entries hash stores raw values, except in case of string and
+  ;; utf8, because both are string values
   (entries (make-hash-table :test #'equal :size 2048 :rehash-size 2.0)))
 
 (defstruct constant
@@ -183,7 +186,8 @@ representation to use.
   class
   name/type)
 
-(defstruct (constant-string (:constructor make-constant-string (value-index))
+(defstruct (constant-string (:constructor make-constant-string
+                                          (index value-index))
                             (:include constant
                                       (tag 8)))
   value-index) ;;; #### is this the value or the value index???
@@ -198,22 +202,31 @@ representation to use.
   name-index
   descriptor-index)
 
-(defstruct (constant-utf8 (:include constant))
+(defstruct (constant-utf8 (:constructor make-constant-utf8 (index value))
+                          (:include constant
+                                    (tag 11)))
   value)
 
 
-;; Need to add pool/constant creation addition routines here;
-;; all routines have 2 branches: return existing or push new.
-
 (defun pool-add-string (pool string)
-  (let ((entry (gethash (pool-entries string))))
+  (let ((entry (gethash (cons 8 string) ;; 8 == string-tag
+                        (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-string (pool-count pool) string))
-      (push entry (pool-entries-list pool))
-      (incf (pool-count pool)))
+      (setf entry (make-constant-string (pool-add-utf8 pool string))
+            (gethash (cons 8 string) (pool-entries pool)) entry)
+      (incf (pool-count pool))
+      (push entry (pool-entries-list pool)))
     (constant-index entry)))
 
-
+(defun pool-add-utf8 (pool utf8-as-string)
+  (let ((entry (gethash (cons 11 utf8-as-string) ;; 11 == utf8
+                        (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-utf8 (pool-count pool) utf8-as-string)
+            (gethash (cons 11 utf8-as-string) (pool-entries pool)) entry)
+      (incf (pool-count pool))
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
 
 (defstruct (class-file (:constructor %make-class-file))
   constants
@@ -416,8 +429,13 @@ ABCL doesn't use interfaces, so don't implement it here at this time
 
 
 (defun finalize-method (method class)
-  (declare (ignore method class))
-  (error "Not implemented"))
+  (setf (method-access-flags method)
+        (map-flags (method-access-flags method))
+        (method-descriptor method)
+        (pool-add-utf8 (apply #'descriptor (method-descriptor method)))
+        (method-name method)
+        (pool-add-utf8 (map-method-name (method-name method))))
+  (finalize-attributes attributes nil class))
 
 
 (defun !write-method (method stream)
