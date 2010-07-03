@@ -390,12 +390,22 @@ the `internal-field-ref' function, the former is to be fed to
   (push method (class-file-methods class)))
 
 (defun class-methods-by-name (class name)
-  (remove (map-method-name name) (class-file-methods class)
+  (remove name (class-file-methods class)
           :test-not #'string= :key #'method-name))
 
-(defun class-method (class descriptor)
-  (find descriptor (class-file-methods class)
-        :test #'string= :key #'method-name))
+(defun class-method (class name return &rest args)
+  (let ((return-and-args (cons return args)))
+    (find-if #'(lambda (c)
+                 (and (string= (method-name c) name)
+                      (equal (method-descriptor c) return-and-args)))
+             (class-file-methods class))))
+
+(defun class-add-attribute (class attribute)
+  (push atttribute (class-file-attributes class)))
+
+(defun class-attribute (class name)
+  (find name (class-file-attributes class)
+        :test #'string= :key #'attribute-name))
 
 
 (defun finalize-class-file (class)
@@ -521,9 +531,12 @@ ABCL doesn't use interfaces, so don't implement it here at this time
                :name name
                :descriptor type))
 
-(defun add-field-attribute (field attribute)
+(defun field-add-attribute (field attribute)
   (push attribute (field-attributes field)))
 
+(defun field-attribute (field name)
+  (find name (field-attributes field)
+        :test #'string= :key #'attribute-name))
 
 (defun finalize-field (field class)
   (let ((pool (class-file-constants class)))
