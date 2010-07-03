@@ -199,9 +199,23 @@ the `internal-field-ref' function, the former is to be fed to
                                      (tag 7)))
   name-index)
 
-(defstruct (constant-member-ref (:include constant))
-  class
-  name/type)
+(defstruct (constant-member-ref (:constructor
+                                 %make-constant-member-ref
+                                     (tag index class-index name/type-index))
+                                (:include constant))
+  class-index
+  name/type-index)
+
+(declaim (inline make-constant-field-ref make-constant-method-ref
+                 make-constant-interface-method-ref))
+(defun make-constant-field-ref (index class-index name/type-index)
+  (%make-constant-member-ref 9 index class-index name/type-index))
+
+(defun make-constant-method-ref (index class-index name/type-index)
+  (%make-constant-member-ref 10 index class-index name/type-index))
+
+(defun make-constant-interface-method-ref (index class-index name/type-index)
+  (%make-constant-member-ref 11 index class-index name/type-index))
 
 (defstruct (constant-string (:constructor
                              make-constant-string (index value-index))
@@ -256,12 +270,34 @@ the `internal-field-ref' function, the former is to be fed to
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
 
-(defun pool-add-member-ref (pool class name type)
+(defun pool-add-field-ref (pool class name type)
   (let ((entry (gethash (acons name type class) (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-member-ref (incf (pool-count pool))
+      (setf entry (make-constant-field-ref (incf (pool-count pool))
+                                           (pool-add-class pool class)
+                                           (pool-add-name/type pool name type))
+            (gethash (acons name type class) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-method-ref (pool class name type)
+  (let ((entry (gethash (acons name type class) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-method-ref (incf (pool-count pool))
                                             (pool-add-class pool class)
                                             (pool-add-name/type pool name type))
+            (gethash (acons name type class) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-interface-method-ref (pool class name type)
+  (let ((entry (gethash (acons name type class) (pool-entries pool))))
+    (unless entry
+      (setf entry
+            (make-constant-interface-method-ref (incf (pool-count pool))
+                                                (pool-add-class pool class)
+                                                (pool-add-name/type pool
+                                                                    name type))
             (gethash (acons name type class) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
@@ -369,7 +405,8 @@ the `internal-field-ref' function, the former is to be fed to
 
   (setf (class-file-access-flags class)
         (map-flags (class-file-access-flags class)))
-  ;; (finalize-class-name )
+  (setf (class-file-class-name class)
+        (pool-add-class (class-name-internal (class-file-class-name class))))
   ;;  (finalize-interfaces)
   (dolist (field (class-file-fields class))
     (finalize-field field class))
@@ -426,13 +463,19 @@ the `internal-field-ref' function, the former is to be fed to
       ((3 4) ; int
        (write-u4 (constant-float/int-value entry) stream))
       ((5 6) ; long double
-       (write-u4 (second entry) stream)
-       (write-u4 (third entry) stream))
-      ((9 10 11 12) ; fieldref methodref InterfaceMethodref nameAndType
-       (write-u2 (second entry) stream)
-       (write-u2 (third entry) stream))
-      ((7 8) ; class string
+       (write-u4 (logand (ash (constant-double/long-value entry) -32)
+                         #xFFFFffff) stream)
+       (write-u4 (logand (constant-double/long-value entry) #xFFFFffff) stream))
+      ((9 10 11) ; fieldref methodref InterfaceMethodref
+       (write-u2 (constant-member-ref-class-index entry) stream)
+       (write-u2 (constant-member-ref-name/type-index entry) stream))
+      (12 ; nameAndType
+       (write-u2 (constant-name/type-name-index entry) stream)
+       (write-u2 (constant-name/type-descriptor-index entry) stream))
+      (7  ; class
        (write-u2 (constant-class-name-index entry) stream))
+      (8  ; string
+       (write-u2 (constant-string-value-index entry) stream))
       (t
        (error "write-constant-pool-entry unhandled tag ~D~%" tag))))))
 
@@ -517,15 +560,8 @@ ABCL doesn't use interfaces, so don't implement it here at this time
      "<init>")
     (t name)))
 
-(defun !make-method-descriptor (name return &rest args)
-  (apply #'concatenate (append (list 'string (map-method-name name) "(")
-                               (mapcar #'map-primitive-type args)
-                               (list ")" return))))
-
 (defun !make-method (name return args &key (flags '(:public)))
-  (setf name (map-method-name name))
-  (%make-method :descriptor (apply #'make-method-descriptor
-                                   name return args)
+  (%make-method :descriptor (cons return args)
                 :access-flags flags
                 :name name
                 :arg-count (if (member :static flags)
