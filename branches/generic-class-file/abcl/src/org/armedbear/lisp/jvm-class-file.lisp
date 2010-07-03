@@ -560,8 +560,6 @@ ABCL doesn't use interfaces, so don't implement it here at this time
   name
   descriptor
   attributes
-  arg-count ;; not in the class file,
-            ;; but required for setting up CODE attribute
   )
 
 
@@ -576,13 +574,17 @@ ABCL doesn't use interfaces, so don't implement it here at this time
 (defun !make-method (name return args &key (flags '(:public)))
   (%make-method :descriptor (cons return args)
                 :access-flags flags
-                :name name
-                :arg-count (if (member :static flags)
-                               (length args)
-                               (1+ (length args))))) ;; implicit 'this'
+                :name name))
 
 (defun method-add-attribute (method attribute)
   (push attribute (method-attributes method)))
+
+(defun method-add-code (method)
+  "Creates an (empty) 'Code' attribute for the method."
+  (method-add-attribute
+   (make-code-attribute (+ (length args)
+                           (if (member :static (method-access-flags method))
+                               0 1))))) ;; 1 == implicit 'this'
 
 (defun method-attribute (method name)
   (find name (method-attributes method)
@@ -676,8 +678,10 @@ ABCL doesn't use interfaces, so don't implement it here at this time
       (write-u1 (svref code-array i) stream)))
   (write-attributes (code-attributes code) stream))
 
-(defun make-code-attribute (method)
-  (%make-code-attribute :max-locals (method-arg-count method)))
+(defun make-code-attribute (arg-count)
+  "Creates an empty 'Code' attribute for a method which takes
+`arg-count` parameters, including the implicit `this` parameter."
+  (%make-code-attribute :max-locals arg-count))
 
 (defun code-add-attribute (code attribute)
   (push attribute (code-attributes code)))
