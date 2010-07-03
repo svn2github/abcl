@@ -168,8 +168,10 @@ the `internal-field-ref' function, the former is to be fed to
 
 
 (defstruct pool
-  (count 1)  ;; "A constant pool entry is considered valid if it has
-             ;; an index greater than 0 (zero) and less than pool-count"
+  ;; `count' contains a reference to the last-used slot (0 being empty)
+  ;; "A constant pool entry is considered valid if it has
+  ;; an index greater than 0 (zero) and less than pool-count"
+  (count 0)
   entries-list
   ;; the entries hash stores raw values, except in case of string and
   ;; utf8, because both are string values
@@ -272,6 +274,40 @@ the `internal-field-ref' function, the former is to be fed to
                                         (pool-add-utf8 pool string))
             (gethash (cons 8 string) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-int (pool int)
+  (let ((entry (gethash (cons 3 int) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-int (incf (pool-count pool)) int)
+            (gethash (cons 3 int) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-float (pool float)
+  (let ((entry (gethash (cons 4 float) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-float (incf (pool-count pool)) float)
+            (gethash (cons 4 float) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool)))
+    (constant-index entry)))
+
+(defun pool-add-long (pool long)
+  (let ((entry (gethash (cons 5 long) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-long (incf (pool-count pool)) long)
+            (gethash (cons 5 long) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool))
+      (incf (pool-count pool))) ;; double index increase; long takes 2 slots
+    (constant-index entry)))
+
+(defun pool-add-double (pool double)
+  (let ((entry (gethash (cons 6 double) (pool-entries pool))))
+    (unless entry
+      (setf entry (make-constant-double (incf (pool-count pool)) double)
+            (gethash (cons 6 double) (pool-entries pool)) entry)
+      (push entry (pool-entries-list pool))
+      (incf (pool-count pool))) ;; double index increase; 'double' takes 2 slots
     (constant-index entry)))
 
 (defun pool-add-name/type (pool name type)
