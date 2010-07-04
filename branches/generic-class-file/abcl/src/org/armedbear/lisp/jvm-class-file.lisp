@@ -153,17 +153,17 @@ the `internal-field-ref' function, the former is to be fed to
 |#
 
 (defun internal-field-type (field-type)
-  (if (keywordp field-type)
+  (if (symbolp field-type)
       (map-primitive-type field-type)
       (class-name-internal field-type)))
 
 (defun internal-field-ref (field-type)
-  (if (keywordp field-type)
+  (if (symbolp field-type)
       (map-primitive-type field-type)
       (class-ref field-type)))
 
 (defun descriptor (return-type &rest argument-types)
-  (format nil "(~{~A~}~A)" (mapcar #'internal-field-ref argument-types)
+  (format nil "(~{~A~})~A" (mapcar #'internal-field-ref argument-types)
           (internal-field-type return-type)))
 
 
@@ -401,7 +401,7 @@ the `internal-field-ref' function, the former is to be fed to
              (class-file-methods class))))
 
 (defun class-add-attribute (class attribute)
-  (push atttribute (class-file-attributes class)))
+  (push attribute (class-file-attributes class)))
 
 (defun class-attribute (class name)
   (find name (class-file-attributes class)
@@ -415,8 +415,8 @@ the `internal-field-ref' function, the former is to be fed to
 
   (setf (class-file-access-flags class)
         (map-flags (class-file-access-flags class)))
-  (setf (class-file-class-name class)
-        (pool-add-class (class-name-internal (class-file-class-name class))))
+  (setf (class-file-class class)
+        (pool-add-class (class-name-internal (class-file-class class))))
   ;;  (finalize-interfaces)
   (dolist (field (class-file-fields class))
     (finalize-field field class))
@@ -582,7 +582,7 @@ ABCL doesn't use interfaces, so don't implement it here at this time
 (defun method-add-code (method)
   "Creates an (empty) 'Code' attribute for the method."
   (method-add-attribute
-   (make-code-attribute (+ (length args)
+   (make-code-attribute (+ (length (cdr (method-descriptor method)))
                            (if (member :static (method-access-flags method))
                                0 1))))) ;; 1 == implicit 'this'
 
