@@ -247,7 +247,11 @@ the `internal-field-ref' function, the former is to be fed to
 (defun make-constant-long (index value)
   (%make-constant-double/long 5 index value))
 
-(defstruct (constant-name/type (:include constant
+(defstruct (constant-name/type (:constructor
+                                make-constant-name/type (index
+                                                         name-index
+                                                         descriptor-index))
+                               (:include constant
                                          (tag 12)))
   name-index
   descriptor-index)
@@ -368,16 +372,16 @@ the `internal-field-ref' function, the former is to be fed to
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
 
-(defstruct (class-file (:constructor %make-class-file))
-  constants
+(defstruct (class-file (:constructor
+                        !make-class-file (class superclass access-flags)))
+  (constants (make-pool))
   access-flags
   class
   superclass
   ;; interfaces
   fields
   methods
-  attributes
-  )
+  attributes)
 
 (defun class-add-field (class field)
   (push field (class-file-fields class)))
