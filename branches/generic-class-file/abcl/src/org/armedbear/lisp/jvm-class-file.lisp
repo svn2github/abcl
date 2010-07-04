@@ -420,7 +420,8 @@ the `internal-field-ref' function, the former is to be fed to
   (setf (class-file-access-flags class)
         (map-flags (class-file-access-flags class)))
   (setf (class-file-class class)
-        (pool-add-class (class-name-internal (class-file-class class))))
+        (pool-add-class (class-file-constants class)
+                        (class-file-class class)))
   ;;  (finalize-interfaces)
   (dolist (field (class-file-fields class))
     (finalize-field field class))
@@ -516,11 +517,11 @@ ABCL doesn't use interfaces, so don't implement it here at this time
     (:strict       #x0800)))
 
 (defun map-flags (flags)
-  (reduce #'(lambda (x y)
+  (reduce #'(lambda (y x)
               (logior (or (when (member (car x) flags)
                             (second x))
-                          0) y)
-              (logior (or )))
+                          0) y))
+          +access-flags-map+
           :initial-value 0))
 
 (defstruct (field (:constructor %make-field))
