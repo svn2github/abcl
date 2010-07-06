@@ -127,8 +127,8 @@ initialized from the `java-dotted-name'."
     "org.armedbear.lisp.AbstractBitVector")
 (define-class-name +!lisp-environment+ "org.armedbear.lisp.Environment")
 (define-class-name +!lisp-special-binding+ "org.armedbear.lisp.SpecialBinding")
-(define-class-name +lisp-special-binding-mark+
-    "org.armedbear.lisp.SpecialBindingMark")
+(define-class-name +lisp-special-bindings-mark+
+    "org.armedbear.lisp.SpecialBindingsMark")
 (define-class-name +!lisp-throw+ "org.armedbear.lisp.Throw")
 (define-class-name +!lisp-return+ "org.armedbear.lisp.Return")
 (define-class-name +!lisp-go+ "org.armedbear.lisp.Go")
