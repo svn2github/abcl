@@ -200,18 +200,15 @@
 
 (defconstant +fasl-loader-class+
   "org/armedbear/lisp/FaslClassLoader")
-(defconstant +lisp-class-class+ "org/armedbear/lisp/LispClass")
 (defconstant +lisp-object-class+ "org/armedbear/lisp/LispObject")
 (defconstant +lisp-object+ "Lorg/armedbear/lisp/LispObject;")
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
-(defconstant +closure-binding-class+ "org/armedbear/lisp/ClosureBinding")
 (defconstant +lisp-symbol-class+ "org/armedbear/lisp/Symbol")
 (defconstant +lisp-symbol+ "Lorg/armedbear/lisp/Symbol;")
 (defconstant +lisp-structure-object-class+ "org/armedbear/lisp/StructureObject")
 (defconstant +lisp-thread-class+ "org/armedbear/lisp/LispThread")
 (defconstant +lisp-thread+ "Lorg/armedbear/lisp/LispThread;")
-(defconstant +lisp-load-class+ "org/armedbear/lisp/Load")
 (defconstant +lisp-cons-class+ "org/armedbear/lisp/Cons")
 (defconstant +lisp-cons+ "Lorg/armedbear/lisp/Cons;")
 (defconstant +lisp-integer-class+ "org/armedbear/lisp/LispInteger")
@@ -241,19 +238,12 @@
 (defconstant +lisp-environment-class+ "org/armedbear/lisp/Environment")
 (defconstant +lisp-special-binding+ "Lorg/armedbear/lisp/SpecialBinding;")
 (defconstant +lisp-special-binding-class+ "org/armedbear/lisp/SpecialBinding")
-(defconstant +lisp-special-bindings-mark+ "Lorg/armedbear/lisp/SpecialBindingsMark;")
-(defconstant +lisp-special-bindings-mark-class+ "org/armedbear/lisp/SpecialBindingsMark")
 (defconstant +lisp-throw-class+ "org/armedbear/lisp/Throw")
 (defconstant +lisp-return-class+ "org/armedbear/lisp/Return")
 (defconstant +lisp-go-class+ "org/armedbear/lisp/Go")
-(defconstant +lisp-compiled-closure-class+ "org/armedbear/lisp/CompiledClosure")
 (defconstant +lisp-primitive-class+ "org/armedbear/lisp/Primitive")
 (defconstant +lisp-hash-table-class+ "org/armedbear/lisp/HashTable")
 (defconstant +lisp-eql-hash-table-class+ "org/armedbear/lisp/EqlHashTable")
-(defconstant +lisp-package-class+ "org/armedbear/lisp/Package")
-(defconstant +lisp-readtable-class+ "org/armedbear/lisp/Readtable")
-(defconstant +lisp-stream-class+ "org/armedbear/lisp/Stream")
-(defconstant +lisp-closure-class+ "org/armedbear/lisp/Closure")
 (defconstant +lisp-closure-parameter-class+ "org/armedbear/lisp/Closure$Parameter")
 (defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
 
@@ -785,7 +775,7 @@ before the emitted code: the code is 'stack-neutral'."
                             (CONS       +lisp-cons-class+)
                             (HASH-TABLE +lisp-hash-table-class+)
                             (FIXNUM     +lisp-fixnum-class+)
-                            (STREAM     +lisp-stream-class+)
+                            (STREAM     +lisp-stream+)
                             (STRING     +lisp-abstract-string-class+)
                             (VECTOR     +lisp-abstract-vector-class+)))
         (expected-type-java-symbol-name (case expected-type
@@ -1864,7 +1854,7 @@ representation, based on the derived type of the LispObject."
              (if (null (third param))               ;; supplied-p
                  (emit-push-nil)
                  (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit 'getstatic +lisp-closure-class+ "OPTIONAL" "I")
+             (emit 'getstatic +lisp-closure+ "OPTIONAL" "I")
              (emit-invokespecial-init +lisp-closure-parameter-class+
                                       (list +lisp-symbol+ +lisp-object+
                                             +lisp-object+ "I")))
@@ -1897,7 +1887,7 @@ representation, based on the derived type of the LispObject."
            (emit-constructor-lambda-name lambda-name)
            (emit-constructor-lambda-list args)
            (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super +lisp-compiled-closure-class+)
+          ((equal super +lisp-compiled-closure+) ;;### only needs EQ when SUPER is guaranteed to be CLASS-NAME
            (aload req-params-register)
            (aload opt-params-register)
            (aload key-params-register)
@@ -2134,7 +2124,7 @@ of the other types."
        (emit 'getstatic class name +lisp-symbol+))
       ((null (symbol-package symbol))
        (emit-push-constant-int (dump-uninterned-symbol-index symbol))
-       (emit-invokestatic +lisp-load-class+ "getUninternedSymbol" '("I")
+       (emit-invokestatic +lisp-load+ "getUninternedSymbol" '("I")
                           +lisp-object+)
        (emit 'checkcast +lisp-symbol-class+))
       ((keywordp symbol)
@@ -3052,7 +3042,7 @@ is registered (or not)."
     (aload (compiland-closure-register compiland))        ;; src
     (emit-push-constant-int 0)                            ;; srcPos
     (emit-push-constant-int (length *closure-variables*))
-    (emit 'anewarray +closure-binding-class+)             ;; dest
+    (emit 'anewarray +lisp-closure-binding+)             ;; dest
     (emit 'dup)
     (astore register)  ;; save dest value
     (emit-push-constant-int 0)                            ;; destPos
@@ -3101,7 +3091,7 @@ Note: DEFUN implies a named lambda."
              (emit 'getstatic *this-class* g +lisp-object+)
                                         ; Stack: template-function
              (when *closure-variables*
-               (emit 'checkcast +lisp-compiled-closure-class+)
+               (emit 'checkcast +lisp-compiled-closure+)
                (duplicate-closure-array compiland)
                (emit-invokestatic +lisp+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
@@ -3391,7 +3381,7 @@ given a specific common representation.")
   (p2-test-predicate form "numberp"))
 
 (defun p2-test-packagep (form)
-  (p2-test-instanceof-predicate form +lisp-package-class+))
+  (p2-test-instanceof-predicate form +lisp-package+))
 
 (defun p2-test-rationalp (form)
   (p2-test-predicate form "rationalp"))
@@ -3931,10 +3921,10 @@ given a specific common representation.")
 (declaim (ftype (function (t) t) emit-new-closure-binding))
 (defun emit-new-closure-binding (variable)
   ""
-  (emit 'new +closure-binding-class+)            ;; value c-b
+  (emit 'new +lisp-closure-binding+)            ;; value c-b
   (emit 'dup_x1)                                 ;; c-b value c-b
   (emit 'swap)                                   ;; c-b c-b value
-  (emit-invokespecial-init +closure-binding-class+
+  (emit-invokespecial-init +lisp-closure-binding+
                            (list +lisp-object+)) ;; c-b
   (aload (compiland-closure-register *current-compiland*))
                                                  ;; c-b array
@@ -4235,7 +4225,7 @@ given a specific common representation.")
            (emit-push-constant-int (variable-closure-index variable))
            (emit 'aaload)
            (emit-swap representation nil)
-           (emit 'putfield +closure-binding-class+ "value" +lisp-object+))
+           (emit 'putfield +lisp-closure-binding+ "value" +lisp-object+))
           ((variable-environment variable)
            (assert (not *file-compilation*))
            (emit-load-externalized-object (variable-environment variable)
@@ -4267,7 +4257,7 @@ given a specific common representation.")
          (aload (compiland-closure-register *current-compiland*))
          (emit-push-constant-int (variable-closure-index variable))
          (emit 'aaload)
-         (emit 'getfield +closure-binding-class+ "value" +lisp-object+))
+         (emit 'getfield +lisp-closure-binding+ "value" +lisp-object+))
         ((variable-environment variable)
          (assert (not *file-compilation*))
          (emit-load-externalized-object (variable-environment variable)
@@ -4653,10 +4643,10 @@ given a specific common representation.")
   (p2-instanceof-predicate form target representation +lisp-fixnum-class+))
 
 (defun p2-packagep (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-package-class+))
+  (p2-instanceof-predicate form target representation +lisp-package+))
 
 (defun p2-readtablep (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-readtable-class+))
+  (p2-instanceof-predicate form target representation +lisp-readtable+))
 
 (defun p2-simple-vector-p (form target representation)
   (p2-instanceof-predicate form target representation +lisp-simple-vector-class+))
@@ -4955,7 +4945,7 @@ given a specific common representation.")
     (when (compiland-closure-register parent)
       (dformat t "(compiland-closure-register parent) = ~S~%"
 	       (compiland-closure-register parent))
-      (emit 'checkcast +lisp-compiled-closure-class+)
+      (emit 'checkcast +lisp-compiled-closure+)
       (duplicate-closure-array parent)
       (emit-invokestatic +lisp+ "makeCompiledClosure"
 			 (list +lisp-object+ +closure-binding-array+)
@@ -5085,7 +5075,7 @@ given a specific common representation.")
                                         ; Stack: template-function
 
                (when (compiland-closure-register *current-compiland*)
-                 (emit 'checkcast +lisp-compiled-closure-class+)
+                 (emit 'checkcast +lisp-compiled-closure+)
                  (duplicate-closure-array *current-compiland*)
                  (emit-invokestatic +lisp+ "makeCompiledClosure"
                                     (list +lisp-object+ +closure-binding-array+)
@@ -5623,7 +5613,7 @@ given a specific common representation.")
        ;; errorp is true
        (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
        (emit-push-constant-int 1) ; errorp
-       (emit-invokestatic +lisp-class-class+ "findClass"
+       (emit-invokestatic +lisp-class+ "findClass"
                           (list +lisp-object+ "Z") +lisp-object+)
        (fix-boxing representation nil)
        (emit-move-from-stack target representation))
@@ -5631,7 +5621,7 @@ given a specific common representation.")
        (let ((arg2 (second args)))
 	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						    arg2 'stack :boolean)
-         (emit-invokestatic +lisp-class-class+ "findClass"
+         (emit-invokestatic +lisp-class+ "findClass"
                             (list +lisp-object+ "Z") +lisp-object+)
          (fix-boxing representation nil)
          (emit-move-from-stack target representation)))
@@ -5809,8 +5799,8 @@ given a specific common representation.")
   (let ((arg (%cadr form)))
     (cond ((eq (derive-compiler-type arg) 'STREAM)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-           (emit 'checkcast +lisp-stream-class+)
-           (emit-invokevirtual +lisp-stream-class+ "getElementType"
+           (emit 'checkcast +lisp-stream+)
+           (emit-invokevirtual +lisp-stream+ "getElementType"
                                nil +lisp-object+)
            (emit-move-from-stack target representation))
           (t
@@ -5828,10 +5818,10 @@ given a specific common representation.")
                 (eq type2 'STREAM))
            (compile-form arg1 'stack :int)
            (compile-form arg2 'stack nil)
-           (emit 'checkcast +lisp-stream-class+)
+           (emit 'checkcast +lisp-stream+)
            (maybe-emit-clear-values arg1 arg2)
            (emit 'swap)
-           (emit-invokevirtual +lisp-stream-class+ "_writeByte" '("I") nil)
+           (emit-invokevirtual +lisp-stream+ "_writeByte" '("I") nil)
            (when target
              (emit-push-nil)
              (emit-move-from-stack target)))
@@ -5856,10 +5846,10 @@ given a specific common representation.")
               (type1 (derive-compiler-type arg1)))
          (cond ((compiler-subtypep type1 'stream)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
-                (emit 'checkcast +lisp-stream-class+)
+                (emit 'checkcast +lisp-stream+)
                 (emit-push-constant-int 1)
                 (emit-push-nil)
-                (emit-invokevirtual +lisp-stream-class+ "readLine"
+                (emit-invokevirtual +lisp-stream+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
                 (emit-move-from-stack target))
                (t
@@ -5870,10 +5860,10 @@ given a specific common representation.")
               (arg2 (%cadr args)))
          (cond ((and (compiler-subtypep type1 'stream) (null arg2))
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
-                (emit 'checkcast +lisp-stream-class+)
+                (emit 'checkcast +lisp-stream+)
                 (emit-push-constant-int 0)
                 (emit-push-nil)
-                (emit-invokevirtual +lisp-stream-class+ "readLine"
+                (emit-invokevirtual +lisp-stream+ "readLine"
                                     (list "Z" +lisp-object+) +lisp-object+)
                 (emit-move-from-stack target)
                 )
@@ -7487,7 +7477,7 @@ We need more thought here.
                             (CONS       +lisp-cons-class+)
                             (HASH-TABLE +lisp-hash-table-class+)
                             (FIXNUM     +lisp-fixnum-class+)
-			    (STREAM     +lisp-stream-class+)
+			    (STREAM     +lisp-stream+)
                             (STRING     +lisp-abstract-string-class+)
                             (VECTOR     +lisp-abstract-vector-class+)))
         (expected-type-java-symbol-name (case expected-type
@@ -7949,8 +7939,9 @@ We need more thought here.
 
 (defun write-class-file (class-file stream)
   (let* ((super (abcl-class-file-superclass class-file))
-         (this-index (pool-class (abcl-class-file-class class-file)))
-         (super-index (pool-class super))
+         (this (abcl-class-file-class class-file))
+         (this-index (pool-class (!class-name this)))
+         (super-index (pool-class (!class-name super)))
          (constructor (make-constructor super
                                         (abcl-class-file-lambda-name class-file)
                                         (abcl-class-file-lambda-list class-file))))
@@ -8102,10 +8093,10 @@ We need more thought here.
           (progn
             ;; if we're the ultimate parent: create the closure array
             (emit-push-constant-int (length *closure-variables*))
-            (emit 'anewarray +closure-binding-class+))
+            (emit 'anewarray +lisp-closure-binding+))
         (progn
           (aload 0)
-          (emit 'getfield +lisp-compiled-closure-class+ "ctx"
+          (emit 'getfield +lisp-compiled-closure+ "ctx"
                 +closure-binding-array+)
           (when local-closure-vars
             ;; in all other cases, it gets stored in the register below
@@ -8129,7 +8120,7 @@ We need more thought here.
             ;; we're the parent, or we have a variable to set.
             (emit 'dup) ; array
             (emit-push-constant-int i)
-            (emit 'new +closure-binding-class+)
+            (emit 'new +lisp-closure-binding+)
             (emit 'dup)
             (cond
               ((null variable)
@@ -8147,7 +8138,7 @@ We need more thought here.
                (setf (variable-index variable) nil))
               (t
                (assert (not "Can't happen!!"))))
-            (emit-invokespecial-init +closure-binding-class+
+            (emit-invokespecial-init +lisp-closure-binding+
                                      (list +lisp-object+))
             (emit 'aastore)))))
 
@@ -8247,7 +8238,7 @@ We need more thought here.
     (setf (abcl-class-file-superclass class-file)
           (if (or *hairy-arglist-p*
 		  (and *child-p* *closure-variables*))
-	      +lisp-compiled-closure-class+
+	      +lisp-compiled-closure+
 	    +lisp-primitive-class+))
 
     (setf (abcl-class-file-lambda-list class-file) args)
