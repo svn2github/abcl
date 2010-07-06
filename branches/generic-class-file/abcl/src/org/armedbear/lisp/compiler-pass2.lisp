@@ -200,10 +200,6 @@
 
 (defconstant +fasl-loader-class+
   "org/armedbear/lisp/FaslClassLoader")
-(defconstant +java-string+ "Ljava/lang/String;")
-(defconstant +java-object+ "Ljava/lang/Object;")
-(defconstant +lisp-class+ "org/armedbear/lisp/Lisp")
-(defconstant +lisp-nil-class+ "org/armedbear/lisp/Nil")
 (defconstant +lisp-class-class+ "org/armedbear/lisp/LispClass")
 (defconstant +lisp-object-class+ "org/armedbear/lisp/LispObject")
 (defconstant +lisp-object+ "Lorg/armedbear/lisp/LispObject;")
@@ -260,6 +256,20 @@
 (defconstant +lisp-closure-class+ "org/armedbear/lisp/Closure")
 (defconstant +lisp-closure-parameter-class+ "org/armedbear/lisp/Closure$Parameter")
 (defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
+
+(defun !class-name (class-name)
+  "To be eliminated when all hard-coded strings are replaced by `class-name'
+structures"
+  (if (typep class-name 'class-name)
+      (class-name-internal class-name)
+      class-name))
+
+(defun !class-ref (class-name)
+  "To be eliminated when all hard-coded strings are
+replaced by `class-name' structures"
+  (if (typep class-name 'class-name)
+      (class-ref class-name)
+      class-name))
 
 (defstruct (instruction (:constructor %make-instruction (opcode args)))
   (opcode 0 :type (integer 0 255))
@@ -342,17 +352,17 @@
 (defknown emit-push-nil () t)
 (declaim (inline emit-push-nil))
 (defun emit-push-nil ()
-  (emit 'getstatic +lisp-class+ "NIL" +lisp-object+))
+  (emit 'getstatic +lisp+ "NIL" +lisp-object+))
 
 (defknown emit-push-nil-symbol () t)
 (declaim (inline emit-push-nil-symbol))
 (defun emit-push-nil-symbol ()
-  (emit 'getstatic +lisp-nil-class+ "NIL" +lisp-symbol+))
+  (emit 'getstatic +lisp-nil+ "NIL" +lisp-symbol+))
 
 (defknown emit-push-t () t)
 (declaim (inline emit-push-t))
 (defun emit-push-t ()
-  (emit 'getstatic +lisp-class+ "T" +lisp-symbol+))
+  (emit 'getstatic +lisp+ "T" +lisp-symbol+))
 
 (defknown emit-push-false (t) t)
 (defun emit-push-false (representation)
@@ -494,7 +504,9 @@ the top-most value's representation being 'rep1'."
 
 (declaim (ftype (function (t t) cons) get-descriptor-info))
 (defun get-descriptor-info (arg-types return-type)
-  (let* ((key (list arg-types return-type))
+  (let* ((arg-types (mapcar #'!class-ref arg-types))
+         (return-type (!class-ref return-type))
+         (key (list arg-types return-type))
          (ht *descriptors*)
          (descriptor-info (gethash1 key ht)))
     (declare (type hash-table ht))
@@ -509,6 +521,7 @@ the top-most value's representation being 'rep1'."
   (let* ((info (get-descriptor-info arg-types return-type))
          (descriptor (car info))
          (stack-effect (cdr info))
+         (class-name (!class-name class-name))
          (instruction (emit 'invokestatic class-name method-name descriptor)))
     (setf (instruction-stack instruction) stack-effect)))
 
@@ -574,7 +587,7 @@ supported (and used) by the compiler.")
 
 (defknown emit-unbox-boolean () t)
 (defun emit-unbox-boolean ()
-  (emit 'instanceof +lisp-nil-class+)
+  (emit 'instanceof +lisp-nil+)
   (emit 'iconst_1)
   (emit 'ixor))  ;; 1 -> 0 && 0 -> 1: in other words, negate the low bit
 
@@ -692,6 +705,7 @@ to get the correct (exact where required) comparisons.")
   (let* ((info (get-descriptor-info arg-types return-type))
          (descriptor (car info))
          (stack-effect (cdr info))
+         (class-name (!class-name class-name))
          (instruction (emit 'invokevirtual class-name method-name descriptor)))
     (declare (type (signed-byte 8) stack-effect))
     (let ((explain *explain*))
@@ -709,6 +723,7 @@ to get the correct (exact where required) comparisons.")
   (let* ((info (get-descriptor-info arg-types nil))
          (descriptor (car info))
          (stack-effect (cdr info))
+         (class-name (!class-name class-name))
          (instruction (emit 'invokespecial class-name "<init>" descriptor)))
     (declare (type (signed-byte 8) stack-effect))
     (setf (instruction-stack instruction) (1- stack-effect))))
@@ -784,7 +799,7 @@ before the emitted code: the code is 'stack-neutral'."
     (emit-load-local-variable variable)
     (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name
           +lisp-symbol+)
-    (emit-invokestatic +lisp-class+ "type_error"
+    (emit-invokestatic +lisp+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
     (emit 'pop) ; Needed for JVM stack consistency.
     (label LABEL1))
@@ -842,9 +857,9 @@ before the emitted code: the code is 'stack-neutral'."
 (defun maybe-generate-interrupt-check ()
   (unless (> *speed* *safety*)
     (let ((label1 (gensym)))
-      (emit 'getstatic +lisp-class+ "interrupted" "Z")
+      (emit 'getstatic +lisp+ "interrupted" "Z")
       (emit 'ifeq label1)
-      (emit-invokestatic +lisp-class+ "handleInterrupt" nil nil)
+      (emit-invokestatic +lisp+ "handleInterrupt" nil nil)
       (label label1))))
 
 (defknown single-valued-p (t) t)
@@ -1207,7 +1222,8 @@ representation, based on the derived type of the LispObject."
 ;; getstatic, putstatic
 (define-resolver (178 179) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-field (first args) (second args) (third args))))
+         (index (pool-field (!class-name (first args))
+                            (second args) (third args))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; bipush, sipush
@@ -1225,7 +1241,8 @@ representation, based on the derived type of the LispObject."
 ;; invokevirtual, invokespecial, invokestatic class-name method-name descriptor
 (define-resolver (182 183 184) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-method (first args) (second args) (third args))))
+         (index (pool-method (!class-name (first args))
+                             (second args) (third args))))
     (setf (instruction-args instruction) (u2 index))
     instruction))
 
@@ -1248,13 +1265,14 @@ representation, based on the derived type of the LispObject."
 ;; getfield, putfield class-name field-name type-name
 (define-resolver (180 181) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-field (first args) (second args) (third args))))
+         (index (pool-field (!class-name (first args))
+                            (second args) (third args))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; new, anewarray, checkcast, instanceof class-name
 (define-resolver (187 189 192 193) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-class (first args))))
+         (index (pool-class (!class-name (first args)))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; iinc
@@ -1773,8 +1791,9 @@ representation, based on the derived type of the LispObject."
   (cond ((and lambda-name (symbolp lambda-name) (symbol-package (truly-the symbol lambda-name)))
          (emit 'ldc (pool-string (symbol-name (truly-the symbol lambda-name))))
          (emit 'ldc (pool-string (package-name (symbol-package (truly-the symbol lambda-name)))))
-         (emit-invokestatic +lisp-class+ "internInPackage"
-                            (list +java-string+ +java-string+) +lisp-symbol+))
+         (emit-invokestatic +lisp+ "internInPackage"
+                            (list +java-string+ +java-string+)
+                            +lisp-symbol+))
         (t
          ;; No name.
          (emit-push-nil))))
@@ -1785,7 +1804,7 @@ representation, based on the derived type of the LispObject."
              (*print-length* nil)
              (s (sys::%format nil "~S" lambda-list)))
         (emit 'ldc (pool-string s))
-        (emit-invokestatic +lisp-class+ "readObjectFromString"
+        (emit-invokestatic +lisp+ "readObjectFromString"
                            (list +java-string+) +lisp-object+))
       (emit-push-nil)))
 
@@ -1855,14 +1874,14 @@ representation, based on the derived type of the LispObject."
                (if (keywordp keyword)
                    (progn
                      (emit 'ldc (pool-string (symbol-name keyword)))
-                     (emit-invokestatic +lisp-class+ "internKeyword"
+                     (emit-invokestatic +lisp+ "internKeyword"
                                         (list +java-string+) +lisp-symbol+))
                    ;; symbol is not really a keyword; yes, that's allowed!
                    (progn
                      (emit 'ldc (pool-string (symbol-name keyword)))
                      (emit 'ldc (pool-string
                                  (package-name (symbol-package keyword))))
-                     (emit-invokestatic +lisp-class+ "internInPackage"
+                     (emit-invokestatic +lisp+ "internInPackage"
                                         (list +java-string+ +java-string+)
                                         +lisp-symbol+))))
              (emit-push-t) ;; we don't need the actual variable-symbol
@@ -2093,7 +2112,7 @@ representation, based on the derived type of the LispObject."
   "Generate code to restore a serialized package."
   (emit 'ldc (pool-string (concatenate 'string "#.(FIND-PACKAGE \""
                                        (package-name pkg) "\")")))
-  (emit-invokestatic +lisp-class+ "readObjectFromString"
+  (emit-invokestatic +lisp+ "readObjectFromString"
                      (list +java-string+) +lisp-object+))
 
 (defun serialize-object (object)
@@ -2102,7 +2121,7 @@ of the other types."
   (let ((s (with-output-to-string (stream)
              (dump-form object stream))))
     (emit 'ldc (pool-string s))
-    (emit-invokestatic +lisp-class+ "readObjectFromString"
+    (emit-invokestatic +lisp+ "readObjectFromString"
                        (list +java-string+) +lisp-object+)))
 
 (defun serialize-symbol (symbol)
@@ -2120,12 +2139,12 @@ of the other types."
        (emit 'checkcast +lisp-symbol-class+))
       ((keywordp symbol)
        (emit 'ldc (pool-string (symbol-name symbol)))
-       (emit-invokestatic +lisp-class+ "internKeyword"
+       (emit-invokestatic +lisp+ "internKeyword"
                           (list +java-string+) +lisp-symbol+))
       (t
        (emit 'ldc (pool-string (symbol-name symbol)))
        (emit 'ldc (pool-string (package-name (symbol-package symbol))))
-       (emit-invokestatic +lisp-class+ "internInPackage"
+       (emit-invokestatic +lisp+ "internInPackage"
                           (list +java-string+ +java-string+)
                           +lisp-symbol+)))))
 
@@ -2189,7 +2208,7 @@ Code to restore the serialized object is inserted into `*code' or
          (let ((*code* *static-code*))
            (remember field-name object)
            (emit 'ldc (pool-string field-name))
-           (emit-invokestatic +lisp-class+ "recall"
+           (emit-invokestatic +lisp+ "recall"
                               (list +java-string+) +lisp-object+)
            (when (string/= field-type +lisp-object+)
              (emit 'checkcast (subseq field-type 1 (1- (length field-type)))))
@@ -2307,7 +2326,7 @@ Code to restore the serialized object is inserted into `*code' or
       ;; previous statements
       (declare-field g +lisp-object+ +field-access-private+)
       (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp-class+ "readObjectFromString"
+      (emit-invokestatic +lisp+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
       (emit 'putstatic *this-class* g +lisp-object+)
       (if *declare-inline*
@@ -2327,9 +2346,9 @@ Code to restore the serialized object is inserted into `*code' or
       ;; may depend on something which was declared inline
       (declare-field g +lisp-object+ +field-access-private+)
       (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp-class+ "readObjectFromString"
+      (emit-invokestatic +lisp+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
-      (emit-invokestatic +lisp-class+ "loadTimeValue"
+      (emit-invokestatic +lisp+ "loadTimeValue"
                          (lisp-object-arg-types 1) +lisp-object+)
       (emit 'putstatic *this-class* g +lisp-object+)
       (if *declare-inline*
@@ -2352,7 +2371,7 @@ The field type of the object is specified by OBJ-REF."
     (let* ((*code* *static-code*))
       (declare-field g obj-ref +field-access-private+)
       (emit 'ldc (pool-string g))
-      (emit-invokestatic +lisp-class+ "recall"
+      (emit-invokestatic +lisp+ "recall"
                          (list +java-string+) +lisp-object+)
       (when (and obj-class (string/= obj-class +lisp-object-class+))
         (emit 'checkcast obj-class))
@@ -2706,7 +2725,7 @@ The field type of the object is specified by OBJ-REF."
                 (arg2 (second args)))
            (compile-form arg1 'stack nil)
            (compile-form arg2 'stack nil)
-           (emit-invokestatic +lisp-class+ "memq"
+           (emit-invokestatic +lisp+ "memq"
                               (lisp-object-arg-types 2) "Z")
            (emit-move-from-stack target representation)))
         (t
@@ -2723,10 +2742,10 @@ The field type of the object is specified by OBJ-REF."
            (compile-form arg1 'stack nil)
            (compile-form arg2 'stack nil)
            (cond ((eq type1 'SYMBOL) ; FIXME
-                  (emit-invokestatic +lisp-class+ "memq"
+                  (emit-invokestatic +lisp+ "memq"
                                      (lisp-object-arg-types 2) "Z"))
                  (t
-                  (emit-invokestatic +lisp-class+ "memql"
+                  (emit-invokestatic +lisp+ "memql"
                                      (lisp-object-arg-types 2) "Z")))
            (emit-move-from-stack target representation)))
         (t
@@ -2735,7 +2754,7 @@ The field type of the object is specified by OBJ-REF."
 (defun p2-gensym (form target representation)
   (cond ((and (null representation) (null (cdr form)))
          (emit-push-current-thread)
-         (emit-invokestatic +lisp-class+ "gensym"
+         (emit-invokestatic +lisp+ "gensym"
                             (list +lisp-thread+) +lisp-symbol+)
          (emit-move-from-stack target))
         (t
@@ -2756,7 +2775,7 @@ The field type of the object is specified by OBJ-REF."
              (t
               (compile-form arg3 'stack nil)
               (maybe-emit-clear-values arg1 arg2 arg3)))
-       (emit-invokestatic +lisp-class+ "get"
+       (emit-invokestatic +lisp+ "get"
                           (lisp-object-arg-types (if arg3 3 2))
                           +lisp-object+)
        (fix-boxing representation nil)
@@ -2778,7 +2797,7 @@ The field type of the object is specified by OBJ-REF."
 	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						    arg2 'stack nil
 						    arg3 'stack nil)
-         (emit-invokestatic +lisp-class+ "getf"
+         (emit-invokestatic +lisp+ "getf"
                             (lisp-object-arg-types 3) +lisp-object+)
          (fix-boxing representation nil)
          (emit-move-from-stack target representation)))
@@ -3084,7 +3103,7 @@ Note: DEFUN implies a named lambda."
              (when *closure-variables*
                (emit 'checkcast +lisp-compiled-closure-class+)
                (duplicate-closure-array compiland)
-               (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+               (emit-invokestatic +lisp+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
                                   +lisp-object+)))))
     (process-args args)
@@ -3567,7 +3586,7 @@ given a specific common representation.")
           (arg2 (%caddr form)))
       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						 arg2 'stack nil)
-      (emit-invokestatic +lisp-class+ "memq"
+      (emit-invokestatic +lisp+ "memq"
                          (lisp-object-arg-types 2) "Z")
       'ifeq)))
 
@@ -3577,7 +3596,7 @@ given a specific common representation.")
           (arg2 (%caddr form)))
       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						 arg2 'stack nil)
-      (emit-invokestatic +lisp-class+ "memql"
+      (emit-invokestatic +lisp+ "memql"
                          (lisp-object-arg-types 2) "Z")
       'ifeq)))
 
@@ -3817,7 +3836,7 @@ given a specific common representation.")
 (defun compile-multiple-value-list (form target representation)
   (emit-clear-values)
   (compile-form (second form) 'stack nil)
-  (emit-invokestatic +lisp-class+ "multipleValueList"
+  (emit-invokestatic +lisp+ "multipleValueList"
                      (lisp-object-arg-types 1) +lisp-object+)
   (fix-boxing representation nil)
   (emit-move-from-stack target))
@@ -3853,7 +3872,7 @@ given a specific common representation.")
      (error "Wrong number of arguments for MULTIPLE-VALUE-CALL."))
     (2
      (compile-form (second form) 'stack nil)
-     (emit-invokestatic +lisp-class+ "coerceToFunction"
+     (emit-invokestatic +lisp+ "coerceToFunction"
                         (lisp-object-arg-types 1) +lisp-object+)
      (emit-invokevirtual +lisp-object-class+ "execute" nil +lisp-object+))
     (3
@@ -3863,7 +3882,7 @@ given a specific common representation.")
        (compile-form (third form) 'stack nil)
        (aload function-register)
        (emit-push-current-thread)
-       (emit-invokestatic +lisp-class+ "multipleValueCall1"
+       (emit-invokestatic +lisp+ "multipleValueCall1"
                           (list +lisp-object+ +lisp-object+ +lisp-thread+)
                           +lisp-object+)))
     (t
@@ -3872,7 +3891,7 @@ given a specific common representation.")
             (function-register (allocate-register))
             (values-register (allocate-register)))
        (compile-form (second form) 'stack nil)
-       (emit-invokestatic +lisp-class+ "coerceToFunction"
+       (emit-invokestatic +lisp+ "coerceToFunction"
                           (lisp-object-arg-types 1) +lisp-object+)
        (emit-move-from-stack function-register)
        (emit 'aconst_null)
@@ -4577,7 +4596,7 @@ given a specific common representation.")
     ;; Non-local GO.
     (emit-push-variable (tagbody-id-variable tag-block))
     (emit-load-externalized-object (tag-label tag)) ; Tag.
-    (emit-invokestatic +lisp-class+ "nonLocalGo" (lisp-object-arg-types 2)
+    (emit-invokestatic +lisp+ "nonLocalGo" (lisp-object-arg-types 2)
                        +lisp-object+)
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
@@ -4654,7 +4673,7 @@ given a specific common representation.")
 (define-inlined-function p2-coerce-to-function (form target representation)
   ((check-arg-count form 1))
   (compile-forms-and-maybe-emit-clear-values (%cadr form) 'stack nil)
-  (emit-invokestatic +lisp-class+ "coerceToFunction"
+  (emit-invokestatic +lisp+ "coerceToFunction"
                      (lisp-object-arg-types 1) +lisp-object+)
   (emit-move-from-stack target))
 
@@ -4747,7 +4766,7 @@ given a specific common representation.")
     (emit-load-externalized-object (block-name block))
     (emit-clear-values)
     (compile-form result-form 'stack nil)
-    (emit-invokestatic +lisp-class+ "nonLocalReturn" (lisp-object-arg-types 3)
+    (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
                        +lisp-object+)
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
@@ -4824,7 +4843,7 @@ given a specific common representation.")
     (label label-START)
     ;; Compile call to Lisp.progvBindVars().
     (emit-push-current-thread)
-    (emit-invokestatic +lisp-class+ "progvBindVars"
+    (emit-invokestatic +lisp+ "progvBindVars"
                        (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
@@ -4938,7 +4957,7 @@ given a specific common representation.")
 	       (compiland-closure-register parent))
       (emit 'checkcast +lisp-compiled-closure-class+)
       (duplicate-closure-array parent)
-      (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+      (emit-invokestatic +lisp+ "makeCompiledClosure"
 			 (list +lisp-object+ +closure-binding-array+)
 			 +lisp-object+)))
   (emit-move-to-variable (local-function-variable local-function)))
@@ -5031,7 +5050,7 @@ given a specific common representation.")
     (cond ((null *closure-variables*))  ; Nothing to do.
           ((compiland-closure-register *current-compiland*)
            (duplicate-closure-array *current-compiland*)
-           (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+           (emit-invokestatic +lisp+ "makeCompiledClosure"
                               (list +lisp-object+ +closure-binding-array+)
                               +lisp-object+))
                                         ; Stack: compiled-closure
@@ -5068,7 +5087,7 @@ given a specific common representation.")
                (when (compiland-closure-register *current-compiland*)
                  (emit 'checkcast +lisp-compiled-closure-class+)
                  (duplicate-closure-array *current-compiland*)
-                 (emit-invokestatic +lisp-class+ "makeCompiledClosure"
+                 (emit-invokestatic +lisp+ "makeCompiledClosure"
                                     (list +lisp-object+ +closure-binding-array+)
                                     +lisp-object+)))))
           (emit-move-from-stack target))
@@ -5525,7 +5544,7 @@ given a specific common representation.")
                 (fixnum-type-p type2))
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack :int)
-           (emit-invokestatic +lisp-class+ "mod" '("I" "I") "I")
+           (emit-invokestatic +lisp+ "mod" '("I" "I") "I")
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
@@ -5820,7 +5839,7 @@ given a specific common representation.")
            (compile-form arg1 'stack :int)
            (compile-form arg2 'stack nil)
            (maybe-emit-clear-values arg1 arg2)
-           (emit-invokestatic +lisp-class+ "writeByte"
+           (emit-invokestatic +lisp+ "writeByte"
                               (list "I" +lisp-object+) nil)
            (when target
              (emit-push-nil)
@@ -7480,7 +7499,7 @@ We need more thought here.
     (emit 'instanceof instanceof-class)
     (emit 'ifne LABEL1)
     (emit 'getstatic +lisp-symbol-class+ expected-type-java-symbol-name +lisp-symbol+)
-    (emit-invokestatic +lisp-class+ "type_error"
+    (emit-invokestatic +lisp+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
     (label LABEL1))
   t)
