@@ -210,8 +210,8 @@
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
 (defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
-(defconstant +lisp-function-proxy-class+
-  "org/armedbear/lisp/AutoloadedFunctionProxy")
+;(defconstant +lisp-function-proxy-class+
+;  "org/armedbear/lisp/AutoloadedFunctionProxy")
 (defconstant +lisp-bignum-class+ "org/armedbear/lisp/Bignum")
 (defconstant +lisp-bignum+ "Lorg/armedbear/lisp/Bignum;")
 (defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
@@ -221,16 +221,6 @@
 (defconstant +lisp-character-class+ "org/armedbear/lisp/LispCharacter")
 (defconstant +lisp-character+ "Lorg/armedbear/lisp/LispCharacter;")
 (defconstant +lisp-character-array+ "[Lorg/armedbear/lisp/LispCharacter;")
-(defconstant +lisp-abstract-bit-vector-class+ "org/armedbear/lisp/AbstractBitVector")
-(defconstant +lisp-abstract-vector-class+ "org/armedbear/lisp/AbstractVector")
-(defconstant +lisp-abstract-string-class+ "org/armedbear/lisp/AbstractString")
-(defconstant +lisp-abstract-string+ "Lorg/armedbear/lisp/AbstractString;")
-(defconstant +lisp-simple-vector-class+ "org/armedbear/lisp/SimpleVector")
-(defconstant +lisp-simple-string-class+ "org/armedbear/lisp/SimpleString")
-(defconstant +lisp-simple-string+ "Lorg/armedbear/lisp/SimpleString;")
-(defconstant +lisp-special-binding+ "Lorg/armedbear/lisp/SpecialBinding;")
-(defconstant +lisp-special-binding-class+ "org/armedbear/lisp/SpecialBinding")
-(defconstant +lisp-closure-parameter-class+ "org/armedbear/lisp/Closure$Parameter")
 (defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
 
 (defun !class-name (class-name)
@@ -762,8 +752,8 @@ before the emitted code: the code is 'stack-neutral'."
                             (HASH-TABLE +lisp-hash-table+)
                             (FIXNUM     +lisp-fixnum-class+)
                             (STREAM     +lisp-stream+)
-                            (STRING     +lisp-abstract-string-class+)
-                            (VECTOR     +lisp-abstract-vector-class+)))
+                            (STRING     +lisp-abstract-string+)
+                            (VECTOR     +lisp-abstract-vector+)))
         (expected-type-java-symbol-name (case expected-type
                                           (HASH-TABLE "HASH_TABLE")
                                           (t
@@ -1199,7 +1189,7 @@ representation, based on the derived type of the LispObject."
 (define-resolver (178 179) (instruction)
   (let* ((args (instruction-args instruction))
          (index (pool-field (!class-name (first args))
-                            (second args) (third args))))
+                            (second args) (!class-ref (third args)))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; bipush, sipush
@@ -1242,7 +1232,7 @@ representation, based on the derived type of the LispObject."
 (define-resolver (180 181) (instruction)
   (let* ((args (instruction-args instruction))
          (index (pool-field (!class-name (first args))
-                            (second args) (third args))))
+                            (second args) (!class-ref (third args)))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; new, anewarray, checkcast, instanceof class-name
@@ -1814,7 +1804,7 @@ representation, based on the derived type of the LispObject."
                (let ((count-sym (gensym)))
                  `(progn
                     (emit-push-constant-int (length ,params))
-                    (emit 'anewarray +lisp-closure-parameter-class+)
+                    (emit 'anewarray +lisp-closure-parameter+)
                     (astore (setf ,register (method-max-locals constructor)))
                     (incf (method-max-locals constructor))
                     (do* ((,count-sym 0 (1+ ,count-sym))
@@ -1824,14 +1814,14 @@ representation, based on the derived type of the LispObject."
                       (declare (ignorable ,param))
                       (aload ,register)
                       (emit-push-constant-int ,count-sym)
-                      (emit 'new +lisp-closure-parameter-class+)
+                      (emit 'new +lisp-closure-parameter+)
                       (emit 'dup)
                       ,@body
                       (emit 'aastore))))))
           ;; process required args
           (parameters-to-array (ignore req req-params-register)
              (emit-push-t) ;; we don't need the actual symbol
-             (emit-invokespecial-init +lisp-closure-parameter-class+
+             (emit-invokespecial-init +lisp-closure-parameter+
                                       (list +lisp-symbol+)))
 
           (parameters-to-array (param opt opt-params-register)
@@ -1841,7 +1831,7 @@ representation, based on the derived type of the LispObject."
                  (emit-push-nil)
                  (emit-push-t)) ;; we don't need the actual supplied-p symbol
              (emit 'getstatic +lisp-closure+ "OPTIONAL" "I")
-             (emit-invokespecial-init +lisp-closure-parameter-class+
+             (emit-invokespecial-init +lisp-closure-parameter+
                                       (list +lisp-symbol+ +lisp-object+
                                             +lisp-object+ "I")))
 
@@ -1865,7 +1855,7 @@ representation, based on the derived type of the LispObject."
              (if (null (third param))
                  (emit-push-nil)
                  (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit-invokespecial-init +lisp-closure-parameter-class+
+             (emit-invokespecial-init +lisp-closure-parameter+
                                       (list +lisp-symbol+ +lisp-symbol+
                                             +lisp-object+ +lisp-object+))))))
     (aload 0) ;; this
@@ -1985,7 +1975,7 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor access-flags)
-  (let ((field (make-field name descriptor)))
+  (let ((field (make-field name (!class-ref descriptor))))
     ;; final static <access-flags>
     (setf (field-access-flags field)
           (logior +field-flag-final+ +field-flag-static+ access-flags))
@@ -2079,10 +2069,10 @@ representation, based on the derived type of the LispObject."
 
 (defun serialize-string (string)
   "Generate code to restore a serialized string."
-  (emit 'new +lisp-simple-string-class+)
+  (emit 'new +lisp-simple-string+)
   (emit 'dup)
   (emit 'ldc (pool-string string))
-  (emit-invokespecial-init +lisp-simple-string-class+ (list +java-string+)))
+  (emit-invokespecial-init +lisp-simple-string+ (list +java-string+)))
 
 (defun serialize-package (pkg)
   "Generate code to restore a serialized package."
@@ -2125,15 +2115,15 @@ of the other types."
                           +lisp-symbol+)))))
 
 (defvar serialization-table
-  `((integer "INT" ,#'eql ,#'serialize-integer ,+lisp-integer+)
-    (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
-    (single-float "FLT" ,#'eql ,#'serialize-float ,+lisp-single-float+)
-    (double-float "DBL" ,#'eql ,#'serialize-double ,+lisp-double-float+)
+  `((integer "INT" ,#'eql ,#'serialize-integer ,+!lisp-integer+)
+    (character "CHR" ,#'eql ,#'serialize-character ,+!lisp-character+)
+    (single-float "FLT" ,#'eql ,#'serialize-float ,+!lisp-single-float+)
+    (double-float "DBL" ,#'eql ,#'serialize-double ,+!lisp-double-float+)
     (string "STR" ,#'equal ,#'serialize-string
             ,+lisp-abstract-string+) ;; because of (not compile-file)
-    (package "PKG" ,#'eq ,#'serialize-package ,+lisp-object+)
-    (symbol "SYM" ,#'eq ,#'serialize-symbol ,+lisp-symbol+)
-    (T "OBJ" ,#'eq ,#'serialize-object ,+lisp-object+))
+    (package "PKG" ,#'eq ,#'serialize-package ,+!lisp-object+)
+    (symbol "SYM" ,#'eq ,#'serialize-symbol ,+!lisp-symbol+)
+    (T "OBJ" ,#'eq ,#'serialize-object ,+!lisp-object+))
   "A list of 5-element lists. The elements of the sublists mean:
 
 1. The type of the value to be serialized
@@ -2186,8 +2176,8 @@ Code to restore the serialized object is inserted into `*code' or
            (emit 'ldc (pool-string field-name))
            (emit-invokestatic +lisp+ "recall"
                               (list +java-string+) +lisp-object+)
-           (when (string/= field-type +lisp-object+)
-             (emit 'checkcast (subseq field-type 1 (1- (length field-type)))))
+           (when (not (eq field-type +!lisp-object+))
+             (emit 'checkcast field-type))
            (emit 'putstatic *this-class* field-name field-type)
            (setf *static-code* *code*)))
         (*declare-inline*
@@ -3296,7 +3286,7 @@ given a specific common representation.")
       'ifeq)))
 
 (defun p2-test-bit-vector-p (form)
-  (p2-test-instanceof-predicate form +lisp-abstract-bit-vector-class+))
+  (p2-test-instanceof-predicate form +lisp-abstract-bit-vector+))
 
 (defun p2-test-characterp (form)
   (p2-test-instanceof-predicate form +lisp-character-class+))
@@ -3395,13 +3385,13 @@ given a specific common representation.")
   (p2-test-instanceof-predicate form +lisp-fixnum-class+))
 
 (defun p2-test-stringp (form)
-  (p2-test-instanceof-predicate form +lisp-abstract-string-class+))
+  (p2-test-instanceof-predicate form +lisp-abstract-string+))
 
 (defun p2-test-vectorp (form)
-  (p2-test-instanceof-predicate form +lisp-abstract-vector-class+))
+  (p2-test-instanceof-predicate form +lisp-abstract-vector+))
 
 (defun p2-test-simple-vector-p (form)
-  (p2-test-instanceof-predicate form +lisp-simple-vector-class+))
+  (p2-test-instanceof-predicate form +lisp-simple-vector+))
 
 (defknown compile-test-form (t) t)
 (defun compile-test-form (test-form)
@@ -4617,7 +4607,7 @@ given a specific common representation.")
            (emit-move-from-stack target representation)))))
 
 (defun p2-bit-vector-p (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-abstract-bit-vector-class+))
+  (p2-instanceof-predicate form target representation +lisp-abstract-bit-vector+))
 
 (defun p2-characterp (form target representation)
   (p2-instanceof-predicate form target representation +lisp-character-class+))
@@ -4635,16 +4625,16 @@ given a specific common representation.")
   (p2-instanceof-predicate form target representation +lisp-readtable+))
 
 (defun p2-simple-vector-p (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-simple-vector-class+))
+  (p2-instanceof-predicate form target representation +lisp-simple-vector+))
 
 (defun p2-stringp (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-abstract-string-class+))
+  (p2-instanceof-predicate form target representation +lisp-abstract-string+))
 
 (defun p2-symbolp (form target representation)
   (p2-instanceof-predicate form target representation +lisp-symbol-class+))
 
 (defun p2-vectorp (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-abstract-vector-class+))
+  (p2-instanceof-predicate form target representation +lisp-abstract-vector+))
 
 (define-inlined-function p2-coerce-to-function (form target representation)
   ((check-arg-count form 1))
@@ -5680,10 +5670,10 @@ given a specific common representation.")
               (fixnum-type-p (derive-compiler-type (second form)))
               (null representation))
          (let ((arg (second form)))
-           (emit 'new +lisp-simple-vector-class+)
+           (emit 'new +lisp-simple-vector+)
            (emit 'dup)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-vector-class+ '("I"))
+           (emit-invokespecial-init +lisp-simple-vector+ '("I"))
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -5705,9 +5695,9 @@ given a specific common representation.")
              (class
               (case result-type
                 ((STRING SIMPLE-STRING)
-                 (setf class +lisp-simple-string-class+))
+                 (setf class +lisp-simple-string+))
                 ((VECTOR SIMPLE-VECTOR)
-                 (setf class +lisp-simple-vector-class+)))))
+                 (setf class +lisp-simple-vector+)))))
         (when class
           (emit 'new class)
           (emit 'dup)
@@ -5724,10 +5714,10 @@ given a specific common representation.")
               (= (length form) 2)
               (null representation))
          (let ((arg (second form)))
-           (emit 'new +lisp-simple-string-class+)
+           (emit 'new +lisp-simple-string+)
            (emit 'dup)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-string-class+ '("I"))
+           (emit-invokespecial-init +lisp-simple-string+ '("I"))
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -6395,10 +6385,10 @@ We need more thought here.
         (cond ((subtypep type2 'VECTOR)
                (compile-form arg1 'stack nil)
                (compile-form arg2 'stack nil)
-               (emit 'checkcast +lisp-abstract-vector-class+)
+               (emit 'checkcast +lisp-abstract-vector+)
                (maybe-emit-clear-values arg1 arg2)
                (emit 'swap)
-               (emit-invokevirtual +lisp-abstract-vector-class+
+               (emit-invokevirtual +lisp-abstract-vector+
                                    (if (eq test 'eq) "deleteEq" "deleteEql")
                                    (lisp-object-arg-types 1) +lisp-object+)
                (emit-move-from-stack target)
@@ -6728,10 +6718,10 @@ We need more thought here.
     (cond ((and (eq representation :char)
                 (zerop *safety*))
            (compile-form arg1 'stack nil)
-           (emit 'checkcast +lisp-abstract-string-class+)
+           (emit 'checkcast +lisp-abstract-string+)
            (compile-form arg2 'stack :int)
            (maybe-emit-clear-values arg1 arg2)
-           (emit-invokevirtual +lisp-abstract-string-class+ "charAt"
+           (emit-invokevirtual +lisp-abstract-string+ "charAt"
                                '("I") "C")
            (emit-move-from-stack target representation))
           ((and (eq representation :char)
@@ -6739,10 +6729,10 @@ We need more thought here.
                 (compiler-subtypep type1 'STRING)
                 (fixnum-type-p type2))
            (compile-form arg1 'stack nil)
-           (emit 'checkcast +lisp-abstract-string-class+)
+           (emit 'checkcast +lisp-abstract-string+)
            (compile-form arg2 'stack :int)
            (maybe-emit-clear-values arg1 arg2)
-           (emit-invokevirtual +lisp-abstract-string-class+ "charAt"
+           (emit-invokevirtual +lisp-abstract-string+ "charAt"
                                '("I") "C")
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
@@ -6777,8 +6767,8 @@ We need more thought here.
            (let* ((*register* *register*)
                   (value-register (when target (allocate-register)))
                   (class (if (eq op 'SCHAR)
-                             +lisp-simple-string-class+
-                             +lisp-abstract-string-class+)))
+                             +lisp-simple-string+
+                             +lisp-abstract-string+)))
              (compile-form arg1 'stack nil)
              (emit 'checkcast class)
              (compile-form arg2 'stack :int)
@@ -6883,10 +6873,10 @@ We need more thought here.
          (:char
           (cond ((compiler-subtypep type1 'string)
                  (compile-form arg1 'stack nil) ; array
-                 (emit 'checkcast +lisp-abstract-string-class+)
+                 (emit 'checkcast +lisp-abstract-string+)
                  (compile-form arg2 'stack :int) ; index
                  (maybe-emit-clear-values arg1 arg2)
-                 (emit-invokevirtual +lisp-abstract-string-class+
+                 (emit-invokevirtual +lisp-abstract-string+
                                      "charAt" '("I") "C"))
                 (t
 		 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
@@ -7230,7 +7220,7 @@ We need more thought here.
                 (not (enclosed-by-runtime-bindings-creating-block-p
                       (variable-block variable))))
            (aload (variable-binding-register variable))
-           (emit 'getfield +lisp-special-binding-class+ "value"
+           (emit 'getfield +lisp-special-binding+ "value"
                  +lisp-object+))
           (t
            (emit-push-current-thread)
@@ -7310,7 +7300,7 @@ We need more thought here.
              (aload (variable-binding-register variable))
              (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit 'dup_x1) ;; copy past th
-             (emit 'putfield +lisp-special-binding-class+ "value"
+             (emit 'putfield +lisp-special-binding+ "value"
                    +lisp-object+))
             ((and (consp value-form)
                   (eq (first value-form) 'CONS)
@@ -7464,8 +7454,8 @@ We need more thought here.
                             (HASH-TABLE +lisp-hash-table+)
                             (FIXNUM     +lisp-fixnum-class+)
 			    (STREAM     +lisp-stream+)
-                            (STRING     +lisp-abstract-string-class+)
-                            (VECTOR     +lisp-abstract-vector-class+)))
+                            (STRING     +lisp-abstract-string+)
+                            (VECTOR     +lisp-abstract-vector+)))
         (expected-type-java-symbol-name (case expected-type
                                           (HASH-TABLE "HASH_TABLE")
                                           (t
