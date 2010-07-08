@@ -684,7 +684,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 			   `(,(1- i)
 			      (jvm::with-inline-code ()
 				(jvm::emit 'jvm::aload 1)
-				(jvm::emit-invokevirtual jvm::+lisp-object-class+ "javaInstance"
+				(jvm::emit-invokevirtual jvm::+lisp-object+ "javaInstance"
 							 nil jvm::+java-object+)
 				(jvm::emit 'jvm::checkcast "org/armedbear/lisp/FaslClassLoader")
 				(jvm::emit 'jvm::dup)

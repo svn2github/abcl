@@ -104,7 +104,7 @@ initialized from the `java-dotted-name'."
 
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
-(define-class-name +!lisp-object+ "org.armedbear.lisp.LispObject")
+(define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")
 (define-class-name +lisp+ "org.armedbear.lisp.Lisp")
 (define-class-name +lisp-nil+ "org.armedbear.lisp.Nil")
