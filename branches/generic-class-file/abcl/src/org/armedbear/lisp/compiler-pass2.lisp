@@ -201,8 +201,6 @@
 
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
-(defconstant +lisp-integer-class+ "org/armedbear/lisp/LispInteger")
-(defconstant +lisp-integer+ "Lorg/armedbear/lisp/LispInteger;")
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
 (defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
@@ -576,8 +574,8 @@ internal representation conversion.")
 (defvar rep-classes
   `((:boolean . ,+lisp-object+)
     (:char    . ,+lisp-character+)
-    (:int     . ,+!lisp-integer+)
-    (:long    . ,+!lisp-integer+)
+    (:int     . ,+lisp-integer+)
+    (:long    . ,+lisp-integer+)
     (:float   . ,+!lisp-single-float+)
     (:double  . ,+!lisp-double-float+))
   "Lists the class on which to call the `getInstance' method on,
@@ -2107,7 +2105,7 @@ of the other types."
                           +lisp-symbol+)))))
 
 (defvar serialization-table
-  `((integer "INT" ,#'eql ,#'serialize-integer ,+!lisp-integer+)
+  `((integer "INT" ,#'eql ,#'serialize-integer ,+lisp-integer+)
     (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
     (single-float "FLT" ,#'eql ,#'serialize-float ,+!lisp-single-float+)
     (double-float "DBL" ,#'eql ,#'serialize-double ,+!lisp-double-float+)

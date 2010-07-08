@@ -112,7 +112,7 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-symbol+ "org.armedbear.lisp.Symbol")
 (define-class-name +lisp-thread+ "org.armedbear.lisp.LispThread")
 (define-class-name +lisp-closure-binding+ "org.armedbear.lisp.ClosureBinding")
-(define-class-name +!lisp-integer+ "org.armedbear.lisp.LispInteger")
+(define-class-name +lisp-integer+ "org.armedbear.lisp.LispInteger")
 (define-class-name +!lisp-fixnum+ "org.armedbear.lisp.Fixnum")
 (define-class-name +!lisp-bignum+ "org.armedbear.lisp.Bignum")
 (define-class-name +!lisp-single-float+ "org.armedbear.lisp.SingleFloat")
