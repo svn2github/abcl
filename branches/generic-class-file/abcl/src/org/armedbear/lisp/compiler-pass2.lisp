@@ -212,8 +212,6 @@
 (defconstant +lisp-single-float+ "Lorg/armedbear/lisp/SingleFloat;")
 (defconstant +lisp-double-float-class+ "org/armedbear/lisp/DoubleFloat")
 (defconstant +lisp-double-float+ "Lorg/armedbear/lisp/DoubleFloat;")
-(defconstant +lisp-character-class+ "org/armedbear/lisp/LispCharacter")
-(defconstant +lisp-character+ "Lorg/armedbear/lisp/LispCharacter;")
 (defconstant +lisp-character-array+ "[Lorg/armedbear/lisp/LispCharacter;")
 (defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
 
@@ -554,11 +552,11 @@ supported (and used) by the compiler.")
 (defknown emit-unbox-character () t)
 (defun emit-unbox-character ()
   (cond ((> *safety* 0)
-         (emit-invokestatic +lisp-character-class+ "getValue"
+         (emit-invokestatic +lisp-character+ "getValue"
                             (lisp-object-arg-types 1) "C"))
         (t
-         (emit 'checkcast +lisp-character-class+)
-         (emit 'getfield +lisp-character-class+ "value" "C"))))
+         (emit 'checkcast +lisp-character+)
+         (emit 'getfield +lisp-character+ "value" "C"))))
 
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
@@ -577,7 +575,7 @@ internal representation conversion.")
 
 (defvar rep-classes
   `((:boolean . ,+lisp-object+)
-    (:char    . ,+!lisp-character+)
+    (:char    . ,+lisp-character+)
     (:int     . ,+!lisp-integer+)
     (:long    . ,+!lisp-integer+)
     (:float   . ,+!lisp-single-float+)
@@ -741,7 +739,7 @@ before the emitted code: the code is 'stack-neutral'."
     (return-from generate-instanceof-type-check-for-variable))
   (let ((instanceof-class (ecase expected-type
                             (SYMBOL     +lisp-symbol+)
-                            (CHARACTER  +lisp-character-class+)
+                            (CHARACTER  +lisp-character+)
                             (CONS       +lisp-cons+)
                             (HASH-TABLE +lisp-hash-table+)
                             (FIXNUM     +lisp-fixnum-class+)
@@ -2044,7 +2042,7 @@ representation, based on the derived type of the LispObject."
 (defun serialize-character (c)
   "Generates code to restore a serialized character."
   (emit-push-constant-int (char-code c))
-  (emit-invokestatic +lisp-character-class+ "getInstance" '("C")
+  (emit-invokestatic +lisp-character+ "getInstance" '("C")
                      +lisp-character+))
 
 (defun serialize-float (s)
@@ -2110,7 +2108,7 @@ of the other types."
 
 (defvar serialization-table
   `((integer "INT" ,#'eql ,#'serialize-integer ,+!lisp-integer+)
-    (character "CHR" ,#'eql ,#'serialize-character ,+!lisp-character+)
+    (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
     (single-float "FLT" ,#'eql ,#'serialize-float ,+!lisp-single-float+)
     (double-float "DBL" ,#'eql ,#'serialize-double ,+!lisp-double-float+)
     (string "STR" ,#'equal ,#'serialize-string
@@ -3271,7 +3269,7 @@ given a specific common representation.")
   (p2-test-instanceof-predicate form +lisp-abstract-bit-vector+))
 
 (defun p2-test-characterp (form)
-  (p2-test-instanceof-predicate form +lisp-character-class+))
+  (p2-test-instanceof-predicate form +lisp-character+))
 
 ;; constantp form &optional environment => generalized-boolean
 (defun p2-test-constantp (form)
@@ -4592,7 +4590,7 @@ given a specific common representation.")
   (p2-instanceof-predicate form target representation +lisp-abstract-bit-vector+))
 
 (defun p2-characterp (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-character-class+))
+  (p2-instanceof-predicate form target representation +lisp-character+))
 
 (defun p2-consp (form target representation)
   (p2-instanceof-predicate form target representation +lisp-cons+))
@@ -7431,7 +7429,7 @@ We need more thought here.
   (declare (type symbol expected-type))
   (let ((instanceof-class (ecase expected-type
                             (SYMBOL     +lisp-symbol+)
-                            (CHARACTER  +lisp-character-class+)
+                            (CHARACTER  +lisp-character+)
                             (CONS       +lisp-cons+)
                             (HASH-TABLE +lisp-hash-table+)
                             (FIXNUM     +lisp-fixnum-class+)
