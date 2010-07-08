@@ -206,8 +206,6 @@
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
 (defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
-;(defconstant +lisp-function-proxy-class+
-;  "org/armedbear/lisp/AutoloadedFunctionProxy")
 (defconstant +lisp-bignum-class+ "org/armedbear/lisp/Bignum")
 (defconstant +lisp-bignum+ "Lorg/armedbear/lisp/Bignum;")
 (defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
@@ -2256,15 +2254,6 @@ Code to restore the serialized object is inserted into `*code' or
      (emit 'new class-name)
      (emit 'dup)
      (emit-invokespecial-init class-name '())
-
-     ;(emit 'ldc (pool-string (pathname-name pathname)))
-     ;(emit-invokestatic +fasl-loader-class+ "faslLoadFunction"
-     ;(list +java-string+) +lisp-object+)
-
-;     (emit 'ldc (pool-string (file-namestring pathname)))
-     
-;     (emit-invokestatic +lisp-function-proxy-class+ "loadPreloadedFunction"
-;			(list +java-string+) +lisp-object+)
      (emit 'putstatic *this-class* g +lisp-object+)
      (setf *static-code* *code*)
      (setf (gethash local-function ht) g))))
