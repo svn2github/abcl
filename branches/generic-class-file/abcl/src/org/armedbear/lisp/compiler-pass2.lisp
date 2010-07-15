@@ -706,7 +706,7 @@ to get the correct (exact where required) comparisons.")
   (ensure-thread-var-initialized)
   (aload *thread*))
 
-(defun local-variable-p (variable)
+(defun variable-local-p (variable)
   "Return non-NIL if `variable' is a local variable.
 
 Special variables are not considered local."
@@ -715,7 +715,7 @@ Special variables are not considered local."
 
 (defun emit-load-local-variable (variable)
   "Loads a local variable in the top stack position."
-  (aver (local-variable-p variable))
+  (aver (variable-local-p variable))
   (if (variable-register variable)
       (aload (variable-register variable))
       (progn
@@ -733,7 +733,7 @@ Special variables are not considered local."
 The stack pointer is returned to the position from
 before the emitted code: the code is 'stack-neutral'."
   (declare (type symbol expected-type))
-  (unless (local-variable-p variable)
+  (unless (variable-local-p variable)
     (return-from generate-instanceof-type-check-for-variable))
   (let ((instanceof-class (ecase expected-type
                             (SYMBOL     +lisp-symbol+)
