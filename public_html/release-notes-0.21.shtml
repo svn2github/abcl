@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v0.21</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version 0.21</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 0.21</h2>
+
+
+<p><a href="release-notes-0.20.shtml">Release notes for older releases</a>.</p>
+
+<dl>
+  <dt>OS-independent pathname representation in FASLs</dt>
+  <dd>A long-withstanding bug which clearly manifested in release 0.20 with the integration of ASDF 2: pathnames were externalized in FASLs using their OS-dependent printed representation. Thus FASLs containing literal pathnames compiled on Windows didn't work correctly on Linux. This bug has been fixed in this release by always externalizing pathnames using '/' as a separator, so they can be correctly read back on all major OSes.</dd>
+  <dt>ASDF2 updated</dt>
+  <dd>ASDF has been updated to version 2.004.</dd>
+  <dt>CLOS/MOP enhancements</dt>
+  <dd>It is now possible to define custom slot definition metaobjects and to add custom defclass options to user-defined metaclasses. It is also now possible to use slot-value, (setf slot-value), and slot-boundp on structure objects.</dd>
+  <dt>Java interop enhancements</dt>
+  <dd>Java integration has been enhanced: the classpath can now be manipulated and inspected at runtime; a proxy implementing multiple interfaces in Lisp can be produced; and CL:STRING has been extended to call toString() on Java objects.</dd>
+  <dt>Other minor bug fixes</dt>
+  <dd>Including a few fixes on how certain objects are printed, a MACROLET bug, and support for JSR-223 with Java 1.5. Consult the CHANGES file distributed with ABCL for more details.</dd>
+</dl>
+
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-0.16.shtml 12246 2009-11-04 22:00:47Z ehuelsmann $</div>
+</div>
+</body>
+</html>
