@@ -53,6 +53,11 @@ public abstract class Operator extends LispObject
 
     public final LispObject getLambdaList()
     {
+        if(lambdaList == null) {
+            DocString ds = getClass().getAnnotation(DocString.class);
+            if(ds != null)
+                lambdaList = new SimpleString(ds.args());
+        }
         return lambdaList;
     }
 

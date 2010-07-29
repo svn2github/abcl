@@ -345,16 +345,6 @@
 (export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
 (export '(make-mutex get-mutex release-mutex with-mutex))
 
-(progn
-  ;; block to be removed at 0.22
-  ;; It exists solely for pre-0.17 compatibility
-  ;; FIXME 0.22
-  (in-package "EXTENSIONS")
-  (export '(mailbox-send mailbox-empty-p mailbox-read mailbox-peek))
-  (export '(make-thread-lock thread-lock thread-unlock with-thread-lock))
-  (export '(with-mutex make-mutex get-mutex release-mutex)))
-
-;; end of 0.22 block
 
 (in-package "EXTENSIONS")
 
@@ -427,6 +417,8 @@
 (sys::autoload-macro '(pprint-logical-block+ pprint-pop+) "pprint")
 
 (in-package "COMMON-LISP")
+
+(sys::autoload '(documentation) "clos")
 
 (sys::autoload '(write print prin1 princ pprint write-to-string
             prin1-to-string princ-to-string write-char

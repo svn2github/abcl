@@ -1,8 +1,7 @@
 /*
- * Version.java
+ * DocString.java
  *
- * Copyright (C) 2003-2008 Peter Graves
- * $Id$
+ * Copyright (C) 2010 Matt Seddon
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,21 +29,22 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
-
 package org.armedbear.lisp;
 
-public final class Version
-{
-  private Version()
-  {
-  }
+import java.lang.annotation.*;
 
-  public static String getVersion()
-  {
-    return "0.22.0-dev";
-  }
-
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+/**
+ * An annotation type to expose documentation to ABCL.
+ * <i>Note:</i> the TAGS ant target also pulls information from here. It
+ * expects <tt>name</tt> to be the first item in the DocString declaration,
+ * and not broken onto multiple lines.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DocString {
+    /** The lisp name. */
+    public String name() default "";
+    /** The arguments. */
+    public String args() default "";
+    /** The documentation string. */
+    public String doc() default "";
 }

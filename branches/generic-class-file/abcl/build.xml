@@ -445,8 +445,11 @@ will load ASDF-INSTALL.
     </target>
 
     <target name="TAGS">
-      <apply executable="etags" parallel="true" verbose="true">
+      <delete file="TAGS"/>
+      <apply executable="etags" parallel="true" verbose="true" maxparallel="300">
+        <arg value="--append"/>
 	<arg value="--regex=|[ \t]+//[ \t]+###[ \t]+\([^ \t]+\)|\1|"/>
+	<arg value='--regex=|[ \t]*@DocString([ \t]*name=\"\([^\"]*\)|\1|'/>
 	<fileset dir="${src.dir}">
 	  <patternset refid="abcl.source.java"/>
 	  <patternset refid="abcl.source.lisp"/>
