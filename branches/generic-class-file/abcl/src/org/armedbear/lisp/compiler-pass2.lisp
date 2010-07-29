@@ -1304,11 +1304,10 @@ representation, based on the derived type of the LispObject."
           ;; Current path ends.
           (return-from walk-code))))))
 
-(declaim (ftype (function () t) analyze-stack))
-(defun analyze-stack ()
+(declaim (ftype (function (t) t) analyze-stack))
+(defun analyze-stack (code)
   (declare (optimize speed))
-  (let* ((code *code*)
-         (code-length (length code)))
+  (let* ((code-length (length code)))
     (declare (type vector code))
     (dotimes (i code-length)
       (declare (type (unsigned-byte 16) i))
@@ -1572,7 +1571,9 @@ representation, based on the derived type of the LispObject."
   t)
 
 (defun code-bytes (code)
-  (let ((length 0))
+  (let ((length 0)
+        labels ;; alist
+        )
     (declare (type (unsigned-byte 16) length))
     ;; Pass 1: calculate label offsets and overall length.
     (dotimes (i (length code))
@@ -1581,7 +1582,9 @@ representation, based on the derived type of the LispObject."
              (opcode (instruction-opcode instruction)))
         (if (= opcode 202) ; LABEL
             (let ((label (car (instruction-args instruction))))
-              (set label length))
+              (set label length)
+              (setf labels
+                    (acons label length labels)))
             (incf length (opcode-size opcode)))))
     ;; Pass 2: replace labels with calculated offsets.
     (let ((index 0))
@@ -1608,7 +1611,7 @@ representation, based on the derived type of the LispObject."
             (dolist (byte (instruction-args instruction))
               (setf (svref bytes index) byte)
               (incf index)))))
-      bytes)))
+      (values bytes labels))))
 
 (declaim (inline write-u1))
 (defun write-u1 (n stream)
@@ -1878,7 +1881,7 @@ representation, based on the derived type of the LispObject."
     (emit 'return)
     (finalize-code)
     (setf *code* (resolve-instructions *code*))
-    (setf (method-max-stack constructor) (analyze-stack))
+    (setf (method-max-stack constructor) (analyze-stack *code*))
     (setf (method-code constructor) (code-bytes *code*))
     (setf (method-handlers constructor) (nreverse *handlers*))
     constructor))
@@ -8205,7 +8208,7 @@ We need more thought here.
     (optimize-code)
 
     (setf *code* (resolve-instructions *code*))
-    (setf (method-max-stack execute-method) (analyze-stack))
+    (setf (method-max-stack execute-method) (analyze-stack *code*))
     (setf (method-code execute-method) (code-bytes *code*))
 
     ;; Remove handler if its protected range is empty.

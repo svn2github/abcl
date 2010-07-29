@@ -65,7 +65,7 @@
   T)
 
 (deftest fieldtype.2
-    (string= (jvm::internal-field-type jvm::+!lisp-object+)
+    (string= (jvm::internal-field-type jvm::+lisp-object+)
              "org/armedbear/lisp/LispObject")
   T)
 
@@ -111,7 +111,7 @@
   T)
 
 (deftest fieldref.2
-    (string= (jvm::internal-field-ref jvm::+!lisp-object+)
+    (string= (jvm::internal-field-ref jvm::+lisp-object+)
              "Lorg/armedbear/lisp/LispObject;")
   T)
 
@@ -124,58 +124,105 @@
   T)
 
 (deftest descriptor.2
-    (string= (jvm::descriptor jvm::+!lisp-object+ jvm::+!lisp-object+)
+    (string= (jvm::descriptor jvm::+lisp-object+ jvm::+lisp-object+)
              "(Lorg/armedbear/lisp/LispObject;)Lorg/armedbear/lisp/LispObject;")
   T)
 
 (deftest map-flags.1
-    (eql (jvm::map-flags '(:public)) #x0001))
+    (eql (jvm::map-flags '(:public)) #x0001)
+  T)
 
 (deftest pool.1
     (let* ((pool (jvm::make-pool)))
-      (jvm::pool-add-class pool jvm::+!lisp-readtable+)
-      (jvm::pool-add-field-ref pool jvm::+!lisp-readtable+ "ABC" :int)
+      (jvm::pool-add-class pool jvm::+lisp-readtable+)
+      (jvm::pool-add-field-ref pool jvm::+lisp-readtable+ "ABC" :int)
       (jvm::pool-add-field-ref pool
-                               jvm::+!lisp-readtable+ "ABD"
-                               jvm::+!lisp-readtable+)
-      (jvm::pool-add-method-ref pool jvm::+!lisp-readtable+ "MBC" :int)
-      (jvm::pool-add-method-ref pool jvm::+!lisp-readtable+ "MBD"
-                                jvm::+!lisp-readtable+)
+                               jvm::+lisp-readtable+ "ABD"
+                               jvm::+lisp-readtable+)
+      (jvm::pool-add-method-ref pool jvm::+lisp-readtable+ "MBC" :int)
+      (jvm::pool-add-method-ref pool jvm::+lisp-readtable+ "MBD"
+                                jvm::+lisp-readtable+)
       (jvm::pool-add-interface-method-ref pool
-                                          jvm::+!lisp-readtable+ "MBD" :int)
+                                          jvm::+lisp-readtable+ "MBD" :int)
       (jvm::pool-add-interface-method-ref pool
-                                          jvm::+!lisp-readtable+ "MBD"
-                                          jvm::+!lisp-readtable+)
+                                          jvm::+lisp-readtable+ "MBD"
+                                          jvm::+lisp-readtable+)
       (jvm::pool-add-string pool "string")
       (jvm::pool-add-int pool 1)
       (jvm::pool-add-float pool 1.0f0)
       (jvm::pool-add-long pool 1)
       (jvm::pool-add-double pool 1.0d0)
       (jvm::pool-add-name/type pool "name1" :int)
-      (jvm::pool-add-name/type pool "name2" jvm::+!lisp-object+)
+      (jvm::pool-add-name/type pool "name2" jvm::+lisp-object+)
       (jvm::pool-add-utf8 pool "utf8")
       T)
   T)
 
 (deftest make-class-file.1
     (let* ((class (jvm::make-class-name "org/armedbear/lisp/mcf_1"))
-           (file (jvm::!make-class-file class jvm::+!lisp-object+ '(:public))))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public))))
       (jvm::class-add-field file (jvm::make-field "ABC" :int))
-      (jvm::class-add-field file (jvm::make-field "ABD" jvm::+!lisp-object+))
+      (jvm::class-add-field file (jvm::make-field "ABD" jvm::+lisp-object+))
       (jvm::class-add-method file (jvm::!make-method "MBC" nil :int))
-      (jvm::class-add-method file (jvm::!make-method "MBD" nil jvm::+!lisp-object+))
+      (jvm::class-add-method file (jvm::!make-method "MBD" nil jvm::+lisp-object+))
+      (jvm::class-add-method file (jvm::!make-method :constructor :void nil))
+      (jvm::class-add-method file (jvm::!make-method :class-constructor :void nil))
       T)
   T)
 
 (deftest finalize-class-file.1
-    (let* ((class (jvm::make-class-name "org/armedbear/lisp/mcf_1"))
-           (file (jvm::!make-class-file class jvm::+!lisp-object+ '(:public))))
+    (let* ((class (jvm::make-class-name "org/armedbear/lisp/fcf_1"))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public))))
       (jvm::class-add-field file (jvm::make-field "ABC" :int))
-      (jvm::class-add-field file (jvm::make-field "ABD" jvm::+!lisp-object+))
+      (jvm::class-add-field file (jvm::make-field "ABD" jvm::+lisp-object+))
       (jvm::class-add-method file (jvm::!make-method "MBC" nil '(:int)))
       (jvm::class-add-method file
                              (jvm::!make-method "MBD" nil
-                                                (list jvm::+!lisp-object+)))
+                                                (list jvm::+lisp-object+)))
       (jvm::finalize-class-file file)
-      file)
+      file
+      T)
   T)
+
+(deftest generate-method.1
+    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_1"))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public)))
+           (method (jvm::!make-method :class-constructor :void nil
+                                      :flags '(:static))))
+      (jvm::class-add-method file method)
+      (jvm::with-code-to-method (method)
+        (jvm::emit 'return))
+      (jvm::finalize-class-file file)
+      (with-open-stream (stream (sys::%make-byte-array-output-stream))
+        (jvm::!write-class-file file stream)
+        (sys::load-compiled-function (sys::%get-output-stream-bytes stream)))
+      T)
+  T)
+
+(deftest generate-method.2
+    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_2"))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public)))
+           (method (jvm::!make-method "doNothing" :void nil)))
+      (jvm::class-add-method file method)
+      (jvm::with-code-to-method (method)
+        (let ((label1 (gensym))
+              (label2 (gensym))
+              (label3 (gensym)))
+          (jvm::label label1)
+          (jvm::emit 'jvm::iconst_1)
+          (jvm::label label2)
+          (jvm::emit 'return)
+          (jvm::label label3)
+          (jvm::code-add-exception-handler (jvm::method-attribute method "Code")
+                                           label1 label2 label3 nil))
+        (jvm::emit 'return))
+      (jvm::finalize-class-file file)
+      (with-open-stream (stream (sys::%make-byte-array-output-stream))
+        (jvm::!write-class-file file stream)
+        (sys::load-compiled-function (sys::%get-output-stream-bytes stream)))
+      T)
+  T)
+
+
+;;(deftest generate-method.2
+;;    (let* ((class))))
