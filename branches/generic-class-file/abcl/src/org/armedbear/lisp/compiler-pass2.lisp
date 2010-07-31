@@ -442,22 +442,6 @@ the top-most value's representation being 'rep1'."
 
 (defparameter *descriptors* (make-hash-table :test #'equal))
 
-;; Just an experiment...
-(defmacro defsubst (name lambda-list &rest body)
-  (let* ((block-name (fdefinition-block-name name))
-         (expansion (generate-inline-expansion block-name lambda-list body)))
-    `(progn
-       (%defun ',name (lambda ,lambda-list (block ,block-name ,@body)))
-       (precompile ',name)
-       (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setf (inline-expansion ',name) ',expansion))
-       ',name)))
-
-#+nil
-(defmacro defsubst (&rest args)
-  `(defun ,@args))
-
-
 (declaim (ftype (function (t t) cons) get-descriptor-info))
 (defun get-descriptor-info (arg-types return-type)
   (let* ((arg-types (mapcar #'!class-ref arg-types))
@@ -469,7 +453,8 @@ the top-most value's representation being 'rep1'."
     (or descriptor-info
         (setf (gethash key ht) (make-descriptor-info arg-types return-type)))))
 
-(defsubst get-descriptor (arg-types return-type)
+(declaim (inline get-descriptor))
+(defun get-descriptor (arg-types return-type)
   (car (get-descriptor-info arg-types return-type)))
 
 (declaim (ftype (function * t) emit-invokestatic))
@@ -478,8 +463,53 @@ the top-most value's representation being 'rep1'."
          (descriptor (car info))
          (stack-effect (cdr info))
          (class-name (!class-name class-name))
-         (instruction (emit 'invokestatic class-name method-name descriptor)))
+         (index (pool-method class-name method-name descriptor))
+         (instruction (apply #'%emit 'invokestatic (u2 index))))
     (setf (instruction-stack instruction) stack-effect)))
+
+
+
+(declaim (ftype (function t string) pretty-java-class))
+(defun pretty-java-class (class)
+  (cond ((equal (!class-name class) (!class-name +lisp-object+))
+         "LispObject")
+        ((equal class +lisp-symbol+)
+         "Symbol")
+        ((equal class  +lisp-thread+)
+         "LispThread")
+        (t
+         class)))
+
+(defknown emit-invokevirtual (t t t t) t)
+(defun emit-invokevirtual (class-name method-name arg-types return-type)
+  (let* ((info (get-descriptor-info arg-types return-type))
+         (descriptor (car info))
+         (stack-effect (cdr info))
+         (class-name (!class-name class-name))
+         (index (pool-method class-name method-name descriptor))
+         (instruction (apply #'%emit 'invokevirtual (u2 index))))
+    (declare (type (signed-byte 8) stack-effect))
+    (let ((explain *explain*))
+      (when (and explain (memq :java-calls explain))
+        (unless (string= method-name "execute")
+          (format t ";   call to ~A ~A.~A(~{~A~^,~})~%"
+                  (pretty-java-type return-type)
+                  (pretty-java-class class-name)
+                  method-name
+                  (mapcar 'pretty-java-type arg-types)))))
+    (setf (instruction-stack instruction) (1- stack-effect))))
+
+(defknown emit-invokespecial-init (string list) t)
+(defun emit-invokespecial-init (class-name arg-types)
+  (let* ((info (get-descriptor-info arg-types nil))
+         (descriptor (car info))
+         (stack-effect (cdr info))
+         (class-name (!class-name class-name))
+         (index (pool-method class-name "<init>" descriptor))
+         (instruction (apply #'%emit 'invokespecial (u2 index))))
+    (declare (type (signed-byte 8) stack-effect))
+    (setf (instruction-stack instruction) (1- stack-effect))))
+
 
 (defknown pretty-java-type (t) string)
 (defun pretty-java-type (type)
@@ -643,46 +673,6 @@ to get the correct (exact where required) comparisons.")
       (when (and (eq rep1 r1) (eq rep2 r2))
         (return-from common-representation result)))))
 
-
-
-(declaim (ftype (function t string) pretty-java-class))
-(defun pretty-java-class (class)
-  (cond ((equal (!class-name class) (!class-name +lisp-object+))
-         "LispObject")
-        ((equal class +lisp-symbol+)
-         "Symbol")
-        ((equal class +lisp-thread+)
-         "LispThread")
-        (t
-         class)))
-
-(defknown emit-invokevirtual (t t t t) t)
-(defun emit-invokevirtual (class-name method-name arg-types return-type)
-  (let* ((info (get-descriptor-info arg-types return-type))
-         (descriptor (car info))
-         (stack-effect (cdr info))
-         (class-name (!class-name class-name))
-         (instruction (emit 'invokevirtual class-name method-name descriptor)))
-    (declare (type (signed-byte 8) stack-effect))
-    (let ((explain *explain*))
-      (when (and explain (memq :java-calls explain))
-        (unless (string= method-name "execute")
-          (format t ";   call to ~A ~A.~A(~{~A~^,~})~%"
-                  (pretty-java-type return-type)
-                  (pretty-java-class class-name)
-                  method-name
-                  (mapcar 'pretty-java-type arg-types)))))
-    (setf (instruction-stack instruction) (1- stack-effect))))
-
-(defknown emit-invokespecial-init (string list) t)
-(defun emit-invokespecial-init (class-name arg-types)
-  (let* ((info (get-descriptor-info arg-types nil))
-         (descriptor (car info))
-         (stack-effect (cdr info))
-         (class-name (!class-name class-name))
-         (instruction (emit 'invokespecial class-name "<init>" descriptor)))
-    (declare (type (signed-byte 8) stack-effect))
-    (setf (instruction-stack instruction) (1- stack-effect))))
 
 ;; Index of local variable used to hold the current thread.
 (defvar *thread* nil)
@@ -1196,11 +1186,8 @@ representation, based on the derived type of the LispObject."
 
 ;; invokevirtual, invokespecial, invokestatic class-name method-name descriptor
 (define-resolver (182 183 184) (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (pool-method (!class-name (first args))
-                             (second args) (third args))))
-    (setf (instruction-args instruction) (u2 index))
-    instruction))
+  ;; we used to create the pool-method here; that moved to the emit-* layer
+  instruction)
 
 ;; ldc
 (define-resolver 18 (instruction)
