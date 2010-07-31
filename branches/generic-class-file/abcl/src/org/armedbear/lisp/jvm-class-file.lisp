@@ -875,7 +875,7 @@ returning the attribute."
   )
 
 
-(defvar *current-code-attribute*)
+(defvar *current-code-attribute* nil)
 
 (defun save-code-specials (code)
   (setf (code-code code) *code*
@@ -889,7 +889,7 @@ returning the attribute."
         *registers-allocated* (code-max-locals code)
         *register* (code-current-local code)))
 
-(defmacro with-code-to-method ((method &key safe-nesting) &body body)
+(defmacro with-code-to-method ((class-file method &key safe-nesting) &body body)
   (let ((m (gensym))
         (c (gensym)))
     `(progn
@@ -898,6 +898,7 @@ returning the attribute."
                (save-code-specials *current-code-attribute*))))
        (let* ((,m ,method)
               (,c (method-ensure-code method))
+              (*pool* (class-file-constants ,class-file))
               (*code* (code-code ,c))
               (*registers-allocated* (code-max-locals ,c))
               (*register* (code-current-local ,c))
