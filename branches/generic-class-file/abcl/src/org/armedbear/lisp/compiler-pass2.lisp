@@ -215,10 +215,6 @@
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
-(defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
-(defconstant +lisp-single-float+ "Lorg/armedbear/lisp/SingleFloat;")
-(defconstant +lisp-double-float-class+ "org/armedbear/lisp/DoubleFloat")
-(defconstant +lisp-double-float+ "Lorg/armedbear/lisp/DoubleFloat;")
 (defconstant +lisp-character-array+ "[Lorg/armedbear/lisp/LispCharacter;")
 (defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
 
@@ -638,8 +634,8 @@ internal representation conversion.")
     (:char    . ,+lisp-character+)
     (:int     . ,+lisp-integer+)
     (:long    . ,+lisp-integer+)
-    (:float   . ,+!lisp-single-float+)
-    (:double  . ,+!lisp-double-float+))
+    (:float   . ,+lisp-single-float+)
+    (:double  . ,+lisp-double-float+))
   "Lists the class on which to call the `getInstance' method on,
 when converting the internal representation to a LispObject.")
 
@@ -928,21 +924,21 @@ before the emitted code: the code is 'stack-neutral'."
 (defun emit-unbox-float ()
   (declare (optimize speed))
   (cond ((= *safety* 3)
-         (emit-invokestatic +lisp-single-float-class+ "getValue"
+         (emit-invokestatic +lisp-single-float+ "getValue"
                             (lisp-object-arg-types 1) "F"))
         (t
-         (emit 'checkcast +lisp-single-float-class+)
-         (emit 'getfield +lisp-single-float-class+ "value" "F"))))
+         (emit 'checkcast +lisp-single-float+)
+         (emit 'getfield +lisp-single-float+ "value" "F"))))
 
 (defknown emit-unbox-double () t)
 (defun emit-unbox-double ()
   (declare (optimize speed))
   (cond ((= *safety* 3)
-         (emit-invokestatic +lisp-double-float-class+ "getValue"
+         (emit-invokestatic +lisp-double-float+ "getValue"
                             (lisp-object-arg-types 1) "D"))
         (t
-         (emit 'checkcast +lisp-double-float-class+)
-         (emit 'getfield +lisp-double-float-class+ "value" "D"))))
+         (emit 'checkcast +lisp-double-float+)
+         (emit 'getfield +lisp-double-float+ "value" "D"))))
 
 (defknown fix-boxing (t t) t)
 (defun fix-boxing (required-representation derived-type)
@@ -2065,17 +2061,17 @@ representation, based on the derived type of the LispObject."
 
 (defun serialize-float (s)
   "Generates code to restore a serialized single-float."
-  (emit 'new +lisp-single-float-class+)
+  (emit 'new +lisp-single-float+)
   (emit 'dup)
   (emit 'ldc (pool-float s))
-  (emit-invokespecial-init +lisp-single-float-class+ '("F")))
+  (emit-invokespecial-init +lisp-single-float+ '("F")))
 
 (defun serialize-double (d)
   "Generates code to restore a serialized double-float."
-  (emit 'new +lisp-double-float-class+)
+  (emit 'new +lisp-double-float+)
   (emit 'dup)
   (emit 'ldc2_w (pool-double d))
-  (emit-invokespecial-init +lisp-double-float-class+ '("D")))
+  (emit-invokespecial-init +lisp-double-float+ '("D")))
 
 (defun serialize-string (string)
   "Generate code to restore a serialized string."
@@ -2127,8 +2123,8 @@ of the other types."
 (defvar serialization-table
   `((integer "INT" ,#'eql ,#'serialize-integer ,+lisp-integer+)
     (character "CHR" ,#'eql ,#'serialize-character ,+lisp-character+)
-    (single-float "FLT" ,#'eql ,#'serialize-float ,+!lisp-single-float+)
-    (double-float "DBL" ,#'eql ,#'serialize-double ,+!lisp-double-float+)
+    (single-float "FLT" ,#'eql ,#'serialize-float ,+lisp-single-float+)
+    (double-float "DBL" ,#'eql ,#'serialize-double ,+lisp-double-float+)
     (string "STR" ,#'equal ,#'serialize-string
             ,+lisp-abstract-string+) ;; because of (not compile-file)
     (package "PKG" ,#'eq ,#'serialize-package ,+lisp-object+)
