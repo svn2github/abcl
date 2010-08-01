@@ -631,7 +631,7 @@ flags and their binary values.")
   descriptor
   attributes)
 
-(defun make-field (name type &key (flags '(:public)))
+(defun !make-field (name type &key (flags '(:public)))
   
   (%make-field :access-flags flags
                :name name
@@ -649,7 +649,7 @@ flags and their binary values.")
     (setf (field-access-flags field)
           (map-flags (field-access-flags field))
           (field-descriptor field)
-          (pool-add-utf8 pool (internal-field-type (field-descriptor field)))
+          (pool-add-utf8 pool (internal-field-ref (field-descriptor field)))
           (field-name field)
           (pool-add-utf8 pool (field-name field))))
   (finalize-attributes (field-attributes field) nil class))
