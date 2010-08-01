@@ -199,6 +199,19 @@
           n)))
 
 
+(defun add-exception-handler (start end handler type)
+  (if (null *current-code-attribute*)
+      (push (make-handler :from start
+                          :to end
+                          :code handler
+                          :catch-type (if (null type)
+                                          0
+                                          (pool-class (!class-name type))))
+            *handlers*)
+      (code-add-exception-handler *current-code-attribute*
+                                  start end handler type)))
+
+
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
 (defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
@@ -3971,10 +3984,7 @@ given a specific common representation.")
     ;; Restore dynamic environment.
     (label label-EXIT)
     (restore-dynamic-environment register)
-    (push (make-handler :from label-START
-			:to label-END
-			:code label-END
-			:catch-type 0) *handlers*)))
+    (add-exception-handler label-START label-END label-END nil)))
 
 (defun p2-m-v-b-node (block target)
   (let* ((*register* *register*)
@@ -4506,16 +4516,8 @@ given a specific common representation.")
         (emit-move-to-variable (tagbody-id-variable block))
         (emit 'athrow)
         ;; Finally...
-        (push (make-handler :from BEGIN-BLOCK
-                            :to END-BLOCK
-                            :code HANDLER
-                            :catch-type (pool-class (!class-name +lisp-go+)))
-              *handlers*)
-        (push (make-handler :from BEGIN-BLOCK
-                            :to END-BLOCK
-                            :code EXTENT-EXIT-HANDLER
-                            :catch-type 0)
-              *handlers*)))
+        (add-exception-handler BEGIN-BLOCK END-BLOCK HANDLER +lisp-go+)
+        (add-exception-handler BEGIN-BLOCK END-BLOCK EXTENT-EXIT-HANDLER nil)))
     (label EXIT)
     (when (tagbody-non-local-go-p block)
       (emit 'aconst_null) ;; load null value
@@ -4677,16 +4679,8 @@ given a specific common representation.")
         (emit 'getfield +lisp-return+ "result" +lisp-object+)
         (emit-move-from-stack target) ; Stack depth is 0.
         ;; Finally...
-        (push (make-handler :from BEGIN-BLOCK
-                            :to END-BLOCK
-                            :code HANDLER
-                            :catch-type (pool-class (!class-name +lisp-return+)))
-              *handlers*)
-        (push (make-handler :from BEGIN-BLOCK
-                            :to END-BLOCK
-                            :code EXTENT-EXIT-HANDLER
-                            :catch-type 0)
-              *handlers*)))
+        (add-exception-handler BEGIN-BLOCK END-BLOCK HANDLER +lisp-return+)
+        (add-exception-handler BEGIN-BLOCK END-BLOCK EXTENT-EXIT-HANDLER nil)))
     (label BLOCK-EXIT)
     (when (block-id-variable block)
       (emit 'aconst_null) ;; load null value
@@ -7622,10 +7616,9 @@ We need more thought here.
     (label EXIT)
     (aload object-register)
     (emit 'monitorexit)
-    (push (make-handler :from BEGIN-PROTECTED-RANGE
-                        :to END-PROTECTED-RANGE
-                        :code END-PROTECTED-RANGE
-                        :catch-type 0) *handlers*)))
+    (add-exception-handler BEGIN-PROTECTED-RANGE
+                           END-PROTECTED-RANGE
+                           END-PROTECTED-RANGE nil)))
 
 
 (defknown p2-catch-node (t t) t)
@@ -7676,16 +7669,12 @@ We need more thought here.
       ;; Finally...
       (emit-push-current-thread)
       (emit-invokevirtual +lisp-thread+ "popCatchTag" nil nil)
-      (let ((handler1 (make-handler :from BEGIN-PROTECTED-RANGE
-                                    :to END-PROTECTED-RANGE
-                                    :code THROW-HANDLER
-                                    :catch-type (pool-class (!class-name +lisp-throw+))))
-            (handler2 (make-handler :from BEGIN-PROTECTED-RANGE
-                                    :to END-PROTECTED-RANGE
-                                    :code DEFAULT-HANDLER
-                                    :catch-type 0)))
-        (push handler1 *handlers*)
-        (push handler2 *handlers*))))
+      (add-exception-handler BEGIN-PROTECTED-RANGE
+                             END-PROTECTED-RANGE
+                             THROW-HANDLER +lisp-throw+)
+      (add-exception-handler BEGIN-PROTECTED-RANGE
+                             END-PROTECTED-RANGE
+                             DEFAULT-HANDLER nil)))
   t)
 
 (defun p2-throw (form target representation)
@@ -7771,11 +7760,8 @@ We need more thought here.
       ;; Result.
       (aload result-register)
       (emit-move-from-stack target)
-      (let ((handler (make-handler :from BEGIN-PROTECTED-RANGE
-                                   :to END-PROTECTED-RANGE
-                                   :code HANDLER
-                                   :catch-type 0)))
-        (push handler *handlers*)))))
+      (add-exception-handler BEGIN-PROTECTED-RANGE
+                             END-PROTECTED-RANGE HANDLER nil))))
 
 (defknown compile-form (t t t) t)
 (defun compile-form (form target representation)

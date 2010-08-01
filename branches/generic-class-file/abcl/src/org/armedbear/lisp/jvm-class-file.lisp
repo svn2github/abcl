@@ -864,9 +864,6 @@ returning the attribute."
                         :catch-type type)
         (code-exception-handlers code)))
 
-(defun add-exception-handler (start end handler type)
-  (code-add-exception-handler *current-code-attribute* start end handler type))
-
 (defstruct exception
   start-pc    ;; label target
   end-pc      ;; label target
