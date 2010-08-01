@@ -214,11 +214,7 @@
 
 (defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
 (defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
-(defconstant +lisp-fixnum-class+ "org/armedbear/lisp/Fixnum")
-(defconstant +lisp-fixnum+ "Lorg/armedbear/lisp/Fixnum;")
 (defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
-(defconstant +lisp-bignum-class+ "org/armedbear/lisp/Bignum")
-(defconstant +lisp-bignum+ "Lorg/armedbear/lisp/Bignum;")
 (defconstant +lisp-single-float-class+ "org/armedbear/lisp/SingleFloat")
 (defconstant +lisp-single-float+ "Lorg/armedbear/lisp/SingleFloat;")
 (defconstant +lisp-double-float-class+ "org/armedbear/lisp/DoubleFloat")
@@ -766,7 +762,7 @@ before the emitted code: the code is 'stack-neutral'."
                             (CHARACTER  +lisp-character+)
                             (CONS       +lisp-cons+)
                             (HASH-TABLE +lisp-hash-table+)
-                            (FIXNUM     +lisp-fixnum-class+)
+                            (FIXNUM     +lisp-fixnum+)
                             (STREAM     +lisp-stream+)
                             (STRING     +lisp-abstract-string+)
                             (VECTOR     +lisp-abstract-vector+)))
@@ -917,15 +913,15 @@ before the emitted code: the code is 'stack-neutral'."
 (defun emit-unbox-fixnum ()
   (declare (optimize speed))
   (cond ((= *safety* 3)
-         (emit-invokestatic +lisp-fixnum-class+ "getValue"
+         (emit-invokestatic +lisp-fixnum+ "getValue"
                             (lisp-object-arg-types 1) "I"))
         (t
-         (emit 'checkcast +lisp-fixnum-class+)
-         (emit 'getfield +lisp-fixnum-class+ "value" "I"))))
+         (emit 'checkcast +lisp-fixnum+)
+         (emit 'getfield +lisp-fixnum+ "value" "I"))))
 
 (defknown emit-unbox-long () t)
 (defun emit-unbox-long ()
-  (emit-invokestatic +lisp-bignum-class+ "longValue"
+  (emit-invokestatic +lisp-bignum+ "longValue"
                      (lisp-object-arg-types 1) "J"))
 
 (defknown emit-unbox-float () t)
@@ -956,8 +952,8 @@ representation, based on the derived type of the LispObject."
         ((eq required-representation :int)
          (cond ((and (fixnum-type-p derived-type)
                      (< *safety* 3))
-                (emit 'checkcast +lisp-fixnum-class+)
-                (emit 'getfield +lisp-fixnum-class+ "value" "I"))
+                (emit 'checkcast +lisp-fixnum+)
+                (emit 'getfield +lisp-fixnum+ "value" "I"))
                (t
                 (emit-invokevirtual +lisp-object+ "intValue" nil "I"))))
         ((eq required-representation :char)
@@ -2042,23 +2038,23 @@ representation, based on the derived type of the LispObject."
 (defun serialize-integer (n)
   "Generates code to restore a serialized integer."
   (cond((<= 0 n 255)
-        (emit-getstatic +lisp-fixnum-class+ "constants" +lisp-fixnum-array+)
+        (emit-getstatic +lisp-fixnum+ "constants" +lisp-fixnum-array+)
         (emit-push-constant-int n)
         (emit 'aaload))
        ((<= most-negative-fixnum n most-positive-fixnum)
         (emit-push-constant-int n)
-        (emit-invokestatic +lisp-fixnum-class+ "getInstance"
+        (emit-invokestatic +lisp-fixnum+ "getInstance"
                            '("I") +lisp-fixnum+))
        ((<= most-negative-java-long n most-positive-java-long)
         (emit-push-constant-long n)
-        (emit-invokestatic +lisp-bignum-class+ "getInstance"
+        (emit-invokestatic +lisp-bignum+ "getInstance"
                            '("J") +lisp-integer+))
        (t
         (let* ((*print-base* 10)
                (s (with-output-to-string (stream) (dump-form n stream))))
           (emit 'ldc (pool-string s))
           (emit-push-constant-int 10)
-          (emit-invokestatic +lisp-bignum-class+ "getInstance"
+          (emit-invokestatic +lisp-bignum+ "getInstance"
                              (list +java-string+ "I") +lisp-integer+)))))
 
 (defun serialize-character (c)
@@ -3384,7 +3380,7 @@ given a specific common representation.")
   'ifne)
 
 (defun p2-test-fixnump (form)
-  (p2-test-instanceof-predicate form +lisp-fixnum-class+))
+  (p2-test-instanceof-predicate form +lisp-fixnum+))
 
 (defun p2-test-stringp (form)
   (p2-test-instanceof-predicate form +lisp-abstract-string+))
@@ -4607,7 +4603,7 @@ given a specific common representation.")
   (p2-instanceof-predicate form target representation +lisp-cons+))
 
 (defun p2-fixnump (form target representation)
-  (p2-instanceof-predicate form target representation +lisp-fixnum-class+))
+  (p2-instanceof-predicate form target representation +lisp-fixnum+))
 
 (defun p2-packagep (form target representation)
   (p2-instanceof-predicate form target representation +lisp-package+))
@@ -7435,7 +7431,7 @@ We need more thought here.
                             (CHARACTER  +lisp-character+)
                             (CONS       +lisp-cons+)
                             (HASH-TABLE +lisp-hash-table+)
-                            (FIXNUM     +lisp-fixnum-class+)
+                            (FIXNUM     +lisp-fixnum+)
 			    (STREAM     +lisp-stream+)
                             (STRING     +lisp-abstract-string+)
                             (VECTOR     +lisp-abstract-vector+)))
