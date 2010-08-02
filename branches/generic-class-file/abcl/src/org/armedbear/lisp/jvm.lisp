@@ -105,18 +105,21 @@
     (dotimes (i (length name))
       (declare (type fixnum i))
       (when (or (char= (char name i) #\-)
-		(char= (char name i) #\Space))
+                (char= (char name i) #\Space))
         (setf (char name i) #\_)))
-    (concatenate 'string "org/armedbear/lisp/" name)))
+    (make-class-name
+     (concatenate 'string "org.armedbear.lisp." name))))
 
 (defun make-unique-class-name ()
   "Creates a random class name for use with a `class-file' structure's
 `class' slot."
-  (concatenate 'string "abcl_"
-          (java:jcall (java:jmethod "java.lang.String" "replace" "char" "char")
-                      (java:jcall (java:jmethod "java.util.UUID" "toString")
-                             (java:jstatic "randomUUID" "java.util.UUID"))
-                      #\- #\_)))
+  (make-class-name
+   (concatenate 'string "abcl_"
+                (substitute #\_ #\-
+                            (java:jcall (java:jmethod "java.util.UUID"
+                                                      "toString")
+                                        (java:jstatic "randomUUID"
+                                                      "java.util.UUID"))))))
 
 (defun make-class-file (&key pathname lambda-name lambda-list)
   "Creates a `class-file' structure. If `pathname' is non-NIL, it's
