@@ -108,7 +108,8 @@
   (declare (optimize speed))
   (pool-get (list 9
                   (pool-class class-name)
-                  (pool-name-and-type field-name type-name))))
+                  (pool-name-and-type field-name
+                                      (internal-field-ref type-name)))))
 
 ;; (tag class-index name-and-type-index)
 (declaim (ftype (function (string string string) fixnum) pool-method))
@@ -210,13 +211,6 @@
             *handlers*)
       (code-add-exception-handler *current-code-attribute*
                                   start end handler type)))
-
-(defun !class-ref (class-name)
-  "To be eliminated when all hard-coded strings are
-replaced by `class-name' structures"
-  (if (or (symbolp class-name) (typep class-name 'class-name))
-      (internal-field-ref class-name)
-      class-name))
 
 (defstruct (instruction (:constructor %make-instruction (opcode args)))
   (opcode 0 :type (integer 0 255))
@@ -504,14 +498,14 @@ the top-most value's representation being 'rep1'."
 (defknown emit-getstatic (t t t) t)
 (defun emit-getstatic (class-name field-name type)
   (let ((index (if (null *current-code-attribute*)
-                   (pool-field class-name field-name (!class-ref type))
+                   (pool-field class-name field-name type)
                    (pool-add-field-ref *pool* class-name field-name type))))
     (apply #'%emit 'getstatic (u2 index))))
 
 (defknown emit-putstatic (t t t) t)
 (defun emit-putstatic (class-name field-name type)
   (let ((index (if (null *current-code-attribute*)
-                   (pool-field class-name field-name (!class-ref type))
+                   (pool-field class-name field-name type)
                    (pool-add-field-ref *pool* class-name field-name type))))
     (apply #'%emit 'putstatic (u2 index))))
 
@@ -1169,7 +1163,7 @@ representation, based on the derived type of the LispObject."
 (define-resolver (180 181) (instruction)
   (let* ((args (instruction-args instruction))
          (index (pool-field (first args)
-                            (second args) (!class-ref (third args)))))
+                            (second args) (third args))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; new, anewarray, checkcast, instanceof class-name
@@ -1915,7 +1909,7 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor access-flags)
-  (let ((field (make-field name (!class-ref descriptor))))
+  (let ((field (make-field name (internal-field-ref descriptor))))
     ;; final static <access-flags>
     (setf (field-access-flags field)
           (logior +field-flag-final+ +field-flag-static+ access-flags))
