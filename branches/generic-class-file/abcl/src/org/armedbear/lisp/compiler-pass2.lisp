@@ -99,7 +99,7 @@
 (declaim (inline pool-class))
 (defun pool-class (class-name)
   (declare (optimize speed))
-  (pool-get (list 7 (pool-name class-name))))
+  (pool-get (list 7 (pool-name (class-name-internal class-name)))))
 
 ;; (tag class-index name-and-type-index)
 (declaim (ftype (function (string string string) fixnum) pool-field))
@@ -206,17 +206,10 @@
                           :code handler
                           :catch-type (if (null type)
                                           0
-                                          (pool-class (!class-name type))))
+                                          (pool-class type)))
             *handlers*)
       (code-add-exception-handler *current-code-attribute*
                                   start end handler type)))
-
-(defun !class-name (class-name)
-  "To be eliminated when all hard-coded strings are replaced by `class-name'
-structures"
-  (if (typep class-name 'class-name)
-      (class-name-internal class-name)
-      class-name))
 
 (defun !class-ref (class-name)
   "To be eliminated when all hard-coded strings are
@@ -461,7 +454,7 @@ the top-most value's representation being 'rep1'."
          (descriptor (car info))
          (stack-effect (cdr info))
          (index (if (null *current-code-attribute*)
-                    (pool-method (!class-name class-name) method-name descriptor)
+                    (pool-method class-name method-name descriptor)
                     (pool-add-method-ref *pool* class-name
                                          method-name (cons return-type arg-types))))
          (instruction (apply #'%emit 'invokestatic (u2 index))))
@@ -471,7 +464,7 @@ the top-most value's representation being 'rep1'."
 
 (declaim (ftype (function t string) pretty-java-class))
 (defun pretty-java-class (class)
-  (cond ((equal (!class-name class) (!class-name +lisp-object+))
+  (cond ((equal class +lisp-object+)
          "LispObject")
         ((equal class +lisp-symbol+)
          "Symbol")
@@ -486,7 +479,7 @@ the top-most value's representation being 'rep1'."
          (descriptor (car info))
          (stack-effect (cdr info))
          (index (if (null *current-code-attribute*)
-                    (pool-method (!class-name class-name) method-name descriptor)
+                    (pool-method class-name method-name descriptor)
                     (pool-add-method-ref *pool* class-name
                                          method-name (cons return-type arg-types))))
          (instruction (apply #'%emit 'invokevirtual (u2 index))))
@@ -507,7 +500,7 @@ the top-most value's representation being 'rep1'."
          (descriptor (car info))
          (stack-effect (cdr info))
          (index (if (null *current-code-attribute*)
-                    (pool-method (!class-name  class-name) "<init>" descriptor)
+                    (pool-method class-name "<init>" descriptor)
                     (pool-add-method-ref *pool* class-name
                                          "<init>" (cons nil arg-types))))
          (instruction (apply #'%emit 'invokespecial (u2 index))))
@@ -549,16 +542,14 @@ the top-most value's representation being 'rep1'."
 (defknown emit-getstatic (t t t) t)
 (defun emit-getstatic (class-name field-name type)
   (let ((index (if (null *current-code-attribute*)
-                   (pool-field (!class-name class-name)
-                           field-name (!class-ref type))
+                   (pool-field class-name field-name (!class-ref type))
                    (pool-add-field-ref *pool* class-name field-name type))))
     (apply #'%emit 'getstatic (u2 index))))
 
 (defknown emit-putstatic (t t t) t)
 (defun emit-putstatic (class-name field-name type)
   (let ((index (if (null *current-code-attribute*)
-                   (pool-field (!class-name class-name)
-                           field-name (!class-ref type))
+                   (pool-field class-name field-name (!class-ref type))
                    (pool-add-field-ref *pool* class-name field-name type))))
     (apply #'%emit 'putstatic (u2 index))))
 
@@ -1227,14 +1218,14 @@ representation, based on the derived type of the LispObject."
 ;; getfield, putfield class-name field-name type-name
 (define-resolver (180 181) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-field (!class-name (first args))
+         (index (pool-field (first args)
                             (second args) (!class-ref (third args)))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; new, anewarray, checkcast, instanceof class-name
 (define-resolver (187 189 192 193) (instruction)
   (let* ((args (instruction-args instruction))
-         (index (pool-class (!class-name (first args)))))
+         (index (pool-class (first args))))
     (inst (instruction-opcode instruction) (u2 index))))
 
 ;; iinc
@@ -7876,8 +7867,8 @@ We need more thought here.
 (defun write-class-file (class-file stream)
   (let* ((super (abcl-class-file-superclass class-file))
          (this (abcl-class-file-class class-file))
-         (this-index (pool-class (!class-name this)))
-         (super-index (pool-class (!class-name super)))
+         (this-index (pool-class this))
+         (super-index (pool-class super))
          (constructor (make-constructor super
                                         (abcl-class-file-lambda-name class-file)
                                         (abcl-class-file-lambda-list class-file))))
