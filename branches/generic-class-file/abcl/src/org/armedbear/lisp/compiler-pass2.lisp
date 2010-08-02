@@ -412,10 +412,6 @@ the top-most value's representation being 'rep1'."
            (emit 'dup2_x2)
            (emit 'pop2)))))
 
-(declaim (inline get-descriptor))
-(defun get-descriptor (arg-types return-type)
-  (apply #'descriptor return-type arg-types))
-
 (declaim (ftype (function * t) emit-invokestatic))
 (defun emit-invokestatic (class-name method-name arg-types return-type)
   (let* ((descriptor (apply #'descriptor return-type arg-types))
