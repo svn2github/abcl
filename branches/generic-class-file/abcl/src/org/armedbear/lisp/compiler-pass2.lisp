@@ -211,13 +211,6 @@
       (code-add-exception-handler *current-code-attribute*
                                   start end handler type)))
 
-
-(defconstant +lisp-object-array+ "[Lorg/armedbear/lisp/LispObject;")
-(defconstant +closure-binding-array+ "[Lorg/armedbear/lisp/ClosureBinding;")
-(defconstant +lisp-fixnum-array+ "[Lorg/armedbear/lisp/Fixnum;")
-(defconstant +lisp-character-array+ "[Lorg/armedbear/lisp/LispCharacter;")
-(defconstant +lisp-closure-parameter-array+ "[Lorg/armedbear/lisp/Closure$Parameter;")
-
 (defun !class-name (class-name)
   "To be eliminated when all hard-coded strings are replaced by `class-name'
 structures"

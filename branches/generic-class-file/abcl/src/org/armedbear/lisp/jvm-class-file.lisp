@@ -82,9 +82,19 @@ representation to use.
 
 (defstruct (class-name (:conc-name class-)
                        (:constructor %make-class-name))
+  "Used for class identification.
+
+The caller should instantiate only one `class-name' per class, as they are
+used as class identifiers and compared using EQ.
+
+Some instructions need a class argument, others need a reference identifier.
+This class is used to abstract from the difference."
   name-internal
   ref
-  array-ref)
+  array-class ;; cached array class reference
+  ;; keeping a reference to the associated array class allows class
+  ;; name comparisons to be EQ: all classes should exist only once,
+  )
 
 (defun make-class-name (name)
   "Creates a `class-name' structure for the class or interface `name'.
@@ -93,8 +103,26 @@ representation to use.
 to 'internal' (JVM) representation by this function."
   (setf name (substitute #\/ #\. name))
   (%make-class-name :name-internal name
-                    :ref (concatenate 'string "L" name ";")
-                    :array-ref (concatenate 'string "[L" name ";")))
+                    :ref (concatenate 'string "L" name ";")))
+
+(defun class-array (class-name)
+  "Returns a class-name representing an array of `class-name'.
+For multi-dimensional arrays, call this function multiple times, using
+its own result.
+
+This function can be called multiple times on the same `class-name' without
+violating the 'only one instance' requirement: the returned value is cached
+and used on successive calls."
+  (unless (class-array-class class-name)
+    ;; Alessio Stalla found by dumping a class file that the JVM uses
+    ;; the same representation (ie '[L<class-name>;') in CHECKCAST as
+    ;; it does in field references, meaning the class name and class ref
+    ;; are identified by the same string
+    (let ((name-and-ref (concatenate 'string "[" (class-ref class-name))))
+      (setf (class-array-class class-name)
+            (%make-class-name :name-internal name-and-ref
+                              :ref name-and-ref))))
+  (class-array-class class-name))
 
 (defmacro define-class-name (symbol java-dotted-name &optional documentation)
   "Convenience macro to define constants for `class-name' structures,
@@ -105,6 +133,7 @@ initialized from the `java-dotted-name'."
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
+(defconstant +lisp-object-array+ (class-array +lisp-object+))
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")
 (define-class-name +lisp+ "org.armedbear.lisp.Lisp")
 (define-class-name +lisp-nil+ "org.armedbear.lisp.Nil")
@@ -112,14 +141,17 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-symbol+ "org.armedbear.lisp.Symbol")
 (define-class-name +lisp-thread+ "org.armedbear.lisp.LispThread")
 (define-class-name +lisp-closure-binding+ "org.armedbear.lisp.ClosureBinding")
+(defconstant +closure-binding-array+ (class-array +lisp-closure-binding+))
 (define-class-name +lisp-integer+ "org.armedbear.lisp.LispInteger")
 (define-class-name +lisp-fixnum+ "org.armedbear.lisp.Fixnum")
+(defconstant +lisp-fixnum-array+ (class-array +lisp-fixnum+))
 (define-class-name +lisp-bignum+ "org.armedbear.lisp.Bignum")
 (define-class-name +lisp-single-float+ "org.armedbear.lisp.SingleFloat")
 (define-class-name +lisp-double-float+ "org.armedbear.lisp.DoubleFloat")
 (define-class-name +lisp-cons+ "org.armedbear.lisp.Cons")
 (define-class-name +lisp-load+ "org.armedbear.lisp.Load")
 (define-class-name +lisp-character+ "org.armedbear.lisp.LispCharacter")
+(defconstant +lisp-character-array+ (class-array +lisp-character+))
 (define-class-name +lisp-structure-object+ "org.armedbear.lisp.StructureObject")
 (define-class-name +lisp-simple-vector+ "org.armedbear.lisp.SimpleVector")
 (define-class-name +lisp-abstract-string+ "org.armedbear.lisp.AbstractString")
@@ -143,7 +175,8 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-compiled-closure+ "org.armedbear.lisp.CompiledClosure")
 (define-class-name +lisp-closure-parameter+
     "org.armedbear.lisp.Closure$Parameter")
-(define-class-name +!fasl-loader+ "org.armedbear.lisp.FaslClassLoader")
+(defconstant +lisp-closure-parameter-array+
+  (class-array +lisp-closure-parameter+))
 
 #|
 
