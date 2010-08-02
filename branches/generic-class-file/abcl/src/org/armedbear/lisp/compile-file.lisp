@@ -699,7 +699,7 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 				(jvm::emit-invokespecial-init ,class-name '())
 				(jvm::emit-invokevirtual +fasl-classloader+
                                                          "putFunction"
-							 (list "I" jvm::+lisp-object+) jvm::+lisp-object+)
+							 (list :int jvm::+lisp-object+) jvm::+lisp-object+)
 				(jvm::emit 'jvm::pop))
 			      t))))))
 	 (classname (fasl-loader-classname))

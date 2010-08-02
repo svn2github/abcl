@@ -214,8 +214,8 @@
 (defun !class-ref (class-name)
   "To be eliminated when all hard-coded strings are
 replaced by `class-name' structures"
-  (if (typep class-name 'class-name)
-      (class-ref class-name)
+  (if (or (symbolp class-name) (typep class-name 'class-name))
+      (internal-field-ref class-name)
       class-name))
 
 (defstruct (instruction (:constructor %make-instruction (opcode args)))
@@ -412,47 +412,14 @@ the top-most value's representation being 'rep1'."
            (emit 'dup2_x2)
            (emit 'pop2)))))
 
-(declaim (ftype (function (t t) cons) make-descriptor-info))
-(defun make-descriptor-info (arg-types return-type)
-  (let ((descriptor (with-standard-io-syntax
-                      (with-output-to-string (s)
-                        (princ #\( s)
-                        (dolist (type arg-types)
-                          (princ type s))
-                        (princ #\) s)
-                        (princ (or return-type "V") s))))
-        (stack-effect (let ((result (cond ((null return-type) 0)
-                                          ((or (equal return-type "J")
-                                               (equal return-type "D")) 2)
-                                          (t 1))))
-                        (dolist (type arg-types result)
-                          (decf result (if (or (equal type "J")
-                                               (equal type "D"))
-                                           2 1))))))
-    (cons descriptor stack-effect)))
-
-(defparameter *descriptors* (make-hash-table :test #'equal))
-
-(declaim (ftype (function (t t) cons) get-descriptor-info))
-(defun get-descriptor-info (arg-types return-type)
-  (let* ((arg-types (mapcar #'!class-ref arg-types))
-         (return-type (!class-ref return-type))
-         (key (list arg-types return-type))
-         (ht *descriptors*)
-         (descriptor-info (gethash1 key ht)))
-    (declare (type hash-table ht))
-    (or descriptor-info
-        (setf (gethash key ht) (make-descriptor-info arg-types return-type)))))
-
 (declaim (inline get-descriptor))
 (defun get-descriptor (arg-types return-type)
-  (car (get-descriptor-info arg-types return-type)))
+  (apply #'descriptor return-type arg-types))
 
 (declaim (ftype (function * t) emit-invokestatic))
 (defun emit-invokestatic (class-name method-name arg-types return-type)
-  (let* ((info (get-descriptor-info arg-types return-type))
-         (descriptor (car info))
-         (stack-effect (cdr info))
+  (let* ((descriptor (apply #'descriptor return-type arg-types))
+         (stack-effect (apply #'descriptor-stack-effect return-type arg-types))
          (index (if (null *current-code-attribute*)
                     (pool-method class-name method-name descriptor)
                     (pool-add-method-ref *pool* class-name
@@ -475,9 +442,8 @@ the top-most value's representation being 'rep1'."
 
 (defknown emit-invokevirtual (t t t t) t)
 (defun emit-invokevirtual (class-name method-name arg-types return-type)
-  (let* ((info (get-descriptor-info arg-types return-type))
-         (descriptor (car info))
-         (stack-effect (cdr info))
+  (let* ((descriptor (apply #'descriptor return-type arg-types))
+         (stack-effect (apply #'descriptor-stack-effect return-type arg-types))
          (index (if (null *current-code-attribute*)
                     (pool-method class-name method-name descriptor)
                     (pool-add-method-ref *pool* class-name
@@ -496,9 +462,8 @@ the top-most value's representation being 'rep1'."
 
 (defknown emit-invokespecial-init (string list) t)
 (defun emit-invokespecial-init (class-name arg-types)
-  (let* ((info (get-descriptor-info arg-types nil))
-         (descriptor (car info))
-         (stack-effect (cdr info))
+  (let* ((descriptor (apply #'descriptor :void arg-types))
+         (stack-effect (apply #'descriptor-stack-effect :void arg-types))
          (index (if (null *current-code-attribute*)
                     (pool-method class-name "<init>" descriptor)
                     (pool-add-method-ref *pool* class-name
@@ -524,13 +489,14 @@ the top-most value's representation being 'rep1'."
                  "Symbol")
                 ((equal type +lisp-thread+)
                  "LispThread")
-                ((equal type "C")
+                ((equal type :char)
                  "char")
-                ((equal type "I")
+                ((equal type :int)
                  "int")
-                ((equal type "Z")
+                ((equal type :boolean)
                  "boolean")
-                ((null type)
+                ((or (null type)
+                     (eq type :void))
                  "void")
                 (t
                  type)))
@@ -593,10 +559,10 @@ supported (and used) by the compiler.")
 (defun emit-unbox-character ()
   (cond ((> *safety* 0)
          (emit-invokestatic +lisp-character+ "getValue"
-                            (lisp-object-arg-types 1) "C"))
+                            (lisp-object-arg-types 1) :char))
         (t
          (emit 'checkcast +lisp-character+)
-         (emit 'getfield +lisp-character+ "value" "C"))))
+         (emit 'getfield +lisp-character+ "value" :char))))
 
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
@@ -623,15 +589,6 @@ internal representation conversion.")
   "Lists the class on which to call the `getInstance' method on,
 when converting the internal representation to a LispObject.")
 
-(defvar rep-arg-chars
-  '((:boolean . "Z")
-    (:char    . "C")
-    (:int     . "I")
-    (:long    . "J")
-    (:float   . "F")
-    (:double  . "D"))
-  "Lists the argument type identifiers for each
-of the internal representations.")
 
 (defun convert-representation (in out)
   "Converts the value on the stack in the `in' representation
@@ -642,10 +599,8 @@ to a value on the stack in the `out' representation."
   (when (null out)
     ;; Convert back to a lisp object
     (when in
-      (let ((class (cdr (assoc in rep-classes)))
-            (arg-spec (cdr (assoc in rep-arg-chars))))
-        (emit-invokestatic class "getInstance" (list arg-spec)
-                           class)))
+      (let ((class (cdr (assoc in rep-classes))))
+        (emit-invokestatic class "getInstance" (list in) class)))
     (return-from convert-representation))
   (let* ((in-map (cdr (assoc in rep-conversion)))
          (op-num (position out '(:boolean :char :int :long :float :double)))
@@ -659,8 +614,7 @@ to a value on the stack in the `out' representation."
             ((functionp op)
              (funcall op))
             ((stringp op)
-             (emit-invokevirtual +lisp-object+ op nil
-                                 (cdr (assoc out rep-arg-chars))))
+             (emit-invokevirtual +lisp-object+ op nil out))
             (t
              (emit op))))))
 
@@ -815,7 +769,7 @@ before the emitted code: the code is 'stack-neutral'."
 (defun maybe-generate-interrupt-check ()
   (unless (> *speed* *safety*)
     (let ((label1 (gensym)))
-      (emit-getstatic +lisp+ "interrupted" "Z")
+      (emit-getstatic +lisp+ "interrupted" :boolean)
       (emit 'ifeq label1)
       (emit-invokestatic +lisp+ "handleInterrupt" nil nil)
       (label label1))))
@@ -894,35 +848,35 @@ before the emitted code: the code is 'stack-neutral'."
   (declare (optimize speed))
   (cond ((= *safety* 3)
          (emit-invokestatic +lisp-fixnum+ "getValue"
-                            (lisp-object-arg-types 1) "I"))
+                            (lisp-object-arg-types 1) :int))
         (t
          (emit 'checkcast +lisp-fixnum+)
-         (emit 'getfield +lisp-fixnum+ "value" "I"))))
+         (emit 'getfield +lisp-fixnum+ "value" :int))))
 
 (defknown emit-unbox-long () t)
 (defun emit-unbox-long ()
   (emit-invokestatic +lisp-bignum+ "longValue"
-                     (lisp-object-arg-types 1) "J"))
+                     (lisp-object-arg-types 1) :long))
 
 (defknown emit-unbox-float () t)
 (defun emit-unbox-float ()
   (declare (optimize speed))
   (cond ((= *safety* 3)
          (emit-invokestatic +lisp-single-float+ "getValue"
-                            (lisp-object-arg-types 1) "F"))
+                            (lisp-object-arg-types 1) :float))
         (t
          (emit 'checkcast +lisp-single-float+)
-         (emit 'getfield +lisp-single-float+ "value" "F"))))
+         (emit 'getfield +lisp-single-float+ "value" :float))))
 
 (defknown emit-unbox-double () t)
 (defun emit-unbox-double ()
   (declare (optimize speed))
   (cond ((= *safety* 3)
          (emit-invokestatic +lisp-double-float+ "getValue"
-                            (lisp-object-arg-types 1) "D"))
+                            (lisp-object-arg-types 1) :double))
         (t
          (emit 'checkcast +lisp-double-float+)
-         (emit 'getfield +lisp-double-float+ "value" "D"))))
+         (emit 'getfield +lisp-double-float+ "value" :double))))
 
 (defknown fix-boxing (t t) t)
 (defun fix-boxing (required-representation derived-type)
@@ -933,19 +887,19 @@ representation, based on the derived type of the LispObject."
          (cond ((and (fixnum-type-p derived-type)
                      (< *safety* 3))
                 (emit 'checkcast +lisp-fixnum+)
-                (emit 'getfield +lisp-fixnum+ "value" "I"))
+                (emit 'getfield +lisp-fixnum+ "value" :int))
                (t
-                (emit-invokevirtual +lisp-object+ "intValue" nil "I"))))
+                (emit-invokevirtual +lisp-object+ "intValue" nil :int))))
         ((eq required-representation :char)
          (emit-unbox-character))
         ((eq required-representation :boolean)
          (emit-unbox-boolean))
         ((eq required-representation :long)
-         (emit-invokevirtual +lisp-object+ "longValue" nil "J"))
+         (emit-invokevirtual +lisp-object+ "longValue" nil :long))
         ((eq required-representation :float)
-         (emit-invokevirtual +lisp-object+ "floatValue" nil "F"))
+         (emit-invokevirtual +lisp-object+ "floatValue" nil :float))
         ((eq required-representation :double)
-         (emit-invokevirtual +lisp-object+ "doubleValue" nil "D"))
+         (emit-invokevirtual +lisp-object+ "doubleValue" nil :double))
         (t (assert nil))))
 
 (defknown emit-move-from-stack (t &optional t) t)
@@ -1820,10 +1774,10 @@ representation, based on the derived type of the LispObject."
              (if (null (third param))               ;; supplied-p
                  (emit-push-nil)
                  (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit-getstatic +lisp-closure+ "OPTIONAL" "I")
+             (emit-getstatic +lisp-closure+ "OPTIONAL" :int)
              (emit-invokespecial-init +lisp-closure-parameter+
                                       (list +lisp-symbol+ +lisp-object+
-                                            +lisp-object+ "I")))
+                                            +lisp-object+ :int)))
 
           (parameters-to-array (param key key-params-register)
              (let ((keyword (fourth param)))
@@ -2024,23 +1978,23 @@ representation, based on the derived type of the LispObject."
        ((<= most-negative-fixnum n most-positive-fixnum)
         (emit-push-constant-int n)
         (emit-invokestatic +lisp-fixnum+ "getInstance"
-                           '("I") +lisp-fixnum+))
+                           '(:int) +lisp-fixnum+))
        ((<= most-negative-java-long n most-positive-java-long)
         (emit-push-constant-long n)
         (emit-invokestatic +lisp-bignum+ "getInstance"
-                           '("J") +lisp-integer+))
+                           '(:long) +lisp-integer+))
        (t
         (let* ((*print-base* 10)
                (s (with-output-to-string (stream) (dump-form n stream))))
           (emit 'ldc (pool-string s))
           (emit-push-constant-int 10)
           (emit-invokestatic +lisp-bignum+ "getInstance"
-                             (list +java-string+ "I") +lisp-integer+)))))
+                             (list +java-string+ :int) +lisp-integer+)))))
 
 (defun serialize-character (c)
   "Generates code to restore a serialized character."
   (emit-push-constant-int (char-code c))
-  (emit-invokestatic +lisp-character+ "getInstance" '("C")
+  (emit-invokestatic +lisp-character+ "getInstance" '(:char)
                      +lisp-character+))
 
 (defun serialize-float (s)
@@ -2048,14 +2002,14 @@ representation, based on the derived type of the LispObject."
   (emit 'new +lisp-single-float+)
   (emit 'dup)
   (emit 'ldc (pool-float s))
-  (emit-invokespecial-init +lisp-single-float+ '("F")))
+  (emit-invokespecial-init +lisp-single-float+ '(:float)))
 
 (defun serialize-double (d)
   "Generates code to restore a serialized double-float."
   (emit 'new +lisp-double-float+)
   (emit 'dup)
   (emit 'ldc2_w (pool-double d))
-  (emit-invokespecial-init +lisp-double-float+ '("D")))
+  (emit-invokespecial-init +lisp-double-float+ '(:double)))
 
 (defun serialize-string (string)
   "Generate code to restore a serialized string."
@@ -2090,7 +2044,7 @@ of the other types."
        (emit-getstatic class name +lisp-symbol+))
       ((null (symbol-package symbol))
        (emit-push-constant-int (dump-uninterned-symbol-index symbol))
-       (emit-invokestatic +lisp-load+ "getUninternedSymbol" '("I")
+       (emit-invokestatic +lisp-load+ "getUninternedSymbol" '(:int)
                           +lisp-object+)
        (emit 'checkcast +lisp-symbol+))
       ((keywordp symbol)
@@ -2333,7 +2287,7 @@ The field type of the object is specified by OBJ-REF."
             (emit-push-constant-int form))
            ((integerp form)
             (emit-load-externalized-object form)
-            (emit-invokevirtual +lisp-object+ "intValue" nil "I"))
+            (emit-invokevirtual +lisp-object+ "intValue" nil :int))
            (t
             (sys::%format t "compile-constant int representation~%")
             (assert nil)))
@@ -2344,7 +2298,7 @@ The field type of the object is specified by OBJ-REF."
             (emit-push-constant-long form))
            ((integerp form)
             (emit-load-externalized-object form)
-            (emit-invokevirtual +lisp-object+ "longValue" nil "J"))
+            (emit-invokevirtual +lisp-object+ "longValue" nil :long))
            (t
             (sys::%format t "compile-constant long representation~%")
             (assert nil)))
@@ -2472,7 +2426,7 @@ The field type of the object is specified by OBJ-REF."
                (:boolean
                 (emit-invokevirtual +lisp-object+
                                     unboxed-method-name
-                                    nil "Z"))
+                                    nil :boolean))
                ((NIL)
                 (emit-invokevirtual +lisp-object+
                                     boxed-method-name
@@ -2607,7 +2561,7 @@ The field type of the object is specified by OBJ-REF."
    t)
 
 (defun emit-ifne-for-eql (representation instruction-type)
-  (emit-invokevirtual +lisp-object+ "eql" instruction-type "Z")
+  (emit-invokevirtual +lisp-object+ "eql" instruction-type :boolean)
   (convert-representation :boolean representation))
 
 (defknown p2-eql (t t t) t)
@@ -2633,28 +2587,28 @@ The field type of the object is specified by OBJ-REF."
           ((fixnum-type-p type2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :int)
-	   (emit-ifne-for-eql representation '("I")))
+	   (emit-ifne-for-eql representation '(:int)))
           ((fixnum-type-p type1)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack nil)
            (emit 'swap)
-	   (emit-ifne-for-eql representation '("I")))
+	   (emit-ifne-for-eql representation '(:int)))
           ((eq type2 'CHARACTER)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :char)
-	   (emit-ifne-for-eql representation '("C")))
+	   (emit-ifne-for-eql representation '(:char)))
           ((eq type1 'CHARACTER)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
 						      arg2 'stack nil)
            (emit 'swap)
-	   (emit-ifne-for-eql representation '("C")))
+	   (emit-ifne-for-eql representation '(:char)))
           (t
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack nil)
            (ecase representation
              (:boolean
               (emit-invokevirtual +lisp-object+ "eql"
-                                  (lisp-object-arg-types 1) "Z"))
+                                  (lisp-object-arg-types 1) :boolean))
              ((NIL)
               (emit-invokevirtual +lisp-object+ "EQL"
                                   (lisp-object-arg-types 1) +lisp-object+)))))
@@ -2670,7 +2624,7 @@ The field type of the object is specified by OBJ-REF."
            (compile-form arg1 'stack nil)
            (compile-form arg2 'stack nil)
            (emit-invokestatic +lisp+ "memq"
-                              (lisp-object-arg-types 2) "Z")
+                              (lisp-object-arg-types 2) :boolean)
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -2687,10 +2641,10 @@ The field type of the object is specified by OBJ-REF."
            (compile-form arg2 'stack nil)
            (cond ((eq type1 'SYMBOL) ; FIXME
                   (emit-invokestatic +lisp+ "memq"
-                                     (lisp-object-arg-types 2) "Z"))
+                                     (lisp-object-arg-types 2) :boolean))
                  (t
                   (emit-invokestatic +lisp+ "memql"
-                                     (lisp-object-arg-types 2) "Z")))
+                                     (lisp-object-arg-types 2) :boolean)))
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -3002,8 +2956,8 @@ is registered (or not)."
     (emit-push-constant-int 0)                            ;; destPos
     (emit-push-constant-int (length *closure-variables*)) ;; length
     (emit-invokestatic +java-system+ "arraycopy"
-                       (list +java-object+ "I"
-                             +java-object+ "I" "I") nil)
+                       (list +java-object+ :int
+                             +java-object+ :int :int) nil)
     (aload register))) ;; reload dest value
 
 
@@ -3126,8 +3080,8 @@ given a specific common representation.")
                                       (>  "isGreaterThan")
                                       (>= "isGreaterThanOrEqualTo")
                                       (=  "isEqualTo"))
-                                    '("I")
-                                    "Z")
+                                    '(:int)
+                                    :boolean)
                 ;; Java boolean on stack here
                 (convert-representation :boolean representation)
                 (emit-move-from-stack target representation)
@@ -3252,7 +3206,7 @@ given a specific common representation.")
   (when (check-arg-count form 1)
     (let ((arg (%cadr form)))
       (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-      (emit-invokevirtual +lisp-object+ java-predicate nil "Z")
+      (emit-invokevirtual +lisp-object+ java-predicate nil :boolean)
       'ifeq)))
 
 (declaim (ftype (function (t t) t) p2-test-instanceof-predicate))
@@ -3274,7 +3228,7 @@ given a specific common representation.")
   (when (= (length form) 2)
     (let ((arg (%cadr form)))
       (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-      (emit-invokevirtual +lisp-object+ "constantp" nil "Z")
+      (emit-invokevirtual +lisp-object+ "constantp" nil :boolean)
       'ifeq)))
 
 (defun p2-test-endp (form)
@@ -3465,30 +3419,30 @@ given a specific common representation.")
             ((eq type2 'CHARACTER)
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack :char)
-             (emit-invokevirtual +lisp-object+ "eql" '("C") "Z")
+             (emit-invokevirtual +lisp-object+ "eql" '(:char) :boolean)
              'ifeq)
             ((eq type1 'CHARACTER)
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
 							arg2 'stack nil)
              (emit 'swap)
-             (emit-invokevirtual +lisp-object+ "eql" '("C") "Z")
+             (emit-invokevirtual +lisp-object+ "eql" '(:char) :boolean)
              'ifeq)
             ((fixnum-type-p type2)
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack :int)
-             (emit-invokevirtual +lisp-object+ "eql" '("I") "Z")
+             (emit-invokevirtual +lisp-object+ "eql" '(:int) :boolean)
              'ifeq)
             ((fixnum-type-p type1)
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							arg2 'stack nil)
              (emit 'swap)
-             (emit-invokevirtual +lisp-object+ "eql" '("I") "Z")
+             (emit-invokevirtual +lisp-object+ "eql" '(:int) :boolean)
              'ifeq)
             (t
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack nil)
              (emit-invokevirtual +lisp-object+ "eql"
-                                 (lisp-object-arg-types 1) "Z")
+                                 (lisp-object-arg-types 1) :boolean)
              'ifeq)))))
 
 (defun p2-test-equality (form)
@@ -3504,13 +3458,13 @@ given a specific common representation.")
 							arg2 'stack :int)
              (emit-invokevirtual +lisp-object+
                                  translated-op
-                                 '("I") "Z"))
+                                 '(:int) :boolean))
             (t
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack nil)
              (emit-invokevirtual +lisp-object+
                                  translated-op
-                                 (lisp-object-arg-types 1) "Z")))
+                                 (lisp-object-arg-types 1) :boolean)))
       'ifeq)))
 
 (defun p2-test-simple-typep (form)
@@ -3531,7 +3485,7 @@ given a specific common representation.")
       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						 arg2 'stack nil)
       (emit-invokestatic +lisp+ "memq"
-                         (lisp-object-arg-types 2) "Z")
+                         (lisp-object-arg-types 2) :boolean)
       'ifeq)))
 
 (defun p2-test-memql (form)
@@ -3541,7 +3495,7 @@ given a specific common representation.")
       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						 arg2 'stack nil)
       (emit-invokestatic +lisp+ "memql"
-                         (lisp-object-arg-types 2) "Z")
+                         (lisp-object-arg-types 2) :boolean)
       'ifeq)))
 
 (defun p2-test-/= (form)
@@ -3560,7 +3514,7 @@ given a specific common representation.")
             ((fixnum-type-p type2)
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack :int)
-             (emit-invokevirtual +lisp-object+ "isNotEqualTo" '("I") "Z")
+             (emit-invokevirtual +lisp-object+ "isNotEqualTo" '(:int) :boolean)
              'ifeq)
             ((fixnum-type-p type1)
              ;; FIXME Compile the args in reverse order and avoid the swap if
@@ -3568,13 +3522,13 @@ given a specific common representation.")
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 							arg2 'stack nil)
              (emit 'swap)
-             (emit-invokevirtual +lisp-object+ "isNotEqualTo" '("I") "Z")
+             (emit-invokevirtual +lisp-object+ "isNotEqualTo" '(:int) :boolean)
              'ifeq)
             (t
 	     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							arg2 'stack nil)
              (emit-invokevirtual +lisp-object+ "isNotEqualTo"
-                                 (lisp-object-arg-types 1) "Z")
+                                 (lisp-object-arg-types 1) :boolean)
              'ifeq)))))
 
 (defun p2-test-numeric-comparison (form)
@@ -3617,7 +3571,7 @@ given a specific common representation.")
                                      (>  "isGreaterThan")
                                      (>= "isGreaterThanOrEqualTo")
                                      (=  "isEqualTo"))
-                                   '("I") "Z")
+                                   '(:int) :boolean)
                'ifeq)
               ((fixnum-type-p type1)
                ;; FIXME We can compile the args in reverse order and avoid
@@ -3632,7 +3586,7 @@ given a specific common representation.")
                                      (>  "isLessThan")
                                      (>= "isLessThanOrEqualTo")
                                      (=  "isEqualTo"))
-                                   '("I") "Z")
+                                   '(:int) :boolean)
                'ifeq)
               (t
 	       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
@@ -3644,7 +3598,7 @@ given a specific common representation.")
                                      (>  "isGreaterThan")
                                      (>= "isGreaterThanOrEqualTo")
                                      (=  "isEqualTo"))
-                                   (lisp-object-arg-types 1) "Z")
+                                   (lisp-object-arg-types 1) :boolean)
                'ifeq))))))
 
 (defknown p2-if-or (t t t) t)
@@ -4021,7 +3975,7 @@ given a specific common representation.")
              (aload result-register)
              (emit-push-constant-int (length vars))
              (emit-invokevirtual +lisp-thread+ "getValues"
-                                 (list +lisp-object+ "I") +lisp-object-array+)
+                                 (list +lisp-object+ :int) +lisp-object-array+)
              ;; Values array is now on the stack at runtime.
              (label LABEL2)
              (let ((index 0))
@@ -5156,7 +5110,7 @@ given a specific common representation.")
                  (t
 		  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							     arg2 'stack :int)
-                  (emit-invokevirtual +lisp-object+ "ash" '("I") +lisp-object+)
+                  (emit-invokevirtual +lisp-object+ "ash" '(:int) +lisp-object+)
                   (fix-boxing representation result-type)))
            (emit-move-from-stack target representation))
           (t
@@ -5220,7 +5174,7 @@ given a specific common representation.")
                ((fixnum-type-p type2)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack :int)
-                (emit-invokevirtual +lisp-object+ "LOGAND" '("I") +lisp-object+)
+                (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
@@ -5229,7 +5183,7 @@ given a specific common representation.")
 							   arg2 'stack nil)
                 ;; swap args
                 (emit 'swap)
-                (emit-invokevirtual +lisp-object+ "LOGAND" '("I") +lisp-object+)
+                (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
@@ -5292,7 +5246,7 @@ given a specific common representation.")
                ((fixnum-type-p type2)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack :int)
-                (emit-invokevirtual +lisp-object+ "LOGIOR" '("I") +lisp-object+)
+                (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
@@ -5301,7 +5255,7 @@ given a specific common representation.")
 							   arg2 'stack nil)
                 ;; swap args
                 (emit 'swap)
-                (emit-invokevirtual +lisp-object+ "LOGIOR" '("I") +lisp-object+)
+                (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
@@ -5356,7 +5310,7 @@ given a specific common representation.")
                ((fixnum-type-p type2)
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							   arg2 'stack :int)
-                (emit-invokevirtual +lisp-object+ "LOGXOR" '("I") +lisp-object+)
+                (emit-invokevirtual +lisp-object+ "LOGXOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type))
                (t
 		(compile-forms-and-maybe-emit-clear-values arg1 'stack nil
@@ -5440,7 +5394,7 @@ given a specific common representation.")
 		  (compile-forms-and-maybe-emit-clear-values arg3 'stack nil)
                   (emit-push-constant-int size)
                   (emit-push-constant-int position)
-                  (emit-invokevirtual +lisp-object+ "LDB" '("I" "I") +lisp-object+)
+                  (emit-invokevirtual +lisp-object+ "LDB" '(:int :int) +lisp-object+)
                   (fix-boxing representation nil)
                   (emit-move-from-stack target representation))))
           ((and (fixnum-type-p size-type)
@@ -5450,7 +5404,7 @@ given a specific common representation.")
 						      arg3 'stack nil)
            (emit 'dup_x2) ;; use not supported by emit-dup: 3 values involved
            (emit 'pop)
-           (emit-invokevirtual +lisp-object+ "LDB" '("I" "I") +lisp-object+)
+           (emit-invokevirtual +lisp-object+ "LDB" '(:int :int) +lisp-object+)
            (fix-boxing representation nil)
            (emit-move-from-stack target representation))
           (t
@@ -5469,12 +5423,12 @@ given a specific common representation.")
                 (fixnum-type-p type2))
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack :int)
-           (emit-invokestatic +lisp+ "mod" '("I" "I") "I")
+           (emit-invokestatic +lisp+ "mod" '(:int :int) :int)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :int)
-           (emit-invokevirtual +lisp-object+ "MOD" '("I") +lisp-object+)
+           (emit-invokevirtual +lisp-object+ "MOD" '(:int) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
            (emit-move-from-stack target representation))
           (t
@@ -5549,7 +5503,7 @@ given a specific common representation.")
        (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
        (emit-push-constant-int 1) ; errorp
        (emit-invokestatic +lisp-class+ "findClass"
-                          (list +lisp-object+ "Z") +lisp-object+)
+                          (list +lisp-object+ :boolean) +lisp-object+)
        (fix-boxing representation nil)
        (emit-move-from-stack target representation))
       (2
@@ -5557,7 +5511,7 @@ given a specific common representation.")
 	 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						    arg2 'stack :boolean)
          (emit-invokestatic +lisp-class+ "findClass"
-                            (list +lisp-object+ "Z") +lisp-object+)
+                            (list +lisp-object+ :boolean) +lisp-object+)
          (fix-boxing representation nil)
          (emit-move-from-stack target representation)))
       (t
@@ -5632,7 +5586,7 @@ given a specific common representation.")
            (emit 'new +lisp-simple-vector+)
            (emit 'dup)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-vector+ '("I"))
+           (emit-invokespecial-init +lisp-simple-vector+ '(:int))
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -5661,7 +5615,7 @@ given a specific common representation.")
           (emit 'new class)
           (emit 'dup)
 	  (compile-forms-and-maybe-emit-clear-values arg2 'stack :int)
-          (emit-invokespecial-init class '("I"))
+          (emit-invokespecial-init class '(:int))
           (emit-move-from-stack target representation)
           (return-from p2-make-sequence)))))
   (compile-function-call form target representation))
@@ -5676,7 +5630,7 @@ given a specific common representation.")
            (emit 'new +lisp-simple-string+)
            (emit 'dup)
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-string+ '("I"))
+           (emit-invokespecial-init +lisp-simple-string+ '(:int))
            (emit-move-from-stack target representation)))
         (t
          (compile-function-call form target representation))))
@@ -5756,7 +5710,7 @@ given a specific common representation.")
            (emit 'checkcast +lisp-stream+)
            (maybe-emit-clear-values arg1 arg2)
            (emit 'swap)
-           (emit-invokevirtual +lisp-stream+ "_writeByte" '("I") nil)
+           (emit-invokevirtual +lisp-stream+ "_writeByte" '(:int) nil)
            (when target
              (emit-push-nil)
              (emit-move-from-stack target)))
@@ -5765,7 +5719,7 @@ given a specific common representation.")
            (compile-form arg2 'stack nil)
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokestatic +lisp+ "writeByte"
-                              (list "I" +lisp-object+) nil)
+                              (list :int +lisp-object+) nil)
            (when target
              (emit-push-nil)
              (emit-move-from-stack target)))
@@ -5785,7 +5739,7 @@ given a specific common representation.")
                 (emit-push-constant-int 1)
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream+ "readLine"
-                                    (list "Z" +lisp-object+) +lisp-object+)
+                                    (list :boolean +lisp-object+) +lisp-object+)
                 (emit-move-from-stack target))
                (t
                 (compile-function-call form target representation)))))
@@ -5799,7 +5753,7 @@ given a specific common representation.")
                 (emit-push-constant-int 0)
                 (emit-push-nil)
                 (emit-invokevirtual +lisp-stream+ "readLine"
-                                    (list "Z" +lisp-object+) +lisp-object+)
+                                    (list :boolean +lisp-object+) +lisp-object+)
                 (emit-move-from-stack target)
                 )
                (t
@@ -6362,13 +6316,13 @@ We need more thought here.
     (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
     (ecase representation
       (:int
-       (emit-invokevirtual +lisp-object+ "length" nil "I"))
+       (emit-invokevirtual +lisp-object+ "length" nil :int))
       ((:long :float :double)
-       (emit-invokevirtual +lisp-object+ "length" nil "I")
+       (emit-invokevirtual +lisp-object+ "length" nil :int)
        (convert-representation :int representation))
       (:boolean
        ;; FIXME We could optimize this all away in unsafe calls.
-       (emit-invokevirtual +lisp-object+ "length" nil "I")
+       (emit-invokevirtual +lisp-object+ "length" nil :int)
        (emit 'pop)
        (emit 'iconst_1))
       (:char
@@ -6425,7 +6379,7 @@ We need more thought here.
     (compile-forms-and-maybe-emit-clear-values index-form 'stack :int
 					       list-form 'stack nil)
     (emit 'swap)
-    (emit-invokevirtual +lisp-object+ "NTH" '("I") +lisp-object+)
+    (emit-invokevirtual +lisp-object+ "NTH" '(:int) +lisp-object+)
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
@@ -6464,7 +6418,7 @@ We need more thought here.
              ((fixnump arg2)
 	      (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
               (emit-push-int arg2)
-              (emit-invokevirtual +lisp-object+ "multiplyBy" '("I") +lisp-object+)
+              (emit-invokevirtual +lisp-object+ "multiplyBy" '(:int) +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -6518,7 +6472,7 @@ We need more thought here.
                                       (if (eq op 'max)
                                           "isLessThanOrEqualTo"
                                           "isGreaterThanOrEqualTo")
-                                      (lisp-object-arg-types 1) "Z")
+                                      (lisp-object-arg-types 1) :boolean)
                   (let ((LABEL1 (gensym)))
                     (emit 'ifeq LABEL1)
                     (emit 'swap)
@@ -6583,7 +6537,7 @@ We need more thought here.
               (when (fixnum-type-p type1)
                 (emit 'swap))
               (emit-invokevirtual +lisp-object+ "add"
-                                  '("I") +lisp-object+)
+                                  '(:int) +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -6655,7 +6609,7 @@ We need more thought here.
                     arg2 'stack :int)
               (emit-invokevirtual +lisp-object+
                                   "subtract"
-                                  '("I") +lisp-object+)
+                                  '(:int) +lisp-object+)
               (fix-boxing representation result-type)
               (emit-move-from-stack target representation))
              (t
@@ -6681,7 +6635,7 @@ We need more thought here.
            (compile-form arg2 'stack :int)
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokevirtual +lisp-abstract-string+ "charAt"
-                               '("I") "C")
+                               '(:int) :char)
            (emit-move-from-stack target representation))
           ((and (eq representation :char)
                 (or (eq op 'CHAR) (< *safety* 3))
@@ -6692,14 +6646,14 @@ We need more thought here.
            (compile-form arg2 'stack :int)
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokevirtual +lisp-abstract-string+ "charAt"
-                               '("I") "C")
+                               '(:int) :char)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :int)
            (emit-invokevirtual +lisp-object+
                                (symbol-name op) ;; "CHAR" or "SCHAR"
-                               '("I") +lisp-object+)
+                               '(:int) +lisp-object+)
            (when (eq representation :char)
              (emit-unbox-character))
            (emit-move-from-stack target representation))
@@ -6736,7 +6690,7 @@ We need more thought here.
                (emit 'dup)
                (emit-move-from-stack value-register :char))
              (maybe-emit-clear-values arg1 arg2 arg3)
-             (emit-invokevirtual class "setCharAt" '("I" "C") nil)
+             (emit-invokevirtual class "setCharAt" '(:int :char) nil)
              (when target
                (emit 'iload value-register)
                (convert-representation :char representation)
@@ -6752,7 +6706,7 @@ We need more thought here.
                (arg2 (%caddr form)))
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						      arg2 'stack :int)
-           (emit-invokevirtual +lisp-object+ "SVREF" '("I") +lisp-object+)
+           (emit-invokevirtual +lisp-object+ "SVREF" '(:int) +lisp-object+)
            (fix-boxing representation nil)
            (emit-move-from-stack target representation)))
         (t
@@ -6772,7 +6726,7 @@ We need more thought here.
              (emit 'dup)
              (emit-move-from-stack value-register nil))
            (maybe-emit-clear-values arg1 arg2 arg3)
-           (emit-invokevirtual +lisp-object+ "svset" (list "I" +lisp-object+) nil)
+           (emit-invokevirtual +lisp-object+ "svset" (list :int +lisp-object+) nil)
            (when value-register
              (aload value-register)
              (emit-move-from-stack target nil))))
@@ -6807,7 +6761,7 @@ We need more thought here.
               (neq representation :char)) ; FIXME
          (compile-form (second form) 'stack nil)
          (compile-form (third form) 'stack :int)
-         (emit-invokevirtual +lisp-object+ "elt" '("I") +lisp-object+)
+         (emit-invokevirtual +lisp-object+ "elt" '(:int) +lisp-object+)
          (fix-boxing representation nil) ; FIXME use derived result type
          (emit-move-from-stack target representation))
         (t
@@ -6824,11 +6778,11 @@ We need more thought here.
          (:int
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "aref" '("I") "I"))
+          (emit-invokevirtual +lisp-object+ "aref" '(:int) :int))
          (:long
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "aref_long" '("I") "J"))
+          (emit-invokevirtual +lisp-object+ "aref_long" '(:int) :long))
          (:char
           (cond ((compiler-subtypep type1 'string)
                  (compile-form arg1 'stack nil) ; array
@@ -6836,18 +6790,18 @@ We need more thought here.
                  (compile-form arg2 'stack :int) ; index
                  (maybe-emit-clear-values arg1 arg2)
                  (emit-invokevirtual +lisp-abstract-string+
-                                     "charAt" '("I") "C"))
+                                     "charAt" '(:int) :char))
                 (t
 		 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 							    arg2 'stack :int)
-                 (emit-invokevirtual +lisp-object+ "AREF" '("I") +lisp-object+)
+                 (emit-invokevirtual +lisp-object+ "AREF" '(:int) +lisp-object+)
                  (emit-unbox-character))))
          ((nil :float :double :boolean)
           ;;###FIXME for float and double, we probably want
           ;; separate java methods to retrieve the values.
 	  (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
 						     arg2 'stack :int)
-          (emit-invokevirtual +lisp-object+ "AREF" '("I") +lisp-object+)
+          (emit-invokevirtual +lisp-object+ "AREF" '(:int) +lisp-object+)
           (convert-representation nil representation)))
        (emit-move-from-stack target representation)))
     (t
@@ -6880,9 +6834,9 @@ We need more thought here.
                     (emit-move-from-stack value-register nil))))
            (maybe-emit-clear-values arg1 arg2 arg3)
            (cond ((fixnum-type-p type3)
-                  (emit-invokevirtual +lisp-object+ "aset" '("I" "I") nil))
+                  (emit-invokevirtual +lisp-object+ "aset" '(:int :int) nil))
                  (t
-                  (emit-invokevirtual +lisp-object+ "aset" (list "I" +lisp-object+) nil)))
+                  (emit-invokevirtual +lisp-object+ "aset" (list :int +lisp-object+) nil)))
            (when value-register
              (cond ((fixnum-type-p type3)
                     (emit 'iload value-register)
@@ -6919,7 +6873,7 @@ We need more thought here.
              (t
               (emit-push-constant-int arg2)
               (emit-invokevirtual +lisp-object+ "getSlotValue"
-                                  '("I") +lisp-object+)))
+                                  '(:int) +lisp-object+)))
            (emit-move-from-stack target representation))
           ((fixnump arg2)
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack nil)
@@ -6927,15 +6881,15 @@ We need more thought here.
            (ecase representation
              (:int
               (emit-invokevirtual +lisp-object+ "getFixnumSlotValue"
-                                  '("I") "I"))
+                                  '(:int) :int))
              ((nil :char :long :float :double)
               (emit-invokevirtual +lisp-object+ "getSlotValue"
-                                  '("I") +lisp-object+)
+                                  '(:int) +lisp-object+)
               ;; (convert-representation NIL NIL) is a no-op
               (convert-representation nil representation))
              (:boolean
               (emit-invokevirtual +lisp-object+ "getSlotValueAsBoolean"
-                                  '("I") "Z")))
+                                  '(:int) :boolean)))
            (emit-move-from-stack target representation))
           (t
            (compile-function-call form target representation)))))
@@ -6974,7 +6928,7 @@ We need more thought here.
               (emit 'dup)
               (astore value-register))
             (emit-invokevirtual +lisp-object+ "setSlotValue"
-                                (list "I" +lisp-object+) nil)
+                                (list :int +lisp-object+) nil)
             (when value-register
               (aload value-register)
               (fix-boxing representation nil)
@@ -7039,7 +6993,7 @@ We need more thought here.
 	   (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
 						      arg2 'stack nil)
            (emit 'swap)
-           (emit-invokevirtual +lisp-object+ "nthcdr" '("I") +lisp-object+)
+           (emit-invokevirtual +lisp-object+ "nthcdr" '(:int) +lisp-object+)
            (fix-boxing representation nil)
            (emit-move-from-stack target representation))
           (t
@@ -7354,7 +7308,7 @@ We need more thought here.
   (cond ((check-arg-count form 1)
          (let ((arg (%cadr form)))
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
-           (emit-invokevirtual +lisp-object+ "sxhash" nil "I")
+           (emit-invokevirtual +lisp-object+ "sxhash" nil :int)
            (convert-representation :int representation)
            (emit-move-from-stack target representation)))
         (t
@@ -7835,27 +7789,27 @@ We need more thought here.
         (setf *using-arg-array* t)
         (setf *hairy-arglist-p* t)
         (return-from analyze-args
-          (get-descriptor (list +lisp-object-array+) +lisp-object+)))
+          (descriptor +lisp-object+ +lisp-object-array+)))
       (return-from analyze-args
         (cond ((<= arg-count call-registers-limit)
-               (get-descriptor (lisp-object-arg-types arg-count) +lisp-object+))
+               (apply #'descriptor +lisp-object+
+                      (lisp-object-arg-types arg-count)))
               (t (setf *using-arg-array* t)
                  (setf (compiland-arity compiland) arg-count)
-                 (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
+                 (descriptor +lisp-object+ +lisp-object-array+)))))
     (when (or (memq '&KEY args)
               (memq '&OPTIONAL args)
               (memq '&REST args))
       (setf *using-arg-array* t)
       (setf *hairy-arglist-p* t)
-      (return-from analyze-args
-                   (get-descriptor (list +lisp-object-array+) +lisp-object+)))
+      (return-from analyze-args (descriptor +lisp-object+ +lisp-object-array+)))
     (cond ((<= arg-count call-registers-limit)
-           (get-descriptor (lisp-object-arg-types (length args))
-                            +lisp-object+))
+           (apply #'descriptor +lisp-object+
+                      (lisp-object-arg-types (length args))))
           (t
            (setf *using-arg-array* t)
            (setf (compiland-arity compiland) arg-count)
-           (get-descriptor (list +lisp-object-array+) +lisp-object+)))))
+           (descriptor +lisp-object+ +lisp-object-array+)))))
 
 (defmacro with-open-class-file ((var class-file) &body body)
   `(with-open-file (,var (abcl-class-file-pathname ,class-file)
