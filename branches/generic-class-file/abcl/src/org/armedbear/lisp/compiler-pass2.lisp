@@ -2251,9 +2251,9 @@ Code to restore the serialized object is inserted into `*code' or
   (declare-with-hashtable
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
-   (let* ((pathname (abcl-class-file-pathname (local-function-class-file local-function)))
-	  (class-name (concatenate 'string "org/armedbear/lisp/" (pathname-name pathname)))
-	  (*code* *static-code*))
+   (let* ((class-name (abcl-class-file-class
+                       (local-function-class-file local-function)))
+          (*code* *static-code*))
      ;; fixme *declare-inline*
      (declare-field g +lisp-object+ +field-access-private+)
      (emit 'new class-name)
@@ -3010,7 +3010,7 @@ is registered (or not)."
     (astore register)  ;; save dest value
     (emit-push-constant-int 0)                            ;; destPos
     (emit-push-constant-int (length *closure-variables*)) ;; length
-    (emit-invokestatic "java/lang/System" "arraycopy"
+    (emit-invokestatic +java-system+ "arraycopy"
                        (list +java-object+ "I"
                              +java-object+ "I" "I") nil)
     (aload register))) ;; reload dest value

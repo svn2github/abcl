@@ -132,6 +132,7 @@ initialized from the `java-dotted-name'."
 
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
+(define-class-name +java-system+ "java.lang.System")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
 (defconstant +lisp-object-array+ (class-array +lisp-object+))
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")
