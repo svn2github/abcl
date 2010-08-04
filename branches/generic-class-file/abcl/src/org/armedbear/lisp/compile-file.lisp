@@ -691,10 +691,10 @@ interpreted toplevel form, non-NIL if it is 'simple enough'."
 				(jvm::emit 'jvm::aload 1)
 				(jvm::emit-invokevirtual jvm::+lisp-object+ "javaInstance"
 							 nil jvm::+java-object+)
-				(jvm::emit 'jvm::checkcast +fasl-classloader+)
+				(jvm::emit-checkcast +fasl-classloader+)
 				(jvm::emit 'jvm::dup)
 				(jvm::emit-push-constant-int ,(1- i))
-				(jvm::emit 'jvm::new ,class-name)
+				(jvm::emit-new ,class-name)
 				(jvm::emit 'jvm::dup)
 				(jvm::emit-invokespecial-init ,class-name '())
 				(jvm::emit-invokevirtual +fasl-classloader+
