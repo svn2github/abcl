@@ -509,6 +509,23 @@ the top-most value's representation being 'rep1'."
                    (pool-add-field-ref *pool* class-name field-name type))))
     (apply #'%emit 'putstatic (u2 index))))
 
+(declaim (inline emit-getfield emit-putfield))
+(defknown emit-getfield (t t t) t)
+(defun emit-getfield (class-name field-name type)
+  (let* ((index (if (null *current-code-attribute*)
+                    (pool-field class-name field-name type)
+                    (pool-add-field-ref *pool* class-name field-name type))))
+    (apply #'%emit 'getfield (u2 index))))
+
+(defknown emit-putfield (t t t) t)
+(defun emit-putfield (class-name field-name type)
+  (let* ((index (if (null *current-code-attribute*)
+                    (pool-field class-name field-name type)
+                    (pool-add-field-ref *pool* class-name field-name type))))
+    (apply #'%emit 'putfield (u2 index))))
+
+
+
 (defvar type-representations '((:int fixnum)
                                (:long (integer #.most-negative-java-long
                                                #.most-positive-java-long))
@@ -552,7 +569,7 @@ supported (and used) by the compiler.")
                             (lisp-object-arg-types 1) :char))
         (t
          (emit 'checkcast +lisp-character+)
-         (emit 'getfield +lisp-character+ "value" :char))))
+         (emit-getfield +lisp-character+ "value" :char))))
 
 ;;                     source type /
 ;;                         targets   :boolean :char    :int :long :float :double
@@ -841,7 +858,7 @@ before the emitted code: the code is 'stack-neutral'."
                             (lisp-object-arg-types 1) :int))
         (t
          (emit 'checkcast +lisp-fixnum+)
-         (emit 'getfield +lisp-fixnum+ "value" :int))))
+         (emit-getfield +lisp-fixnum+ "value" :int))))
 
 (defknown emit-unbox-long () t)
 (defun emit-unbox-long ()
@@ -856,7 +873,7 @@ before the emitted code: the code is 'stack-neutral'."
                             (lisp-object-arg-types 1) :float))
         (t
          (emit 'checkcast +lisp-single-float+)
-         (emit 'getfield +lisp-single-float+ "value" :float))))
+         (emit-getfield +lisp-single-float+ "value" :float))))
 
 (defknown emit-unbox-double () t)
 (defun emit-unbox-double ()
@@ -866,7 +883,7 @@ before the emitted code: the code is 'stack-neutral'."
                             (lisp-object-arg-types 1) :double))
         (t
          (emit 'checkcast +lisp-double-float+)
-         (emit 'getfield +lisp-double-float+ "value" :double))))
+         (emit-getfield +lisp-double-float+ "value" :double))))
 
 (defknown fix-boxing (t t) t)
 (defun fix-boxing (required-representation derived-type)
@@ -877,7 +894,7 @@ representation, based on the derived type of the LispObject."
          (cond ((and (fixnum-type-p derived-type)
                      (< *safety* 3))
                 (emit 'checkcast +lisp-fixnum+)
-                (emit 'getfield +lisp-fixnum+ "value" :int))
+                (emit-getfield +lisp-fixnum+ "value" :int))
                (t
                 (emit-invokevirtual +lisp-object+ "intValue" nil :int))))
         ((eq required-representation :char)
@@ -1161,10 +1178,8 @@ representation, based on the derived type of the LispObject."
 
 ;; getfield, putfield class-name field-name type-name
 (define-resolver (180 181) (instruction)
-  (let* ((args (instruction-args instruction))
-         (index (pool-field (first args)
-                            (second args) (third args))))
-    (inst (instruction-opcode instruction) (u2 index))))
+  ;; we used to create the pool-field here; that moved to the emit-* layer
+  instruction)
 
 ;; new, anewarray, checkcast, instanceof class-name
 (define-resolver (187 189 192 193) (instruction)
@@ -1190,8 +1205,9 @@ representation, based on the derived type of the LispObject."
         instruction)))
 
 (defun resolve-instructions (code)
-  (let ((vector (make-array 512 :fill-pointer 0 :adjustable t)))
-    (dotimes (index (length code) vector)
+  (let* ((len (length code))
+         (vector (make-array (ash len 1) :fill-pointer 0 :adjustable t)))
+    (dotimes (index len vector)
       (declare (type (unsigned-byte 16) index))
       (let ((instruction (svref code index)))
         (case (instruction-opcode instruction)
@@ -1200,8 +1216,8 @@ representation, based on the derived type of the LispObject."
                   (list
                    (inst 'aload *thread*)
                    (inst 'aconst_null)
-                   (inst 'putfield (list +lisp-thread+ "_values"
-                                         +lisp-object-array+)))))
+                   (inst 'putfield (u2 (pool-field +lisp-thread+ "_values"
+                                                   +lisp-object-array+))))))
              (dolist (instruction instructions)
                (vector-push-extend (resolve-instruction instruction) vector))))
           (t
@@ -3739,14 +3755,14 @@ given a specific common representation.")
     (compile-form first-subform result-register nil)
     ;; Save multiple values returned by first subform.
     (emit-push-current-thread)
-    (emit 'getfield +lisp-thread+ "_values" +lisp-object-array+)
+    (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
     (astore values-register)
     (dolist (subform subforms)
       (compile-form subform nil nil))
     ;; Restore multiple values returned by first subform.
     (emit-push-current-thread)
     (aload values-register)
-    (emit 'putfield +lisp-thread+ "_values" +lisp-object-array+)
+    (emit-putfield +lisp-thread+ "_values" +lisp-object-array+)
     ;; Result.
     (aload result-register)
     (fix-boxing representation nil)
@@ -3945,7 +3961,7 @@ given a specific common representation.")
              (compile-form (third form) result-register nil)
              ;; Store values from values form in values register.
              (emit-push-current-thread)
-             (emit 'getfield +lisp-thread+ "_values" +lisp-object-array+)
+             (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
              (emit-move-from-stack values-register)
              ;; Did we get just one value?
              (aload values-register)
@@ -4120,7 +4136,7 @@ given a specific common representation.")
            (emit-push-constant-int (variable-closure-index variable))
            (emit 'aaload)
            (emit-swap representation nil)
-           (emit 'putfield +lisp-closure-binding+ "value" +lisp-object+))
+           (emit-putfield +lisp-closure-binding+ "value" +lisp-object+))
           ((variable-environment variable)
            (assert (not *file-compilation*))
            (emit-load-externalized-object (variable-environment variable)
@@ -4152,7 +4168,7 @@ given a specific common representation.")
          (aload (compiland-closure-register *current-compiland*))
          (emit-push-constant-int (variable-closure-index variable))
          (emit 'aaload)
-         (emit 'getfield +lisp-closure-binding+ "value" +lisp-object+))
+         (emit-getfield +lisp-closure-binding+ "value" +lisp-object+))
         ((variable-environment variable)
          (assert (not *file-compilation*))
          (emit-load-externalized-object (variable-environment variable)
@@ -4411,11 +4427,11 @@ given a specific common representation.")
         (emit 'dup)
         (astore go-register)
         ;; Get the tag.
-        (emit 'getfield +lisp-go+ "tagbody" +lisp-object+) ; Stack depth is still 1.
+        (emit-getfield +lisp-go+ "tagbody" +lisp-object+) ; Stack depth is still 1.
         (emit-push-variable (tagbody-id-variable block))
         (emit 'if_acmpne RETHROW) ;; Not this TAGBODY
         (aload go-register)
-        (emit 'getfield +lisp-go+ "tag" +lisp-object+) ; Stack depth is still 1.
+        (emit-getfield +lisp-go+ "tag" +lisp-object+) ; Stack depth is still 1.
         (astore tag-register)
         ;; Don't actually generate comparisons for tags
         ;; to which there is no non-local GO instruction
@@ -4586,7 +4602,7 @@ given a specific common representation.")
         (label HANDLER)
         ;; The Return object is on the runtime stack. Stack depth is 1.
         (emit 'dup) ; Stack depth is 2.
-        (emit 'getfield +lisp-return+ "tag" +lisp-object+) ; Still 2.
+        (emit-getfield +lisp-return+ "tag" +lisp-object+) ; Still 2.
         (emit-push-variable (block-id-variable block))
         ;; If it's not the block we're looking for...
         (emit 'if_acmpeq THIS-BLOCK) ; Stack depth is 1.
@@ -4596,7 +4612,7 @@ given a specific common representation.")
         (emit-move-to-variable (block-id-variable block))
         (emit 'athrow)
         (label THIS-BLOCK)
-        (emit 'getfield +lisp-return+ "result" +lisp-object+)
+        (emit-getfield +lisp-return+ "result" +lisp-object+)
         (emit-move-from-stack target) ; Stack depth is 0.
         ;; Finally...
         (add-exception-handler BEGIN-BLOCK END-BLOCK HANDLER +lisp-return+)
@@ -7123,7 +7139,7 @@ We need more thought here.
                 (not (enclosed-by-runtime-bindings-creating-block-p
                       (variable-block variable))))
            (aload (variable-binding-register variable))
-           (emit 'getfield +lisp-special-binding+ "value"
+           (emit-getfield +lisp-special-binding+ "value"
                  +lisp-object+))
           (t
            (emit-push-current-thread)
@@ -7203,7 +7219,7 @@ We need more thought here.
              (aload (variable-binding-register variable))
              (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
              (emit 'dup_x1) ;; copy past th
-             (emit 'putfield +lisp-special-binding+ "value"
+             (emit-putfield +lisp-special-binding+ "value"
                    +lisp-object+))
             ((and (consp value-form)
                   (eq (first value-form) 'CONS)
@@ -7311,7 +7327,7 @@ We need more thought here.
     (cond ((and (eq (derive-compiler-type arg) 'SYMBOL) (< *safety* 3))
 	   (compile-forms-and-maybe-emit-clear-values arg 'stack nil)
            (emit 'checkcast +lisp-symbol+)
-           (emit 'getfield  +lisp-symbol+ "name" +lisp-simple-string+)
+           (emit-getfield  +lisp-symbol+ "name" +lisp-simple-string+)
            (emit-move-from-stack target representation))
           (t
            (compile-function-call form target representation)))))
@@ -7570,7 +7586,7 @@ We need more thought here.
       (label THROW-HANDLER) ; Start of handler for THROW.
       ;; The Throw object is on the runtime stack. Stack depth is 1.
       (emit 'dup) ; Stack depth is 2.
-      (emit 'getfield +lisp-throw+ "tag" +lisp-object+) ; Still 2.
+      (emit-getfield +lisp-throw+ "tag" +lisp-object+) ; Still 2.
       (aload tag-register) ; Stack depth is 3.
       ;; If it's not the tag we're looking for, we branch to the start of the
       ;; catch-all handler, which will do a re-throw.
@@ -7647,7 +7663,7 @@ We need more thought here.
         (compile-form protected-form result-register nil)
         (unless (single-valued-p protected-form)
           (emit-push-current-thread)
-          (emit 'getfield +lisp-thread+ "_values" +lisp-object-array+)
+          (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
           (astore values-register))
         (label END-PROTECTED-RANGE))
       (let ((*register* *register*))
@@ -7660,7 +7676,7 @@ We need more thought here.
       ;; The Throwable object is on the runtime stack. Stack depth is 1.
       (astore exception-register)
       (emit-push-current-thread)
-      (emit 'getfield +lisp-thread+ "_values" +lisp-object-array+)
+      (emit-getfield +lisp-thread+ "_values" +lisp-object-array+)
       (astore values-register)
       (let ((*register* *register*))
         (dolist (subform cleanup-forms)
@@ -7668,7 +7684,7 @@ We need more thought here.
       (maybe-emit-clear-values cleanup-forms)
       (emit-push-current-thread)
       (aload values-register)
-      (emit 'putfield +lisp-thread+ "_values" +lisp-object-array+)
+      (emit-putfield +lisp-thread+ "_values" +lisp-object-array+)
       (aload exception-register)
       (emit 'athrow) ; Re-throw exception.
       (label EXIT)
@@ -7676,7 +7692,7 @@ We need more thought here.
       (unless (single-valued-p protected-form)
         (emit-push-current-thread)
         (aload values-register)
-        (emit 'putfield +lisp-thread+ "_values" +lisp-object-array+))
+        (emit-putfield +lisp-thread+ "_values" +lisp-object-array+))
       ;; Result.
       (aload result-register)
       (emit-move-from-stack target)
@@ -7967,7 +7983,7 @@ We need more thought here.
             (emit 'anewarray +lisp-closure-binding+))
         (progn
           (aload 0)
-          (emit 'getfield +lisp-compiled-closure+ "ctx"
+          (emit-getfield +lisp-compiled-closure+ "ctx"
                 +closure-binding-array+)
           (when local-closure-vars
             ;; in all other cases, it gets stored in the register below
