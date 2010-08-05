@@ -984,6 +984,54 @@ After finalization, the fields contain offsets instead of labels."
   )
 
 
+(defstruct (constant-value-attribute (:conc-name constant-value-)
+                                     (:include attribute
+                                               (name "ConstantValue")
+                                               ;; finalizer
+                                               ;; writer
+                                               ))
+  "An attribute of a field of primitive type.
+
+"
+  
+  )
+
+
+(defstruct (checked-exceptions-attribute
+             (:conc-name checked-)
+             (:include attribute
+                       (name "Exceptions")
+                       (finalizer #'finalize-checked-exceptions)
+                       (writer #'write-checked-exceptions)))
+  "An attribute of `code-attribute', "
+  table ;; a list of checked classes corresponding to Java's 'throws'
+)
+
+(defun finalize-checked-exceptions (checked-exceptions code class)
+  (declare (ignorable code class))
+
+  "Prepare `checked-exceptions' for serialization."
+  (setf (checked-table checked-exceptions)
+        (mapcar #'(lambda (exception)
+                    (pool-add-class (class-file-constants class)
+                                    exception))
+                (checked-table checked-exceptions))))
+
+(defun write-checked-exceptions (checked-exceptions stream)
+  "Write `checked-exceptions' to `stream' in class file representation."
+  (write-u2 (length (checked-table checked-exceptions)) stream)
+  (dolist (exception (reverse (checked-table checked-exceptions)))
+    (write-u2 exception stream)))
+
+;; Can't be used yet: serialization missing
+(defstruct (deprecated-attribute (:include attribute
+                                           (name "Deprecated")
+                                           (finalizer (constantly nil))
+                                           (writer (constantly nil))))
+  ;; finalizer and writer need to do nothing: Deprecated attributes are empty
+  "An attribute of a class file, field or method, indicating the element
+to which it has been attached has been superseded.")
+
 (defvar *current-code-attribute* nil)
 
 (defun save-code-specials (code)
@@ -1039,6 +1087,14 @@ it was compiled from."
 (defun write-source-file (source-file stream)
   (write-u2 (source-filename source-file) stream))
 
+
+(defstruct (synthetic-attribute (:include attribute
+                                          (name "Synthetic")
+                                          (finalizer (constantly nil))
+                                          (writer (constantly nil))))
+  ;; finalizer and writer need to do nothing: Synthetic attributes are empty
+  "An attribute of a class file, field or method to mark that it wasn't
+included in the sources - but was generated artificially.")
 
 
 (defstruct (line-numbers-attribute
