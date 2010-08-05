@@ -1021,42 +1021,97 @@ After finalization, the fields contain offsets instead of labels."
                (restore-code-specials *current-code-attribute*)))))))
 
 
-;; ### Can't be used yet: no serialization
 (defstruct (source-file-attribute (:conc-name source-)
                                   (:include attribute
-                                            (name "SourceFile")))
+                                            (name "SourceFile")
+                                            (finalizer #'finalize-source-file)
+                                            (writer #'write-source-file)))
   "An attribute of the class file indicating which source file
 it was compiled from."
   filename)
 
-;; ### Can't be used yet: no serialization
-(defstruct (line-numbers-attribute (:include attribute
-                                             (name "LineNumberTable")))
+(defun finalize-source-file (source-file code class)
+  (declare (ignorable code class))
+  (setf (source-filename source-file)
+        (pool-add-utf8 (class-file-constants class)
+                       (source-filename source-file))))
+
+(defun write-source-file (source-file stream)
+  (write-u2 (source-filename source-file) stream))
+
+
+
+(defstruct (line-numbers-attribute
+             (:conc-name line-numbers-)
+             (:include attribute
+                       (name "LineNumberTable")
+                       (finalizer #'finalize-line-numbers)
+                       (writer #'write-line-numbers)))
   "An attribute of `code-attribute', containing a mapping of offsets
 within the code section to the line numbers in the source file."
-  line-numbers ;; a list of line-number structures, in reverse order
+  table ;; a list of line-number structures, in reverse order
   )
 
 (defstruct line-number
   start-pc  ;; a label, before finalization
   line)
 
-;; ### Can't be used yet: no serialization
-(defstruct (local-variables-attribute (:conc-name local-var-)
-                                      (:include attribute
-                                                (name "LocalVariableTable")))
+(defun finalize-line-numbers (line-numbers code class)
+  (declare (ignorable code class))
+  (dolist (line-number (line-numbers-table line-numbers))
+    (setf (line-number-start-pc line-number)
+          (code-label-offset code (line-number-start-pc line-number)))))
+
+(defun write-line-numbers (line-numbers stream)
+  (write-u2 (length (line-numbers-table line-numbers)) stream)
+  (dolist (line-number (reverse (line-numbers-table line-numbers)))
+    (write-u2 (line-number-start-pc line-number) stream)
+    (write-u2 (line-number-line line-number) stream)))
+
+
+
+(defstruct (local-variables-attribute
+             (:conc-name local-var-)
+             (:include attribute
+                       (name "LocalVariableTable")
+                       (finalizer #'finalize-local-variables)
+                       (writer #'write-local-variables)))
   "An attribute of the `code-attribute', containing a table of local variable
 names, their type and their scope of validity."
-  locals ;; a list of local-variable structures, in reverse order
+  table ;; a list of local-variable structures, in reverse order
   )
 
 (defstruct (local-variable (:conc-name local-))
   start-pc  ;; a label, before finalization
-  length
+  length    ;; a label (at the ending position) before finalization
   name
   descriptor
   index ;; The index of the variable inside the block of locals
   )
+
+(defun finalize-local-variables (local-variables code class)
+  (dolist (local-variable (local-var-table local-variables))
+    (setf (local-start-pc local-variable)
+          (code-label-offset code (local-start-pc local-variable))
+          (local-length local-variable)
+          ;; calculate 'length' from the distance between 2 labels
+          (- (code-label-offset code (local-length local-variable))
+             (local-start-pc local-variable))
+          (local-name local-variable)
+          (pool-add-utf8 (class-file-constants class)
+                         (local-name local-variable))
+          (local-descriptor local-variable)
+          (pool-add-utf8 (class-file-constants class)
+                         (local-descriptor local-variable)))))
+
+(defun write-local-variables (local-variables stream)
+  (write-u2 (length (local-var-table local-variables)) stream)
+  (dolist (local-variable (reverse (local-var-table local-variables)))
+    (write-u2 (local-start-pc local-variable) stream)
+    (write-u2 (local-length local-variable) stream)
+    (write-u2 (local-name local-variable) stream)
+    (write-u2 (local-descriptor local-variable) stream)
+    (write-u2 (local-index local-variable) stream)))
 
 #|
 
