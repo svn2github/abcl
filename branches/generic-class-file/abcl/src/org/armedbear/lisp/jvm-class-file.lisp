@@ -279,12 +279,15 @@ take that effect into account."
 (defstruct (constant-class (:constructor make-constant-class (index name-index))
                            (:include constant
                                      (tag 7)))
+  "Structure holding information on a 'class' type item in the constant pool."
   name-index)
 
 (defstruct (constant-member-ref (:constructor
                                  %make-constant-member-ref
                                      (tag index class-index name/type-index))
                                 (:include constant))
+  "Structure holding information on a member reference type item
+(a field, method or interface method reference) in the constant pool."
   class-index
   name/type-index)
 
@@ -307,11 +310,14 @@ interface-method reference."
                              make-constant-string (index value-index))
                             (:include constant
                                       (tag 8)))
+  "Structure holding information on a 'string' type item in the constant pool."
   value-index)
 
 (defstruct (constant-float/int (:constructor
                                 %make-constant-float/int (tag index value))
                                (:include constant))
+  "Structure holding information on a 'float' or 'integer' type item
+in the constant pool."
   value)
 
 (declaim (inline make-constant-float make-constant-int))
@@ -326,6 +332,8 @@ interface-method reference."
 (defstruct (constant-double/long (:constructor
                                   %make-constant-double/long (tag index value))
                                  (:include constant))
+  "Structure holding information on a 'double' or 'long' type item
+in the constant pool."
   value)
 
 (declaim (inline make-constant-double make-constant-float))
@@ -343,12 +351,18 @@ interface-method reference."
                                                          descriptor-index))
                                (:include constant
                                          (tag 12)))
+  "Structure holding information on a 'name-and-type' type item in the
+constant pool; this type of element is used by 'member-ref' type items."
   name-index
   descriptor-index)
 
 (defstruct (constant-utf8 (:constructor make-constant-utf8 (index value))
                           (:include constant
                                     (tag 1)))
+  "Structure holding information on a 'utf8' type item in the constant pool;
+
+This type of item is used for text representation of identifiers
+and string contents."
   value)
 
 
@@ -488,10 +502,12 @@ class file as UTF-8 encoded data."
 
 (defstruct (class-file (:constructor
                         !make-class-file (class superclass access-flags)))
+  "Holds the components of a class file."
   (constants (make-pool))
   access-flags
   class
   superclass
+  ;; support for implementing interfaces not yet available
   ;; interfaces
   fields
   methods
@@ -689,26 +705,31 @@ flags and their binary values.")
           :initial-value 0))
 
 (defstruct (field (:constructor %make-field))
-  ""
+  "Holds information on the properties of fields in the class(-file)."
   access-flags
   name
   descriptor
   attributes)
 
 (defun !make-field (name type &key (flags '(:public)))
-  
+  "Creates a field for addition to a class file."
   (%make-field :access-flags flags
                :name name
                :descriptor type))
 
 (defun field-add-attribute (field attribute)
+  "Adds an attribute to a field."
   (push attribute (field-attributes field)))
 
 (defun field-attribute (field name)
+  "Retrieves an attribute named `name' of `field'.
+
+Returns NIL if the attribute isn't found."
   (find name (field-attributes field)
         :test #'string= :key #'attribute-name))
 
 (defun finalize-field (field class)
+  "Prepares `field' for serialization."
   (let ((pool (class-file-constants class)))
     (setf (field-access-flags field)
           (map-flags (field-access-flags field))
@@ -719,6 +740,7 @@ flags and their binary values.")
   (finalize-attributes (field-attributes field) nil class))
 
 (defun !write-field (field stream)
+  "Writes classfile representation of `field' to `stream'."
   (write-u2 (field-access-flags field) stream)
   (write-u2 (field-name field) stream)
   (write-u2 (field-descriptor field) stream)
@@ -726,6 +748,7 @@ flags and their binary values.")
 
 
 (defstruct (method (:constructor %!make-method))
+  "Holds information on the properties of methods in the class(-file)."
   access-flags
   name
   descriptor
@@ -747,6 +770,7 @@ be one of two keyword identifiers to identify special methods:
     (t name)))
 
 (defun !make-method (name return args &key (flags '(:public)))
+  "Creates a method for addition to a class file."
   (%!make-method :descriptor (cons return args)
                 :access-flags flags
                 :name name))
@@ -775,11 +799,13 @@ returning the attribute."
         code)))
 
 (defun method-attribute (method name)
+  "Returns the first attribute of `method' with `name'."
   (find name (method-attributes method)
         :test #'string= :key #'attribute-name))
 
 
 (defun finalize-method (method class)
+  "Prepares `method' for serialization."
   (let ((pool (class-file-constants class)))
     (setf (method-access-flags method)
           (map-flags (method-access-flags method))
@@ -791,6 +817,7 @@ returning the attribute."
 
 
 (defun !write-method (method stream)
+  "Write class file representation of `method' to `stream'."
   (write-u2 (method-access-flags method) stream)
   (write-u2 (method-name method) stream)
   (sys::%format t "method-name: ~a~%" (method-name method))
@@ -798,6 +825,11 @@ returning the attribute."
   (write-attributes (method-attributes method) stream))
 
 (defstruct attribute
+  "Parent attribute structure to be included into other attributes, mainly
+to define common fields.
+
+Having common fields allows common driver code for
+finalizing and serializing attributes."
   name
 
   ;; not in the class file:
@@ -806,6 +838,7 @@ returning the attribute."
   )
 
 (defun finalize-attributes (attributes att class)
+  "Prepare `attributes' (a list) of attribute `att' list for serialization."
   (dolist (attribute attributes)
     ;; assure header: make sure 'name' is in the pool
     (setf (attribute-name attribute)
@@ -815,6 +848,7 @@ returning the attribute."
     (funcall (attribute-finalizer attribute) attribute att class)))
 
 (defun write-attributes (attributes stream)
+  "Writes the `attributes' to `stream'."
   (write-u2 (length attributes) stream)
   (dolist (attribute attributes)
     (write-u2 (attribute-name attribute) stream)
@@ -834,6 +868,8 @@ returning the attribute."
                                      (finalizer #'!finalize-code)
                                      (writer #'!write-code))
                            (:constructor %make-code-attribute))
+  "The attribute containing the actual JVM byte code;
+an attribute of a method."
   max-stack
   max-locals
   code
@@ -850,15 +886,18 @@ returning the attribute."
 
 
 (defun code-label-offset (code label)
+  "Retrieves the `label' offset within a `code' attribute after the
+attribute has been finalized."
   (cdr (assoc label (code-labels code))))
 
 (defun (setf code-label-offset) (offset code label)
+  "Sets the `label' offset within a `code' attribute after the attribute
+has been finalized."
   (setf (code-labels code)
         (acons label offset (code-labels code))))
 
-
-
 (defun !finalize-code (code parent class)
+  "Prepares the `code' attribute for serialization, within method `parent'."
   (declare (ignore parent))
   (let ((c (resolve-instructions (coerce (reverse (code-code code)) 'vector))))
     (setf (code-max-stack code) (analyze-stack c))
@@ -884,6 +923,7 @@ returning the attribute."
   (finalize-attributes (code-attributes code) code class))
 
 (defun !write-code (code stream)
+  "Writes the attribute `code' to `stream'."
   (sys::%format t "max-stack: ~a~%" (code-max-stack code))
   (write-u2 (code-max-stack code) stream)
   (sys::%format t "max-locals: ~a~%" (code-max-locals code))
@@ -917,11 +957,16 @@ returning the attribute."
   attribute)
 
 (defun code-attribute (code name)
+  "Returns an attribute of `code' identified by `name'."
   (find name (code-attributes code)
         :test #'string= :key #'attribute-name))
 
 
 (defun code-add-exception-handler (code start end handler type)
+  "Adds an exception handler to `code' protecting the region from
+labels `start' to `end' (inclusive) from exception `type' - where
+a value of NIL indicates all types. Upon an exception of the given
+type, control is transferred to label `handler'."
   (push (make-exception :start-pc start
                         :end-pc end
                         :handler-pc handler
@@ -929,6 +974,9 @@ returning the attribute."
         (code-exception-handlers code)))
 
 (defstruct exception
+  "Exception handler information.
+
+After finalization, the fields contain offsets instead of labels."
   start-pc    ;; label target
   end-pc      ;; label target
   handler-pc  ;; label target
@@ -973,30 +1021,42 @@ returning the attribute."
                (restore-code-specials *current-code-attribute*)))))))
 
 
+;; ### Can't be used yet: no serialization
 (defstruct (source-file-attribute (:conc-name source-)
                                   (:include attribute
                                             (name "SourceFile")))
+  "An attribute of the class file indicating which source file
+it was compiled from."
   filename)
 
+;; ### Can't be used yet: no serialization
 (defstruct (line-numbers-attribute (:include attribute
                                              (name "LineNumberTable")))
-  line-numbers)
+  "An attribute of `code-attribute', containing a mapping of offsets
+within the code section to the line numbers in the source file."
+  line-numbers ;; a list of line-number structures, in reverse order
+  )
 
 (defstruct line-number
-  start-pc
+  start-pc  ;; a label, before finalization
   line)
 
+;; ### Can't be used yet: no serialization
 (defstruct (local-variables-attribute (:conc-name local-var-)
                                       (:include attribute
                                                 (name "LocalVariableTable")))
-  locals)
+  "An attribute of the `code-attribute', containing a table of local variable
+names, their type and their scope of validity."
+  locals ;; a list of local-variable structures, in reverse order
+  )
 
 (defstruct (local-variable (:conc-name local-))
-  start-pc
+  start-pc  ;; a label, before finalization
   length
   name
   descriptor
-  index)
+  index ;; The index of the variable inside the block of locals
+  )
 
 #|
 
