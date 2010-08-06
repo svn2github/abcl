@@ -256,7 +256,7 @@
 (define-opcode ifnull 198 3 -1)
 (define-opcode ifnonnull 199 3 nil)
 (define-opcode goto_w 200 5 nil)
-(define-opcode jsr_w 201 5 nil)
+;; (define-opcode jsr_w 201 5 nil) Don't use: deprecated
 (define-opcode label 202 0 0)  ;; virtual: does not exist in the JVM
 ;; (define-opcode push-value 203 nil 1)
 ;; (define-opcode store-value 204 nil -1)
@@ -392,15 +392,25 @@
     (3 (emit 'astore_3))
     (t (emit 'astore index))))
 
-(declaim (ftype (function (t) t) branch-opcode-p))
-(declaim (inline branch-opcode-p))
-(defun branch-opcode-p (opcode)
+(declaim (ftype (function (t) t) branch-p)
+         (inline branch-p))
+(defun branch-p (opcode)
   (declare (optimize speed))
   (declare (type '(integer 0 255) opcode))
   (or (<= 153 opcode 168)
-      (= opcode 198)))
+      (<= 198 opcode 200))) ;; ifnull / ifnonnull / goto_w
 
-(declaim (ftype (function (t) boolean) label-p))
+(declaim (ftype (function (t) t) unconditional-control-transfer-p)
+         (inline unconditional-control-transfer-p))
+(defun unconditional-control-transfer-p (opcode)
+  (or (= 168 opcode) ;; goto
+      (= 200 opcode) ;; goto_w
+      (<= 172 opcode 177) ;; ?return
+      (= 191 opcode) ;; athrow
+      ))
+
+(declaim (ftype (function (t) boolean) label-p)
+         (inline label-p))
 (defun label-p (instruction)
   (and instruction
        (= (the fixnum (instruction-opcode (the instruction instruction))) 202)))
@@ -679,5 +689,108 @@
       (declare (type (unsigned-byte 16) index))
       (let ((instruction (aref code index)))
         (vector-push-extend (resolve-instruction instruction) vector)))))
+
+
+
+;; BYTE CODE ANALYSIS AND OPTIMIZATION
+
+(declaim (ftype (function (t t t) t) analyze-stack-path))
+(defun analyze-stack-path (code start-index depth)
+  (declare (optimize speed))
+  (declare (type fixnum start-index depth))
+  (do* ((i start-index (1+ i))
+        (limit (length code)))
+       ((>= i limit))
+    (declare (type fixnum i limit))
+    (let* ((instruction (aref code i))
+           (instruction-depth (instruction-depth instruction))
+           (instruction-stack (instruction-stack instruction)))
+      (declare (type fixnum instruction-stack))
+      (when instruction-depth
+        (unless (= (the fixnum instruction-depth)
+                   (the fixnum (+ depth instruction-stack)))
+          (internal-compiler-error "Stack inconsistency detected ~
+                                    in ~A at index ~D: ~
+                                    found ~S, expected ~S."
+                                   (compiland-name *current-compiland*)
+                                   i instruction-depth
+                                   (+ depth instruction-stack)))
+        (return-from analyze-stack-path))
+      (let ((opcode (instruction-opcode instruction)))
+        (setf depth (+ depth instruction-stack))
+        (setf (instruction-depth instruction) depth)
+        (when (branch-opcode-p opcode)
+          (let ((label (car (instruction-args instruction))))
+            (declare (type symbol label))
+            (analyze-stack-path code (symbol-value label) depth)))
+        (when (unconditional-control-transfer-p opcode)
+          ;; Current path ends.
+          (return-from analyze-stack-path))))))
+
+(declaim (ftype (function (t) t) analyze-stack))
+(defun analyze-stack (code exception-entry-points)
+  (declare (optimize speed))
+  (let* ((code-length (length code)))
+    (declare (type vector code))
+    (dotimes (i code-length)
+      (declare (type (unsigned-byte 16) i))
+      (let* ((instruction (aref code i))
+             (opcode (instruction-opcode instruction)))
+        (when (eql opcode 202) ; LABEL
+          (let ((label (car (instruction-args instruction))))
+            (set label i)))
+        (if (instruction-stack instruction)
+            (when (opcode-stack-effect opcode)
+              (unless (eql (instruction-stack instruction)
+                           (opcode-stack-effect opcode))
+                (sys::%format t "instruction-stack = ~S ~
+                                 opcode-stack-effect = ~S~%"
+                              (instruction-stack instruction)
+                              (opcode-stack-effect opcode))
+                (sys::%format t "index = ~D instruction = ~A~%" i
+                              (print-instruction instruction))))
+            (setf (instruction-stack instruction)
+                  (opcode-stack-effect opcode)))
+        (unless (instruction-stack instruction)
+          (sys::%format t "no stack information for instruction ~D~%"
+                        (instruction-opcode instruction))
+          (aver nil))))
+    (analyze-stack-path code 0 0)
+    (dolist (entry-point exception-entry-points)
+      ;; Stack depth is always 1 when handler is called.
+      (analyze-stack-path code (symbol-value entry-point) 1))
+    (let ((max-stack 0))
+      (declare (type fixnum max-stack))
+      (dotimes (i code-length)
+        (declare (type (unsigned-byte 16) i))
+        (let* ((instruction (aref code i))
+               (instruction-depth (instruction-depth instruction)))
+          (when instruction-depth
+            (setf max-stack (max max-stack (the fixnum instruction-depth))))))
+      max-stack)))
+
+(defun delete-unreachable-code (code)
+  ;; Look for unreachable code after GOTO.
+  (let* ((code (coerce code 'vector))
+         (changed nil)
+         (after-goto/areturn nil))
+    (dotimes (i (length code))
+      (declare (type (unsigned-byte 16) i))
+      (let* ((instruction (aref code i))
+             (opcode (instruction-opcode instruction)))
+        (cond (after-goto/areturn
+               (if (= opcode 202) ; LABEL
+                   (setf after-goto/areturn nil)
+                   ;; Unreachable.
+                   (progn
+                     (setf (aref code i) nil)
+                     (setf changed t))))
+              ((unconditional-control-transfer-p opcode)
+               (setf after-goto/areturn t)))))
+    (values (if changed (delete nil code) code)
+            changed)))
+
+
+
 
 (provide '#:opcodes)

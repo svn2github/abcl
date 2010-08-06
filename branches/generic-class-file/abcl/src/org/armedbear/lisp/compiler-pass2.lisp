@@ -914,74 +914,6 @@ representation, based on the derived type of the LispObject."
   (check-number-of-args form n t))
 
 
-(declaim (ftype (function (t t t) t) walk-code))
-(defun walk-code (code start-index depth)
-  (declare (optimize speed))
-  (declare (type fixnum start-index depth))
-  (do* ((i start-index (1+ i))
-        (limit (length code)))
-       ((>= i limit))
-    (declare (type fixnum i limit))
-    (let* ((instruction (aref code i))
-           (instruction-depth (instruction-depth instruction))
-           (instruction-stack (instruction-stack instruction)))
-      (declare (type fixnum instruction-stack))
-      (when instruction-depth
-        (unless (= (the fixnum instruction-depth) (the fixnum (+ depth instruction-stack)))
-          (internal-compiler-error 
-           "Stack inconsistency detected in ~A at index ~D: found ~S, expected ~S." 
-           (compiland-name *current-compiland*)
-           i instruction-depth (+ depth instruction-stack)))
-        (return-from walk-code))
-      (let ((opcode (instruction-opcode instruction)))
-        (setf depth (+ depth instruction-stack))
-        (setf (instruction-depth instruction) depth)
-        (when (branch-opcode-p opcode)
-          (let ((label (car (instruction-args instruction))))
-            (declare (type symbol label))
-            (walk-code code (symbol-value label) depth)))
-        (when (member opcode '(167 176 191)) ; GOTO ARETURN ATHROW
-          ;; Current path ends.
-          (return-from walk-code))))))
-
-(declaim (ftype (function (t) t) analyze-stack))
-(defun analyze-stack (code)
-  (declare (optimize speed))
-  (let* ((code-length (length code)))
-    (declare (type vector code))
-    (dotimes (i code-length)
-      (declare (type (unsigned-byte 16) i))
-      (let* ((instruction (aref code i))
-             (opcode (instruction-opcode instruction)))
-        (when (eql opcode 202) ; LABEL
-          (let ((label (car (instruction-args instruction))))
-            (set label i)))
-        (if (instruction-stack instruction)
-            (when (opcode-stack-effect opcode)
-              (unless (eql (instruction-stack instruction) (opcode-stack-effect opcode))
-                (sys::%format t "instruction-stack = ~S opcode-stack-effect = ~S~%"
-                         (instruction-stack instruction)
-                         (opcode-stack-effect opcode))
-                (sys::%format t "index = ~D instruction = ~A~%" i (print-instruction instruction))))
-            (setf (instruction-stack instruction) (opcode-stack-effect opcode)))
-        (unless (instruction-stack instruction)
-          (sys::%format t "no stack information for instruction ~D~%" (instruction-opcode instruction))
-          (aver nil))))
-    (walk-code code 0 0)
-    (dolist (handler *handlers*)
-      ;; Stack depth is always 1 when handler is called.
-      (walk-code code (symbol-value (handler-code handler)) 1))
-    (let ((max-stack 0))
-      (declare (type fixnum max-stack))
-      (dotimes (i code-length)
-        (declare (type (unsigned-byte 16) i))
-        (let* ((instruction (aref code i))
-               (instruction-depth (instruction-depth instruction)))
-          (when instruction-depth
-            (setf max-stack (max max-stack (the fixnum instruction-depth))))))
-      max-stack)))
-
-
 (defun finalize-code ()
   (setf *code* (nreverse (coerce *code* 'vector))))
 
@@ -1128,30 +1060,6 @@ representation, based on the derived type of the LispObject."
       (setf *code* (delete nil code))
       t)))
 
-(defun delete-unreachable-code ()
-  ;; Look for unreachable code after GOTO.
-  (let* ((code (coerce *code* 'vector))
-         (changed nil)
-         (after-goto/areturn nil))
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let* ((instruction (aref code i))
-             (opcode (instruction-opcode instruction)))
-        (cond (after-goto/areturn
-               (if (= opcode 202) ; LABEL
-                   (setf after-goto/areturn nil)
-                   ;; Unreachable.
-                   (progn
-                     (setf (aref code i) nil)
-                     (setf changed t))))
-              ((= opcode 176) ; ARETURN
-               (setf after-goto/areturn t))
-              ((= opcode 167) ; GOTO
-               (setf after-goto/areturn t)))))
-    (when changed
-      (setf *code* (delete nil code))
-      t)))
-
 (defvar *enable-optimization* t)
 
 (defknown optimize-code () t)
@@ -1168,7 +1076,11 @@ representation, based on the derived type of the LispObject."
         (setf changed-p (or (optimize-2) changed-p))
         (setf changed-p (or (optimize-2b) changed-p))
         (setf changed-p (or (optimize-3) changed-p))
-        (setf changed-p (or (delete-unreachable-code) changed-p))
+        (if changed-p
+            (setf *code* delete-unreachable-code *code*)
+            (multiple-value-setq
+                (*code* changed-p)
+              (delete-unreachable-code *code*)))
         (unless changed-p
           (return))))
     (unless (vectorp *code*)
@@ -1489,7 +1401,8 @@ representation, based on the derived type of the LispObject."
     (emit 'return)
     (finalize-code)
     (setf *code* (resolve-instructions (expand-virtual-instructions *code*)))
-    (setf (method-max-stack constructor) (analyze-stack *code*))
+    (setf (method-max-stack constructor)
+          (analyze-stack *code* (mapcar #'handler-code *handlers*)))
     (setf (method-code constructor) (code-bytes *code*))
     (setf (method-handlers constructor) (nreverse *handlers*))
     constructor))
@@ -7789,7 +7702,8 @@ We need more thought here.
     (optimize-code)
 
     (setf *code* (resolve-instructions (expand-virtual-instructions *code*)))
-    (setf (method-max-stack execute-method) (analyze-stack *code*))
+    (setf (method-max-stack execute-method)
+          (analyze-stack *code* (mapcar #'handler-code *handlers*)))
     (setf (method-code execute-method) (code-bytes *code*))
 
     ;; Remove handler if its protected range is empty.
