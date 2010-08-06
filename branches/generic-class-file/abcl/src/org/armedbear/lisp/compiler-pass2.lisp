@@ -41,7 +41,7 @@
   (require "KNOWN-FUNCTIONS")
   (require "KNOWN-SYMBOLS")
   (require "DUMP-FORM")
-  (require "OPCODES")
+  (require "JVM-INSTRUCTIONS")
   (require "JAVA"))
 
 

@@ -1,4 +1,4 @@
-;;; opcodes.lisp
+;;; jvm-instructions.lisp
 ;;;
 ;;; Copyright (C) 2003-2006 Peter Graves
 ;;; $Id$

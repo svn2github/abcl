@@ -43,7 +43,7 @@
   (require "COMPILER-ERROR")
   (require "KNOWN-FUNCTIONS")
   (require "DUMP-FORM")
-  (require "OPCODES")
+  (require "JVM-INSTRUCTIONS")
   (require "JVM-CLASS-FILE")
   (require "KNOWN-SYMBOLS")
   (require "JAVA")
