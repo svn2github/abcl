@@ -319,6 +319,57 @@
           (values (funcall fn) (funcall fn NIL)))))
   NIL T)
 
+;;Nested with-code-to-method
+(deftest with-code-to-method.1
+    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_6"))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public)))
+           (method (jvm::!make-method :class-constructor :void nil
+				      :flags '(:static)))
+	   (registers nil))
+      (jvm::class-add-method file method)
+      (jvm::with-code-to-method (file method)
+	(jvm::allocate-register)
+	(push jvm::*register* registers)
+	(jvm::with-code-to-method (file method)
+	  (jvm::allocate-register)
+	  (push jvm::*register* registers)
+	  (jvm::with-code-to-method (file method)
+	    (jvm::allocate-register)
+	    (push jvm::*register* registers))
+	  (jvm::allocate-register)
+	  (push jvm::*register* registers))
+	(jvm::allocate-register)
+	(push jvm::*register* registers))
+      (jvm::finalize-class-file file)
+      (nreverse registers))
+  (1 2 3 4 5))
+
+(deftest with-code-to-method.2
+    (let* ((class (jvm::make-class-name "org/armedbear/lisp/gm_7"))
+           (file (jvm::!make-class-file class jvm::+lisp-object+ '(:public)))
+           (method1 (jvm::!make-method :class-constructor :void nil
+				       :flags '(:static)))
+	   (method2 (jvm::!make-method "method2" :void nil))
+	   (registers nil))
+      (jvm::class-add-method file method1)
+      (jvm::class-add-method file method2)
+      (jvm::with-code-to-method (file method1)
+	(jvm::allocate-register)
+	(push jvm::*register* registers)
+	(jvm::with-code-to-method (file method2)
+	  (jvm::allocate-register)
+	  (push jvm::*register* registers)
+	  (jvm::with-code-to-method (file method1)
+	    (jvm::allocate-register)
+	    (push jvm::*register* registers))
+	  (jvm::allocate-register)
+	  (push jvm::*register* registers))
+	(jvm::allocate-register)
+	(push jvm::*register* registers))
+      (jvm::finalize-class-file file)
+      (nreverse registers))
+  (1 1 2 2 3))
+
 ;; ;;  generation of an ABCL-like function, with mixed output to constructor,
 ;; ;;  static initializer and function method(s)
 ;; (deftest generate-method.6

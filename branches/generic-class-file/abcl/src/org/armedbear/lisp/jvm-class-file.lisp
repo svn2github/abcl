@@ -881,7 +881,7 @@ an attribute of a method."
   ;; labels contains offsets into the code array after it's finalized
   labels ;; an alist
 
-  current-local) ;; used for handling nested WITH-CODE-TO-METHOD blocks
+  (current-local 0)) ;; used for handling nested WITH-CODE-TO-METHOD blocks
 
 
 
@@ -1046,7 +1046,8 @@ to which it has been attached has been superseded.")
         *registers-allocated* (code-max-locals code)
         *register* (code-current-local code)))
 
-(defmacro with-code-to-method ((class-file method &key safe-nesting) &body body)
+(defmacro with-code-to-method ((class-file method &key (safe-nesting t))
+			       &body body)
   (let ((m (gensym))
         (c (gensym)))
     `(progn
@@ -1054,7 +1055,7 @@ to which it has been attached has been superseded.")
            `((when *current-code-attribute*
                (save-code-specials *current-code-attribute*))))
        (let* ((,m ,method)
-              (,c (method-ensure-code method))
+              (,c (method-ensure-code ,method))
               (*pool* (class-file-constants ,class-file))
               (*code* (code-code ,c))
               (*registers-allocated* (code-max-locals ,c))
@@ -1062,6 +1063,7 @@ to which it has been attached has been superseded.")
               (*current-code-attribute* ,c))
          ,@body
          (setf (code-code ,c) *code*
+	       (code-current-local ,c) *register*
 ;;               (code-exception-handlers ,c) *handlers*
                (code-max-locals ,c) *registers-allocated*))
        ,@(when safe-nesting
