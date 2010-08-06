@@ -31,6 +31,9 @@
 
 (in-package #:jvm)
 
+
+;;    OPCODES
+
 (defconst *opcode-table* (make-array 256))
 
 (defconst *opcodes* (make-hash-table :test 'equalp))
@@ -254,10 +257,10 @@
 (define-opcode ifnonnull 199 3 nil)
 (define-opcode goto_w 200 5 nil)
 (define-opcode jsr_w 201 5 nil)
-(define-opcode label 202 0 0)
+(define-opcode label 202 0 0)  ;; virtual: does not exist in the JVM
 ;; (define-opcode push-value 203 nil 1)
 ;; (define-opcode store-value 204 nil -1)
-(define-opcode clear-values 205 0 0)
+(define-opcode clear-values 205 0 0)  ;; virtual: does not exist in the JVM
 ;;(define-opcode var-ref 206 0 0)
 
 (defparameter *last-opcode* 206)
@@ -285,5 +288,396 @@
 (defun opcode-stack-effect (opcode-number)
   (declare (optimize speed))
   (jvm-opcode-stack-effect (svref *opcode-table* opcode-number)))
+
+
+
+
+;;   INSTRUCTION
+
+(defstruct (instruction (:constructor %make-instruction (opcode args)))
+  (opcode 0 :type (integer 0 255))
+  args
+  stack
+  depth
+  wide)
+
+(defun make-instruction (opcode args)
+  (let ((inst (apply #'%make-instruction
+                     (list opcode
+                           (remove :wide-prefix args)))))
+    (when (memq :wide-prefix args)
+      (setf (inst-wide inst) t))
+    inst))
+
+(defun print-instruction (instruction)
+  (sys::%format nil "~A ~A stack = ~S depth = ~S"
+          (opcode-name (instruction-opcode instruction))
+          (instruction-args instruction)
+          (instruction-stack instruction)
+          (instruction-depth instruction)))
+
+(declaim (ftype (function (t) t) instruction-label))
+(defun instruction-label (instruction)
+  (and instruction
+       (= (instruction-opcode (the instruction instruction)) 202)
+       (car (instruction-args instruction))))
+
+
+
+(defknown inst * t)
+(defun inst (instr &optional args)
+  (declare (optimize speed))
+  (let ((opcode (if (fixnump instr)
+                    instr
+                    (opcode-number instr))))
+    (unless (listp args)
+      (setf args (list args)))
+    (make-instruction opcode args)))
+
+
+;; Having %emit and %%emit output their code to *code*
+;; is currently an implementation detail exposed to all users.
+;; We need to have APIs to address this, but for now pass2 is
+;; our only user and we'll hard-code the use of *code*.
+(defvar *code* nil)
+
+(defknown %%emit * t)
+(defun %%emit (instr &rest args)
+  (declare (optimize speed))
+  (let ((instruction (make-instruction instr args)))
+    (push instruction *code*)
+    instruction))
+
+(defknown %emit * t)
+(defun %emit (instr &rest args)
+  (declare (optimize speed))
+  (let ((instruction (inst instr args)))
+    (push instruction *code*)
+    instruction))
+
+(defmacro emit (instr &rest args)
+  (when (and (consp instr)
+             (eq (car instr) 'QUOTE)
+             (symbolp (cadr instr)))
+    (setf instr (opcode-number (cadr instr))))
+  (if (fixnump instr)
+      `(%%emit ,instr ,@args)
+      `(%emit ,instr ,@args)))
+
+
+;;  Helper routines
+
+(defknown label (symbol) t)
+(defun label (symbol)
+  (declare (type symbol symbol))
+  (declare (optimize speed))
+  (emit 'label symbol)
+  (setf (symbol-value symbol) nil))
+
+(defknown aload (fixnum) t)
+(defun aload (index)
+  (case index
+    (0 (emit 'aload_0))
+    (1 (emit 'aload_1))
+    (2 (emit 'aload_2))
+    (3 (emit 'aload_3))
+    (t (emit 'aload index))))
+
+(defknown astore (fixnum) t)
+(defun astore (index)
+  (case index
+    (0 (emit 'astore_0))
+    (1 (emit 'astore_1))
+    (2 (emit 'astore_2))
+    (3 (emit 'astore_3))
+    (t (emit 'astore index))))
+
+(declaim (ftype (function (t) t) branch-opcode-p))
+(declaim (inline branch-opcode-p))
+(defun branch-opcode-p (opcode)
+  (declare (optimize speed))
+  (declare (type '(integer 0 255) opcode))
+  (or (<= 153 opcode 168)
+      (= opcode 198)))
+
+(declaim (ftype (function (t) boolean) label-p))
+(defun label-p (instruction)
+  (and instruction
+       (= (the fixnum (instruction-opcode (the instruction instruction))) 202)))
+
+(defun print-code (code)
+  (dotimes (i (length code))
+    (let ((instruction (elt code i)))
+      (sys::%format t "~D ~A ~S ~S ~S~%"
+                    i
+                    (opcode-name (instruction-opcode instruction))
+                    (instruction-args instruction)
+                    (instruction-stack instruction)
+                    (instruction-depth instruction)))))
+
+(defun print-code2 (code)
+  (dotimes (i (length code))
+    (let ((instruction (elt code i)))
+      (case (instruction-opcode instruction)
+        (202 ; LABEL
+         (format t "~A:~%" (car (instruction-args instruction))))
+        (t
+         (format t "~8D:   ~A ~S~%"
+                 i
+                 (opcode-name (instruction-opcode instruction))
+                 (instruction-args instruction)))))))
+
+(defun expand-virtual-instructions (code)
+  (let* ((len (length code))
+         (vector (make-array (ash len 1) :fill-pointer 0 :adjustable t)))
+    (dotimes (index len vector)
+      (declare (type (unsigned-byte 16) index))
+      (let ((instruction (svref code index)))
+        (case (instruction-opcode instruction)
+          (205 ; CLEAR-VALUES
+           (dolist (instruction
+                     (list
+                      (inst 'aload *thread*)
+                      (inst 'aconst_null)
+                      (inst 'putfield (u2 (pool-field +lisp-thread+ "_values"
+                                                      +lisp-object-array+)))))
+             (vector-push-extend instruction vector)))
+          (t
+           (vector-push-extend instruction vector)))))))
+
+
+;;   RESOLVERS
+
+(defun unsupported-opcode (instruction)
+  (error "Unsupported opcode ~D." (instruction-opcode instruction)))
+
+(declaim (type hash-table +resolvers+))
+(defconst +resolvers+ (make-hash-table))
+
+(defun initialize-resolvers ()
+  (let ((ht +resolvers+))
+    (dotimes (n (1+ *last-opcode*))
+      (setf (gethash n ht) #'unsupported-opcode))
+    ;; The following opcodes resolve to themselves.
+    (dolist (n '(0 ; nop
+                 1 ; aconst_null
+                 2 ; iconst_m1
+                 3 ; iconst_0
+                 4 ; iconst_1
+                 5 ; iconst_2
+                 6 ; iconst_3
+                 7 ; iconst_4
+                 8 ; iconst_5
+                 9 ; lconst_0
+                 10 ; lconst_1
+                 11 ; fconst_0
+                 12 ; fconst_1
+                 13 ; fconst_2
+                 14 ; dconst_0
+                 15 ; dconst_1
+                 42 ; aload_0
+                 43 ; aload_1
+                 44 ; aload_2
+                 45 ; aload_3
+                 46 ; iaload
+                 47 ; laload
+                 48 ; faload
+                 49 ; daload
+                 50 ; aaload
+                 75 ; astore_0
+                 76 ; astore_1
+                 77 ; astore_2
+                 78 ; astore_3
+                 79 ; iastore
+                 80 ; lastore
+                 81 ; fastore
+                 82 ; dastore
+                 83 ; aastore
+                 87 ; pop
+                 88 ; pop2
+                 89 ; dup
+                 90 ; dup_x1
+                 91 ; dup_x2
+                 92 ; dup2
+                 93 ; dup2_x1
+                 94 ; dup2_x2
+                 95 ; swap
+                 96 ; iadd
+                 97 ; ladd
+                 98 ; fadd
+                 99 ; dadd
+                 100 ; isub
+                 101 ; lsub
+                 102 ; fsub
+                 103 ; dsub
+                 104 ; imul
+                 105 ; lmul
+                 106 ; fmul
+                 107 ; dmul
+                 116 ; ineg
+                 117 ; lneg
+                 118 ; fneg
+                 119 ; dneg
+                 120 ; ishl
+                 121 ; lshl
+                 122 ; ishr
+                 123 ; lshr
+                 126 ; iand
+                 127 ; land
+                 128 ; ior
+                 129 ; lor
+                 130 ; ixor
+                 131 ; lxor
+                 133 ; i2l
+                 134 ; i2f
+                 135 ; i2d
+                 136 ; l2i
+                 137 ; l2f
+                 138 ; l2d
+                 141 ; f2d
+                 144 ; d2f
+                 148 ; lcmp
+                 149 ; fcmpd
+                 150 ; fcmpg
+                 151 ; dcmpd
+                 152 ; dcmpg
+                 153 ; ifeq
+                 154 ; ifne
+                 155 ; ifge
+                 156 ; ifgt
+                 157 ; ifgt
+                 158 ; ifle
+                 159 ; if_icmpeq
+                 160 ; if_icmpne
+                 161 ; if_icmplt
+                 162 ; if_icmpge
+                 163 ; if_icmpgt
+                 164 ; if_icmple
+                 165 ; if_acmpeq
+                 166 ; if_acmpne
+                 167 ; goto
+                 176 ; areturn
+                 177 ; return
+                 178 ; getstatic
+                 179 ; putstatic
+                 180 ; getfield
+                 181 ; putfield
+                 182 ; invokevirtual
+                 183 ; invockespecial
+                 184 ; invokestatic
+                 187 ; new
+                 189 ; anewarray
+                 190 ; arraylength
+                 191 ; athrow
+                 192 ; checkcast
+                 193 ; instanceof
+                 194 ; monitorenter
+                 195 ; monitorexit
+                 198 ; ifnull
+                 202 ; label
+                 ))
+      (setf (gethash n ht) nil))))
+
+(initialize-resolvers)
+
+(defmacro define-resolver (opcodes args &body body)
+  (let ((name (gensym)))
+    `(progn
+       (defun ,name ,args ,@body)
+       (eval-when (:load-toplevel :execute)
+         ,(if (listp opcodes)
+              `(dolist (op ',opcodes)
+                 (setf (gethash op +resolvers+)
+                       (symbol-function ',name)))
+              `(setf (gethash ,opcodes +resolvers+)
+                     (symbol-function ',name)))))))
+
+(defun load/store-resolver (instruction inst-index inst-index2 error-text)
+ (let* ((args (instruction-args instruction))
+        (index (car args)))
+   (declare (type (unsigned-byte 16) index))
+   (cond ((<= 0 index 3)
+          (inst (+ index inst-index)))
+         ((<= 0 index 255)
+          (inst inst-index2 index))
+         (t
+          (error error-text)))))
+
+;; aload
+(define-resolver 25 (instruction)
+  (load/store-resolver instruction 42 25 "ALOAD unsupported case"))
+
+;; astore
+(define-resolver 58 (instruction)
+  (load/store-resolver instruction 75 58 "ASTORE unsupported case"))
+
+;; iload
+(define-resolver 21 (instruction)
+  (load/store-resolver instruction 26 21 "ILOAD unsupported case"))
+
+;; istore
+(define-resolver 54 (instruction)
+  (load/store-resolver instruction 59 54 "ISTORE unsupported case"))
+
+;; lload
+(define-resolver 22 (instruction)
+  (load/store-resolver instruction 30 22 "LLOAD unsupported case"))
+
+;; lstore
+(define-resolver 55 (instruction)
+  (load/store-resolver instruction 63 55 "LSTORE unsupported case"))
+
+;; bipush, sipush
+(define-resolver (16 17) (instruction)
+  (let* ((args (instruction-args instruction))
+         (n (first args)))
+    (declare (type fixnum n))
+    (cond ((<= 0 n 5)
+           (inst (+ n 3)))
+          ((<= -128 n 127)
+           (inst 16 (logand n #xff))) ; BIPUSH
+          (t ; SIPUSH
+           (inst 17 (s2 n))))))
+
+;; ldc
+(define-resolver 18 (instruction)
+  (let* ((args (instruction-args instruction)))
+    (unless (= (length args) 1)
+      (error "Wrong number of args for LDC."))
+    (if (> (car args) 255)
+        (inst 19 (u2 (car args))) ; LDC_W
+        (inst 18 args))))
+
+;; ldc2_w
+(define-resolver 20 (instruction)
+  (let* ((args (instruction-args instruction)))
+    (unless (= (length args) 1)
+      (error "Wrong number of args for LDC2_W."))
+    (inst 20 (u2 (car args)))))
+
+;; iinc
+(define-resolver 132 (instruction)
+  (let* ((args (instruction-args instruction))
+         (register (first args))
+         (n (second args)))
+    (when (not (<= -128 n 127))
+      (error "IINC argument ~A out of bounds." n))
+    (inst 132 (list register (s1 n)))))
+
+(defknown resolve-instruction (t) t)
+(defun resolve-instruction (instruction)
+  (declare (optimize speed))
+  (let ((resolver (gethash1 (instruction-opcode instruction) +resolvers+)))
+    (if resolver
+        (funcall resolver instruction)
+        instruction)))
+
+(defun resolve-instructions (code)
+  (let* ((len (length code))
+         (vector (make-array len :fill-pointer 0 :adjustable t)))
+    (dotimes (index len vector)
+      (declare (type (unsigned-byte 16) index))
+      (let ((instruction (aref code index)))
+        (vector-push-extend (resolve-instruction instruction) vector)))))
 
 (provide '#:opcodes)

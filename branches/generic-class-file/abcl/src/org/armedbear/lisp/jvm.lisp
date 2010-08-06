@@ -196,8 +196,6 @@ using `make-unique-class-name'."
 
 (defvar *this-class* nil)
 
-(defvar *code* ())
-
 ;; All tags visible at the current point of compilation, some of which may not
 ;; be in the current compiland.
 (defvar *visible-tags* ())
