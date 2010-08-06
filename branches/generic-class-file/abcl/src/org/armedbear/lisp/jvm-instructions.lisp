@@ -397,13 +397,13 @@
 (defun branch-p (opcode)
   (declare (optimize speed))
   (declare (type '(integer 0 255) opcode))
-  (or (<= 153 opcode 168)
+  (or (<= 153 opcode 167)
       (<= 198 opcode 200))) ;; ifnull / ifnonnull / goto_w
 
 (declaim (ftype (function (t) t) unconditional-control-transfer-p)
          (inline unconditional-control-transfer-p))
 (defun unconditional-control-transfer-p (opcode)
-  (or (= 168 opcode) ;; goto
+  (or (= 167 opcode) ;; goto
       (= 200 opcode) ;; goto_w
       (<= 172 opcode 177) ;; ?return
       (= 191 opcode) ;; athrow
@@ -719,7 +719,7 @@
       (let ((opcode (instruction-opcode instruction)))
         (setf depth (+ depth instruction-stack))
         (setf (instruction-depth instruction) depth)
-        (when (branch-opcode-p opcode)
+        (when (branch-p opcode)
           (let ((label (car (instruction-args instruction))))
             (declare (type symbol label))
             (analyze-stack-path code (symbol-value label) depth)))

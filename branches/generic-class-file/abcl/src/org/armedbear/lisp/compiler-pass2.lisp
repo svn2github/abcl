@@ -927,7 +927,7 @@ representation, based on the derived type of the LispObject."
     (dotimes (i (length code))
       (declare (type (unsigned-byte 16) i))
       (let ((instruction (aref code i)))
-        (when (branch-opcode-p (instruction-opcode instruction))
+        (when (branch-p (instruction-opcode instruction))
           (let ((label (car (instruction-args instruction))))
             (set label marker)))))
     ;; Add labels used for exception handlers.
@@ -1077,7 +1077,7 @@ representation, based on the derived type of the LispObject."
         (setf changed-p (or (optimize-2b) changed-p))
         (setf changed-p (or (optimize-3) changed-p))
         (if changed-p
-            (setf *code* delete-unreachable-code *code*)
+            (setf *code* (delete-unreachable-code *code*))
             (multiple-value-setq
                 (*code* changed-p)
               (delete-unreachable-code *code*)))
@@ -1112,7 +1112,7 @@ representation, based on the derived type of the LispObject."
       (dotimes (i (length code))
         (declare (type (unsigned-byte 16) i))
         (let ((instruction (aref code i)))
-          (when (branch-opcode-p (instruction-opcode instruction))
+          (when (branch-p (instruction-opcode instruction))
             (let* ((label (car (instruction-args instruction)))
                    (offset (- (the (unsigned-byte 16) (symbol-value (the symbol label))) index)))
               (setf (instruction-args instruction) (s2 offset))))
