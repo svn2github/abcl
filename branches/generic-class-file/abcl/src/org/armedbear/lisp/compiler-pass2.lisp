@@ -918,10 +918,8 @@ representation, based on the derived type of the LispObject."
   (setf *code* (nreverse (coerce *code* 'vector))))
 
 
-;; CLEAR-VALUES CLEAR-VALUES => CLEAR-VALUES
-;; GETSTATIC POP => nothing
-(defun optimize-3 ()
-  (let* ((code (coerce *code* 'vector))
+(defun optimize-instruction-sequences (code)
+  (let* ((code (coerce code 'vector))
          (changed nil))
     (dotimes (i (1- (length code)))
       (declare (type (unsigned-byte 16) i))
@@ -940,24 +938,29 @@ representation, based on the derived type of the LispObject."
                                (instruction-opcode next-instruction))))
         (case this-opcode
           (205 ; CLEAR-VALUES
-           (when (eql next-opcode 205) ; CLEAR-VALUES
+           (when (eql next-opcode 205)       ; CLEAR-VALUES
              (setf (aref code i) nil)
              (setf changed t)))
           (178 ; GETSTATIC
-           (when (and (eql next-opcode 87) ; POP
+           (when (and (eql next-opcode 87)   ; POP
                       (not labels-skipped-p))
              (setf (aref code i) nil)
              (setf (aref code (1+ i)) nil)
              (setf changed t)))
-          (167 ; GOTO
-           (when (and (eql next-opcode 202)  ; LABEL
+          (176 ; ARETURN
+           (when (eql next-opcode 176)       ; ARETURN
+             (setf (aref code i) nil)
+             (setf changed t)))
+          ((200 167)                         ; GOTO GOTO_W
+           (when (and (or (eql next-opcode 202)  ; LABEL
+                          (eql next-opcode 200)  ; GOTO_W
+                          (eql next-opcode 167)) ; GOTO
                       (eq (car (instruction-args this-instruction))
                           (car (instruction-args next-instruction))))
              (setf (aref code i) nil)
              (setf changed t))))))
-    (when changed
-      (setf *code* (delete nil code))
-      t)))
+    (values (if changed (delete nil code) code)
+            changed)))
 
 (defvar *enable-optimization* t)
 
@@ -979,11 +982,15 @@ representation, based on the derived type of the LispObject."
                                  (mapcar #'handler-to *handlers*)
                                  (mapcar #'handler-code *handlers*))))
         (if changed-p
+            (setf *code* (optimize-instruction-sequences *code*))
+            (multiple-value-setq
+                (*code* changed-p)
+              (optimize-instruction-sequences *code*)))
+        (if changed-p
             (setf *code* (optimize-jumps *code*))
             (multiple-value-setq
                 (*code* changed-p)
               (optimize-jumps *code*)))
-        (setf changed-p (or (optimize-3) changed-p))
         (if changed-p
             (setf *code* (delete-unreachable-code *code*))
             (multiple-value-setq
