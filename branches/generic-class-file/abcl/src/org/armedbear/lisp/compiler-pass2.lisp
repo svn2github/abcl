@@ -928,7 +928,14 @@ representation, based on the derived type of the LispObject."
       (let* ((this-instruction (aref code i))
              (this-opcode (and this-instruction
                                (instruction-opcode this-instruction)))
-             (next-instruction (aref code (1+ i)))
+             (labels-skipped-p nil)
+             (next-instruction (do ((j (1+ i) (1+ j)))
+                                   ((or (>= j (length code))
+                                        (/= 202 ; LABEL
+                                            (instruction-opcode (aref code j))))
+                                    (when (< j (length code))
+                                      (aref code j)))
+                                 (setf labels-skipped-p t)))
              (next-opcode (and next-instruction
                                (instruction-opcode next-instruction))))
         (case this-opcode
@@ -937,7 +944,8 @@ representation, based on the derived type of the LispObject."
              (setf (aref code i) nil)
              (setf changed t)))
           (178 ; GETSTATIC
-           (when (eql next-opcode 87) ; POP
+           (when (and (eql next-opcode 87) ; POP
+                      (not labels-skipped-p))
              (setf (aref code i) nil)
              (setf (aref code (1+ i)) nil)
              (setf changed t)))
@@ -946,7 +954,6 @@ representation, based on the derived type of the LispObject."
                       (eq (car (instruction-args this-instruction))
                           (car (instruction-args next-instruction))))
              (setf (aref code i) nil)
-             ;;(setf (aref code (1+ i)) nil)
              (setf changed t))))))
     (when changed
       (setf *code* (delete nil code))
