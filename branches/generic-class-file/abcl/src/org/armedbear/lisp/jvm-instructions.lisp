@@ -395,8 +395,8 @@
 (declaim (ftype (function (t) t) branch-p)
          (inline branch-p))
 (defun branch-p (opcode)
-  (declare (optimize speed))
-  (declare (type '(integer 0 255) opcode))
+;;  (declare (optimize speed))
+;;  (declare (type '(integer 0 255) opcode))
   (or (<= 153 opcode 167)
       (<= 198 opcode 200))) ;; ifnull / ifnonnull / goto_w
 
@@ -843,9 +843,9 @@
          (changed nil))
     (dotimes (i (length code))
       (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (when (and instruction (= (instruction-opcode instruction) 167)) ; GOTO
-          ;; we're missing conditional jumps here?
+      (let* ((instruction (aref code i))
+             (opcode (and instruction (instruction-opcode instruction))))
+        (when (and opcode (branch-p opcode))
           (let* ((target-label (car (instruction-args instruction)))
                  (next-instruction (gethash1 target-label ht)))
             (when next-instruction
@@ -855,9 +855,10 @@
                        (instruction-args next-instruction)
                        changed t))
                 (176 ; ARETURN
-                 (setf (instruction-opcode instruction) 176
-                       (instruction-args instruction) nil
-                       changed t))))))))
+                 (when (unconditional-control-transfer-p opcode)
+                   (setf (instruction-opcode instruction) 176
+                         (instruction-args instruction) nil
+                         changed t)))))))))
     (values code changed)))
 
 (defun code-bytes (code)
