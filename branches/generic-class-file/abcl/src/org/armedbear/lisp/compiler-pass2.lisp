@@ -918,51 +918,6 @@ representation, based on the derived type of the LispObject."
   (setf *code* (nreverse (coerce *code* 'vector))))
 
 
-
-(defun optimize-2 ()
-  (let* ((code (coerce *code* 'vector))
-         (length (length code))
-         (changed nil))
-    (declare (type (unsigned-byte 16) length))
-    ;; Since we're looking at this instruction and the next one, we can stop
-    ;; one before the end.
-    (dotimes (i (1- length))
-      (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (when (and instruction (= (instruction-opcode instruction) 167)) ; GOTO
-          (do* ((j (1+ i) (1+ j))
-                (next-instruction (aref code j) (aref code j)))
-               ((>= j length))
-            (declare (type (unsigned-byte 16) j))
-            (when next-instruction
-              (cond ((= (instruction-opcode next-instruction) 167) ; GOTO
-                     (cond ((= j (1+ i))
-                            ;; Two GOTOs in a row: the second instruction is
-                            ;; unreachable.
-                            (setf (aref code j) nil)
-                            (setf changed t))
-                           ((eq (car (instruction-args next-instruction))
-                                (car (instruction-args instruction)))
-                            ;; We've reached another GOTO to the same destination.
-                            ;; We don't need the first GOTO; we can just fall
-                            ;; through to the second one.
-                            (setf (aref code i) nil)
-                            (setf changed t)))
-                     (return))
-                    ((= (instruction-opcode next-instruction) 202) ; LABEL
-                     (when (eq (car (instruction-args instruction))
-                               (car (instruction-args next-instruction)))
-                       ;; GOTO next instruction; we don't need this one.
-                       (setf (aref code i) nil)
-                       (setf changed t)
-                       (return)))
-                    (t
-                     ;; Not a GOTO or a label.
-                     (return))))))))
-    (when changed
-      (setf *code* (delete nil code))
-      t)))
-
 ;; CLEAR-VALUES CLEAR-VALUES => CLEAR-VALUES
 ;; GETSTATIC POP => nothing
 (defun optimize-3 ()
@@ -971,9 +926,11 @@ representation, based on the derived type of the LispObject."
     (dotimes (i (1- (length code)))
       (declare (type (unsigned-byte 16) i))
       (let* ((this-instruction (aref code i))
-             (this-opcode (and this-instruction (instruction-opcode this-instruction)))
+             (this-opcode (and this-instruction
+                               (instruction-opcode this-instruction)))
              (next-instruction (aref code (1+ i)))
-             (next-opcode (and next-instruction (instruction-opcode next-instruction))))
+             (next-opcode (and next-instruction
+                               (instruction-opcode next-instruction))))
         (case this-opcode
           (205 ; CLEAR-VALUES
            (when (eql next-opcode 205) ; CLEAR-VALUES
@@ -983,6 +940,13 @@ representation, based on the derived type of the LispObject."
            (when (eql next-opcode 87) ; POP
              (setf (aref code i) nil)
              (setf (aref code (1+ i)) nil)
+             (setf changed t)))
+          (167 ; GOTO
+           (when (and (eql next-opcode 202)  ; LABEL
+                      (eq (car (instruction-args this-instruction))
+                          (car (instruction-args next-instruction))))
+             (setf (aref code i) nil)
+             ;;(setf (aref code (1+ i)) nil)
              (setf changed t))))))
     (when changed
       (setf *code* (delete nil code))
@@ -1007,7 +971,6 @@ representation, based on the derived type of the LispObject."
                                  (mapcar #'handler-from *handlers*)
                                  (mapcar #'handler-to *handlers*)
                                  (mapcar #'handler-code *handlers*))))
-        (setf changed-p (or (optimize-2) changed-p))
         (if changed-p
             (setf *code* (optimize-jumps *code*))
             (multiple-value-setq
