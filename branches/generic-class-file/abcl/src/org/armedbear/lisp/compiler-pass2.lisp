@@ -918,36 +918,6 @@ representation, based on the derived type of the LispObject."
   (setf *code* (nreverse (coerce *code* 'vector))))
 
 
-;; Remove unused labels.
-(defun optimize-1 ()
-  (let ((code (coerce *code* 'vector))
-        (changed nil)
-        (marker (gensym)))
-    ;; Mark the labels that are actually branched to.
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (when (branch-p (instruction-opcode instruction))
-          (let ((label (car (instruction-args instruction))))
-            (set label marker)))))
-    ;; Add labels used for exception handlers.
-    (dolist (handler *handlers*)
-      (set (handler-from handler) marker)
-      (set (handler-to handler) marker)
-      (set (handler-code handler) marker))
-    ;; Remove labels that are not used as branch targets.
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (when (= (instruction-opcode instruction) 202) ; LABEL
-          (let ((label (car (instruction-args instruction))))
-            (declare (type symbol label))
-            (unless (eq (symbol-value label) marker)
-              (setf (aref code i) nil)
-              (setf changed t))))))
-    (when changed
-      (setf *code* (delete nil code))
-      t)))
 
 (defun optimize-2 ()
   (let* ((code (coerce *code* 'vector))
@@ -1072,7 +1042,13 @@ representation, based on the derived type of the LispObject."
       (print-code *code*))
     (loop
       (let ((changed-p nil))
-        (setf changed-p (or (optimize-1) changed-p))
+        (multiple-value-setq
+            (*code* changed-p)
+          (delete-unused-labels *code*
+                                (append
+                                 (mapcar #'handler-from *handlers*)
+                                 (mapcar #'handler-to *handlers*)
+                                 (mapcar #'handler-code *handlers*))))
         (setf changed-p (or (optimize-2) changed-p))
         (setf changed-p (or (optimize-2b) changed-p))
         (setf changed-p (or (optimize-3) changed-p))
@@ -1090,48 +1066,6 @@ representation, based on the derived type of the LispObject."
       (print-code *code*)))
   t)
 
-(defun code-bytes (code)
-  (let ((length 0)
-        labels ;; alist
-        )
-    (declare (type (unsigned-byte 16) length))
-    ;; Pass 1: calculate label offsets and overall length.
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let* ((instruction (aref code i))
-             (opcode (instruction-opcode instruction)))
-        (if (= opcode 202) ; LABEL
-            (let ((label (car (instruction-args instruction))))
-              (set label length)
-              (setf labels
-                    (acons label length labels)))
-            (incf length (opcode-size opcode)))))
-    ;; Pass 2: replace labels with calculated offsets.
-    (let ((index 0))
-      (declare (type (unsigned-byte 16) index))
-      (dotimes (i (length code))
-        (declare (type (unsigned-byte 16) i))
-        (let ((instruction (aref code i)))
-          (when (branch-p (instruction-opcode instruction))
-            (let* ((label (car (instruction-args instruction)))
-                   (offset (- (the (unsigned-byte 16) (symbol-value (the symbol label))) index)))
-              (setf (instruction-args instruction) (s2 offset))))
-          (unless (= (instruction-opcode instruction) 202) ; LABEL
-            (incf index (opcode-size (instruction-opcode instruction)))))))
-    ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
-    (let ((bytes (make-array length))
-          (index 0))
-      (declare (type (unsigned-byte 16) index))
-      (dotimes (i (length code))
-        (declare (type (unsigned-byte 16) i))
-        (let ((instruction (aref code i)))
-          (unless (= (instruction-opcode instruction) 202) ; LABEL
-            (setf (svref bytes index) (instruction-opcode instruction))
-            (incf index)
-            (dolist (byte (instruction-args instruction))
-              (setf (svref bytes index) byte)
-              (incf index)))))
-      (values bytes labels))))
 
 (declaim (inline write-u1))
 (defun write-u1 (n stream)
