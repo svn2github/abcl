@@ -818,6 +818,48 @@
     (values (if changed (delete nil code) code)
             changed)))
 
+
+(declaim (ftype (function (t) hash-table) hash-labels))
+(defun label-target-instructions (code)
+  (let ((ht (make-hash-table :test 'eq))
+        (code (coerce code 'vector))
+        (pending-labels '()))
+    (dotimes (i (length code))
+      (declare (type (unsigned-byte 16) i))
+      (let ((instruction (aref code i)))
+        (cond ((label-p instruction)
+               (push (instruction-label instruction) pending-labels))
+              (t
+               ;; Not a label.
+               (when pending-labels
+                 (dolist (label pending-labels)
+                   (setf (gethash label ht) instruction))
+                 (setf pending-labels nil))))))
+    ht))
+
+(defun optimize-jumps (code)
+  (let* ((code (coerce code 'vector))
+         (ht (label-target-instructions code))
+         (changed nil))
+    (dotimes (i (length code))
+      (declare (type (unsigned-byte 16) i))
+      (let ((instruction (aref code i)))
+        (when (and instruction (= (instruction-opcode instruction) 167)) ; GOTO
+          ;; we're missing conditional jumps here?
+          (let* ((target-label (car (instruction-args instruction)))
+                 (next-instruction (gethash1 target-label ht)))
+            (when next-instruction
+              (case (instruction-opcode next-instruction)
+                ((167 200)                  ;; GOTO
+                 (setf (instruction-args instruction)
+                       (instruction-args next-instruction)
+                       changed t))
+                (176 ; ARETURN
+                 (setf (instruction-opcode instruction) 176
+                       (instruction-args instruction) nil
+                       changed t))))))))
+    (values code changed)))
+
 (defun code-bytes (code)
   (let ((length 0)
         labels ;; alist

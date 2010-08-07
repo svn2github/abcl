@@ -963,48 +963,6 @@ representation, based on the derived type of the LispObject."
       (setf *code* (delete nil code))
       t)))
 
-(declaim (ftype (function (t) hash-table) hash-labels))
-(defun hash-labels (code)
-  (let ((ht (make-hash-table :test 'eq))
-        (code (coerce code 'vector))
-        (pending-labels '()))
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (cond ((label-p instruction)
-               (push (instruction-label instruction) pending-labels))
-              (t
-               ;; Not a label.
-               (when pending-labels
-                 (dolist (label pending-labels)
-                   (setf (gethash label ht) instruction))
-                 (setf pending-labels nil))))))
-    ht))
-
-(defun optimize-2b ()
-  (let* ((code (coerce *code* 'vector))
-         (ht (hash-labels code))
-         (changed nil))
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let ((instruction (aref code i)))
-        (when (and instruction (= (instruction-opcode instruction) 167)) ; GOTO
-          (let* ((target-label (car (instruction-args instruction)))
-                 (next-instruction (gethash1 target-label ht)))
-            (when next-instruction
-              (case (instruction-opcode next-instruction)
-                (167 ; GOTO
-                 (setf (instruction-args instruction)
-                       (instruction-args next-instruction)
-                       changed t))
-                (176 ; ARETURN
-                 (setf (instruction-opcode instruction) 176
-                       (instruction-args instruction) nil
-                       changed t))))))))
-    (when changed
-      (setf *code* code)
-      t)))
-
 ;; CLEAR-VALUES CLEAR-VALUES => CLEAR-VALUES
 ;; GETSTATIC POP => nothing
 (defun optimize-3 ()
@@ -1045,12 +1003,16 @@ representation, based on the derived type of the LispObject."
         (multiple-value-setq
             (*code* changed-p)
           (delete-unused-labels *code*
-                                (append
+                                (nconc
                                  (mapcar #'handler-from *handlers*)
                                  (mapcar #'handler-to *handlers*)
                                  (mapcar #'handler-code *handlers*))))
         (setf changed-p (or (optimize-2) changed-p))
-        (setf changed-p (or (optimize-2b) changed-p))
+        (if changed-p
+            (setf *code* (optimize-jumps *code*))
+            (multiple-value-setq
+                (*code* changed-p)
+              (optimize-jumps *code*)))
         (setf changed-p (or (optimize-3) changed-p))
         (if changed-p
             (setf *code* (delete-unreachable-code *code*))
