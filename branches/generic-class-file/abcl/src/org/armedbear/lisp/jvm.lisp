@@ -82,6 +82,7 @@
 (defvar *pool-entries* nil)
 (defvar *fields* ())
 (defvar *static-code* ())
+(defvar *class-file* nil)
 
 (defvar *externalized-objects* nil)
 (defvar *declared-functions* nil)

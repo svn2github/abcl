@@ -1275,14 +1275,19 @@ representation, based on the derived type of the LispObject."
 (defconst +field-access-default+   #x00) ;; package accessible, used for LABELS
 
 (defknown declare-field (t t t) t)
-(defun declare-field (name descriptor access-flags)
-  (let ((field (make-field name (internal-field-ref descriptor))))
-    ;; final static <access-flags>
-    (setf (field-access-flags field)
-          (logior +field-flag-final+ +field-flag-static+ access-flags))
-    (setf (field-name-index field) (pool-name (field-name field)))
-    (setf (field-descriptor-index field) (pool-name (field-descriptor field)))
-    (push field *fields*)))
+(defun declare-field (name descriptor)
+  (if *current-code-attribute*
+      (let ((field (!make-field name descriptor '(:final :static :private))))
+        (class-add-field *class-file* field))
+      (let ((field (make-field name (internal-field-ref descriptor))))
+        ;; final static <access-flags>
+        (setf (field-access-flags field)
+              (logior +field-flag-final+ +field-flag-static+
+                      +field-access-private+))
+        (setf (field-name-index field) (pool-name (field-name field)))
+        (setf (field-descriptor-index field)
+              (pool-name (field-descriptor field)))
+        (push field *fields*))))
 
 (defknown sanitize (symbol) string)
 (defun sanitize (symbol)
@@ -1467,7 +1472,7 @@ Code to restore the serialized object is inserted into `*code' or
 
     ;; We need to set up the serialized value
     (let ((field-name (symbol-name (gensym prefix))))
-      (declare-field field-name field-type +field-access-private+)
+      (declare-field field-name field-type)
       (push (cons object field-name) *externalized-objects*)
 
       (cond
@@ -1504,7 +1509,7 @@ Code to restore the serialized object is inserted into `*code' or
    (let ((s (sanitize symbol)))
      (when s
        (setf f (concatenate 'string f "_" s))))
-   (declare-field f +lisp-object+ +field-access-private+)
+   (declare-field f +lisp-object+)
    (multiple-value-bind
          (name class)
        (lookup-known-symbol symbol)
@@ -1557,7 +1562,7 @@ Code to restore the serialized object is inserted into `*code' or
                        (local-function-class-file local-function)))
           (*code* *static-code*))
      ;; fixme *declare-inline*
-     (declare-field g +lisp-object+ +field-access-private+)
+     (declare-field g +lisp-object+)
      (emit-new class-name)
      (emit 'dup)
      (emit-invokespecial-init class-name '())
@@ -1582,7 +1587,7 @@ Code to restore the serialized object is inserted into `*code' or
            (*code* (if *declare-inline* *code* *static-code*)))
       ;; strings may contain evaluated bits which may depend on
       ;; previous statements
-      (declare-field g +lisp-object+ +field-access-private+)
+      (declare-field g +lisp-object+)
       (emit 'ldc (pool-string s))
       (emit-invokestatic +lisp+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
@@ -1602,7 +1607,7 @@ Code to restore the serialized object is inserted into `*code' or
       ;; The readObjectFromString call may require evaluation of
       ;; lisp code in the string (think #.() syntax), of which the outcome
       ;; may depend on something which was declared inline
-      (declare-field g +lisp-object+ +field-access-private+)
+      (declare-field g +lisp-object+)
       (emit 'ldc (pool-string s))
       (emit-invokestatic +lisp+ "readObjectFromString"
                          (list +java-string+) +lisp-object+)
@@ -1626,7 +1631,7 @@ The field type of the object is specified by OBJ-REF."
     ;; fixme *declare-inline*?
     (remember g obj)
     (let* ((*code* *static-code*))
-      (declare-field g +lisp-object+ +field-access-private+)
+      (declare-field g +lisp-object+)
       (emit 'ldc (pool-string g))
       (emit-invokestatic +lisp+ "recall"
                          (list +java-string+) +lisp-object+)
