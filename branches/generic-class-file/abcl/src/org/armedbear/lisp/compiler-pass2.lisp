@@ -914,9 +914,6 @@ representation, based on the derived type of the LispObject."
   (check-number-of-args form n t))
 
 
-(defun finalize-code ()
-  (setf *code* (nreverse (coerce *code* 'vector))))
-
 
 
 
@@ -1186,8 +1183,11 @@ representation, based on the derived type of the LispObject."
            (aver nil)))
     (setf *code* (append *static-code* *code*))
     (emit 'return)
-    (finalize-code)
-    (setf *code* (resolve-instructions (expand-virtual-instructions *code*)))
+    (setf *code*
+          (finalize-code *code* (nconc (mapcar #'handler-from *handlers*)
+                                       (mapcar #'handler-to *handlers*)
+                                       (mapcar #'handler-code *handlers*)) nil))
+
     (setf (method-max-stack constructor)
           (analyze-stack *code* (mapcar #'handler-code *handlers*)))
     (setf (method-code constructor) (code-bytes *code*))
@@ -7485,10 +7485,11 @@ We need more thought here.
 
 
     ;;;  Move here
-    (finalize-code)
-    (optimize-code)
+    (setf *code* (finalize-code *code*
+                                (nconc (mapcar #'handler-from *handlers*)
+                                       (mapcar #'handler-to *handlers*)
+                                       (mapcar #'handler-code *handlers*)) t))
 
-    (setf *code* (resolve-instructions (expand-virtual-instructions *code*)))
     (setf (method-max-stack execute-method)
           (analyze-stack *code* (mapcar #'handler-code *handlers*)))
     (setf (method-code execute-method) (code-bytes *code*))

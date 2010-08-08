@@ -819,7 +819,7 @@
             changed)))
 
 
-(declaim (ftype (function (t) hash-table) hash-labels))
+(declaim (ftype (function (t) label-target-instructions) hash-labels))
 (defun label-target-instructions (code)
   (let ((ht (make-hash-table :test 'eq))
         (code (coerce code 'vector))
@@ -908,46 +908,42 @@
 
 (defvar *enable-optimization* t)
 
-(defknown optimize-code () t)
-(defun optimize-code ()
+(defknown optimize-code (t t) t)
+(defun optimize-code (code handler-labels)
   (unless *enable-optimization*
     (format t "optimizations are disabled~%"))
   (when *enable-optimization*
     (when *compiler-debug*
       (format t "----- before optimization -----~%")
-      (print-code *code*))
+      (print-code code))
     (loop
-      (let ((changed-p nil))
-        (multiple-value-setq
-            (*code* changed-p)
-          (delete-unused-labels *code*
-                                (nconc
-                                 (mapcar #'handler-from *handlers*)
-                                 (mapcar #'handler-to *handlers*)
-                                 (mapcar #'handler-code *handlers*))))
-        (if changed-p
-            (setf *code* (optimize-instruction-sequences *code*))
-            (multiple-value-setq
-                (*code* changed-p)
-              (optimize-instruction-sequences *code*)))
-        (if changed-p
-            (setf *code* (optimize-jumps *code*))
-            (multiple-value-setq
-                (*code* changed-p)
-              (optimize-jumps *code*)))
-        (if changed-p
-            (setf *code* (delete-unreachable-code *code*))
-            (multiple-value-setq
-                (*code* changed-p)
-              (delete-unreachable-code *code*)))
-        (unless changed-p
-          (return))))
-    (unless (vectorp *code*)
-      (setf *code* (coerce *code* 'vector)))
+       (let ((changed-p nil))
+         (multiple-value-setq
+             (code changed-p)
+           (delete-unused-labels code handler-labels))
+         (if changed-p
+             (setf code (optimize-instruction-sequences code))
+             (multiple-value-setq
+                 (code changed-p)
+               (optimize-instruction-sequences code)))
+         (if changed-p
+             (setf code (optimize-jumps code))
+             (multiple-value-setq
+                 (code changed-p)
+               (optimize-jumps code)))
+         (if changed-p
+             (setf code (delete-unreachable-code code))
+             (multiple-value-setq
+                 (code changed-p)
+               (delete-unreachable-code code)))
+         (unless changed-p
+           (return))))
+    (unless (vectorp code)
+      (setf code (coerce code 'vector)))
     (when *compiler-debug*
       (sys::%format t "----- after optimization -----~%")
-      (print-code *code*)))
-  t)
+      (print-code code)))
+  code)
 
 
 
@@ -997,6 +993,10 @@
               (incf index)))))
       (values bytes labels))))
 
-
+(defun finalize-code (code handler-labels optimize)
+  (setf code (coerce (nreverse code) 'vector))
+  (when optimize
+    (setf code (optimize-code code handler-labels)))
+  (resolve-instructions (expand-virtual-instructions code)))
 
 (provide '#:opcodes)
