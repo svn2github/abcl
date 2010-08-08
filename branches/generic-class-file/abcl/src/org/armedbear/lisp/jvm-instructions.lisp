@@ -733,7 +733,6 @@
   (let* ((code-length (length code)))
     (declare (type vector code))
     (dotimes (i code-length)
-      (declare (type (unsigned-byte 16) i))
       (let* ((instruction (aref code i))
              (opcode (instruction-opcode instruction)))
         (when (eql opcode 202) ; LABEL
@@ -762,7 +761,6 @@
     (let ((max-stack 0))
       (declare (type fixnum max-stack))
       (dotimes (i code-length)
-        (declare (type (unsigned-byte 16) i))
         (let* ((instruction (aref code i))
                (instruction-depth (instruction-depth instruction)))
           (when instruction-depth
@@ -771,12 +769,12 @@
 
 
 (defun delete-unused-labels (code handler-labels)
+  (declare (optimize speed))
   (let ((code (coerce code 'vector))
         (changed nil)
         (marker (gensym)))
     ;; Mark the labels that are actually branched to.
     (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
       (let ((instruction (aref code i)))
         (when (branch-p (instruction-opcode instruction))
           (let ((label (car (instruction-args instruction))))
@@ -786,7 +784,6 @@
       (set label marker))
     ;; Remove labels that are not used as branch targets.
     (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
       (let ((instruction (aref code i)))
         (when (= (instruction-opcode instruction) 202) ; LABEL
           (let ((label (car (instruction-args instruction))))
@@ -799,6 +796,7 @@
 
 (defun delete-unreachable-code (code)
   ;; Look for unreachable code after GOTO.
+  (declare (optimize speed))
   (let* ((code (coerce code 'vector))
          (changed nil)
          (after-goto/areturn nil))
@@ -825,7 +823,6 @@
         (code (coerce code 'vector))
         (pending-labels '()))
     (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
       (let ((instruction (aref code i)))
         (cond ((label-p instruction)
                (push (instruction-label instruction) pending-labels))
@@ -838,11 +835,11 @@
     ht))
 
 (defun optimize-jumps (code)
+  (declare (optimize speed))
   (let* ((code (coerce code 'vector))
          (ht (label-target-instructions code))
          (changed nil))
     (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
       (let* ((instruction (aref code i))
              (opcode (and instruction (instruction-opcode instruction))))
         (when (and opcode (branch-p opcode))
@@ -866,7 +863,6 @@
   (let* ((code (coerce code 'vector))
          (changed nil))
     (dotimes (i (1- (length code)))
-      (declare (type (unsigned-byte 16) i))
       (let* ((this-instruction (aref code i))
              (this-opcode (and this-instruction
                                (instruction-opcode this-instruction)))
