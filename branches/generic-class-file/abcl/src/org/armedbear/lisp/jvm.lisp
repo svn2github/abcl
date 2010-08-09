@@ -112,9 +112,6 @@
 (defvar *compiler-debug* nil)
 
 (defvar *pool* nil)
-(defvar *pool-count* 1)
-(defvar *pool-entries* nil)
-(defvar *fields* ())
 (defvar *static-code* ())
 (defvar *class-file* nil)
 
@@ -174,13 +171,11 @@ using `make-unique-class-name'."
     `(let* ((,var                   ,class-file)
             (*class-file*           ,var)
             (*pool*                 (abcl-class-file-constants ,var))
-            (*fields*               (abcl-class-file-fields ,var))
             (*static-code*          (abcl-class-file-static-code ,var))
             (*externalized-objects* (abcl-class-file-objects ,var))
             (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
-       (setf (abcl-class-file-fields ,var)       *fields*
-             (abcl-class-file-static-code ,var)  *static-code*
+       (setf (abcl-class-file-static-code ,var)  *static-code*
              (abcl-class-file-objects ,var)      *externalized-objects*
              (abcl-class-file-functions ,var)    *declared-functions*))))
 

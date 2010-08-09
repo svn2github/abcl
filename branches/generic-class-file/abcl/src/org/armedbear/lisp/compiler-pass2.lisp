@@ -866,42 +866,6 @@ representation, based on the derived type of the LispObject."
             (write-8-bits (aref octets i) stream)))
         (write-ascii string length stream))))
 
-(defknown write-constant-pool-entry (t t) t)
-(defun write-constant-pool-entry (entry stream)
-  (declare (optimize speed))
-  (declare (type stream stream))
-  (let ((tag (first entry)))
-    (declare (type (integer 1 12) tag))
-    (write-u1 tag stream)
-    (case tag
-      (1 ; UTF8
-       (write-utf8 (third entry) stream))
-      ((3 4) ; int
-       (write-u4 (second entry) stream))
-      ((5 6) ; long double
-       (write-u4 (second entry) stream)
-       (write-u4 (third entry) stream))
-      ((9 10 11 12) ; fieldref methodref InterfaceMethodref nameAndType
-       (write-u2 (second entry) stream)
-       (write-u2 (third entry) stream))
-      ((7 8) ; class string
-       (write-u2 (second entry) stream))
-      (t
-       (error "write-constant-pool-entry unhandled tag ~D~%" tag)))))
-
-(defun write-constant-pool (stream)
-  (declare (optimize speed))
-  (write-u2 *pool-count* stream)
-  (dolist (entry (reverse *pool*))
-    (write-constant-pool-entry entry stream)))
-
-(defstruct (field (:constructor make-field (name descriptor)))
-  access-flags
-  name
-  descriptor
-  name-index
-  descriptor-index)
-
 (defstruct (java-method (:include method)
                         (:conc-name method-)
                         (:constructor %make-method))
@@ -1130,24 +1094,11 @@ representation, based on the derived type of the LispObject."
   (write-u2 1 stream) ; attributes count
   (write-code-attr method stream))
 
-(defun write-field (field stream)
-  (declare (optimize speed))
-  (write-u2 (or (field-access-flags field) #x1) stream) ; access flags
-  (write-u2 (field-name-index field) stream)
-  (write-u2 (field-descriptor-index field) stream)
-  (write-u2 0 stream)) ; attributes count
-
-(defconst +field-flag-final+       #x10) ;; final field
-(defconst +field-flag-static+      #x08) ;; static field
-(defconst +field-access-protected+ #x04) ;; subclass accessible
-(defconst +field-access-private+   #x02) ;; class-only accessible
-(defconst +field-access-public+    #x01) ;; generally accessible
-(defconst +field-access-default+   #x00) ;; package accessible, used for LABELS
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor)
-  (let ((field (!make-field name descriptor
-                            :flags '(:final :static :private))))
+  (let ((field (make-field name descriptor
+                           :flags '(:final :static :private))))
     (class-add-field *class-file* field)))
 
 (defknown sanitize (symbol) string)
@@ -7074,7 +7025,7 @@ We need more thought here.
     (write-u2 (length (class-file-fields class-file)) stream)
     ;; fields
     (dolist (field (class-file-fields class-file))
-      (!write-field field stream))
+      (write-field field stream))
     ;; methods count
     (write-u2 (1+ (length (abcl-class-file-methods class-file))) stream)
     ;; methods

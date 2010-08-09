@@ -603,7 +603,7 @@ The class can't be modified after finalization."
   ;; fields
   (write-u2 (length (class-file-fields class)) stream)
   (dolist (field (class-file-fields class))
-    (!write-field field stream))
+    (write-field field stream))
 
   ;; methods
   (write-u2 (length (class-file-methods class)) stream)
@@ -713,7 +713,7 @@ flags and their binary values.")
   descriptor
   attributes)
 
-(defun !make-field (name type &key (flags '(:public)))
+(defun make-field (name type &key (flags '(:public)))
   "Creates a field for addition to a class file."
   (%make-field :access-flags flags
                :name name
@@ -741,7 +741,7 @@ Returns NIL if the attribute isn't found."
           (pool-add-utf8 pool (field-name field))))
   (finalize-attributes (field-attributes field) nil class))
 
-(defun !write-field (field stream)
+(defun write-field (field stream)
   "Writes classfile representation of `field' to `stream'."
   (write-u2 (field-access-flags field) stream)
   (write-u2 (field-name field) stream)
