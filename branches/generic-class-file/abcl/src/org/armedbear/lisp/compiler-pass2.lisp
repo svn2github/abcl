@@ -1146,19 +1146,9 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor)
-  (if nil ;; *current-code-attribute*
-      (let ((field (!make-field name descriptor
-                                :flags '(:final :static :private))))
-        (class-add-field *class-file* field))
-      (let ((field (make-field name (internal-field-ref descriptor))))
-        ;; final static <access-flags>
-        (setf (field-access-flags field)
-              (logior +field-flag-final+ +field-flag-static+
-                      +field-access-private+))
-        (setf (field-name-index field) (pool-name (field-name field)))
-        (setf (field-descriptor-index field)
-              (pool-name (field-descriptor field)))
-        (push field *fields*))))
+  (let ((field (!make-field name descriptor
+                            :flags '(:final :static :private))))
+    (class-add-field *class-file* field)))
 
 (defknown sanitize (symbol) string)
 (defun sanitize (symbol)
@@ -7067,7 +7057,9 @@ We need more thought here.
     (when (and (boundp '*source-line-number*)
                (fixnump *source-line-number*))
       (pool-name "LineNumberTable")) ; Must be in pool!
-    
+    (dolist (field (class-file-fields class-file))
+      (finalize-field field class-file))
+
     (write-u4 #xCAFEBABE stream)
     (write-u2 3 stream)
     (write-u2 45 stream)
@@ -7079,10 +7071,10 @@ We need more thought here.
     ;; interfaces count
     (write-u2 0 stream)
     ;; fields count
-    (write-u2 (length *fields*) stream)
+    (write-u2 (length (class-file-fields class-file)) stream)
     ;; fields
-    (dolist (field *fields*)
-      (write-field field stream))
+    (dolist (field (class-file-fields class-file))
+      (!write-field field stream))
     ;; methods count
     (write-u2 (1+ (length (abcl-class-file-methods class-file))) stream)
     ;; methods
