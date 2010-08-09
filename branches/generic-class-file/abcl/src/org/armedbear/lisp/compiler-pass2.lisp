@@ -79,36 +79,6 @@
 (defun pool-double (double)
   (pool-add-double *pool* double))
 
-(defknown u2 (fixnum) cons)
-(defun u2 (n)
-  (declare (optimize speed))
-  (declare (type (unsigned-byte 16) n))
-  (when (not (<= 0 n 65535))
-    (error "u2 argument ~A out of 65k range." n))
-  (list (logand (ash n -8) #xff)
-        (logand n #xff)))
-
-(defknown s1 (fixnum) fixnum)
-(defun s1 (n)
-  (declare (optimize speed))
-  (declare (type (signed-byte 8) n))
-  (when (not (<= -128 n 127))
-    (error "s2 argument ~A out of 16-bit signed range." n))
-  (if (< n 0)
-      (1+ (logxor (- n) #xFF))
-      n))
-
-
-(defknown s2 (fixnum) cons)
-(defun s2 (n)
-  (declare (optimize speed))
-  (declare (type (signed-byte 16) n))
-  (when (not (<= -32768 n 32767))
-    (error "s2 argument ~A out of 16-bit signed range." n))
-  (u2 (if (< n 0) (1+ (logxor (- n) #xFFFF))
-          n)))
-
-
 (defun add-exception-handler (start end handler type)
   (if (null *current-code-attribute*)
       (push (make-handler :from start
