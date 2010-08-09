@@ -579,6 +579,88 @@ The class can't be modified after finalization."
   ;; top-level attributes (no parent attributes to refer to)
   (finalize-attributes (class-file-attributes class) nil class))
 
+
+(declaim (inline write-u1 write-u2 write-u4 write-s4))
+(defun write-u1 (n stream)
+  (declare (optimize speed))
+  (declare (type (unsigned-byte 8) n))
+  (declare (type stream stream))
+  (write-8-bits n stream))
+
+(defknown write-u2 (t t) t)
+(defun write-u2 (n stream)
+  (declare (optimize speed))
+  (declare (type (unsigned-byte 16) n))
+  (declare (type stream stream))
+  (write-8-bits (logand (ash n -8) #xFF) stream)
+  (write-8-bits (logand n #xFF) stream))
+
+(defknown write-u4 (integer stream) t)
+(defun write-u4 (n stream)
+  (declare (optimize speed))
+  (declare (type (unsigned-byte 32) n))
+  (write-u2 (logand (ash n -16) #xFFFF) stream)
+  (write-u2 (logand n #xFFFF) stream))
+
+(declaim (ftype (function (t t) t) write-s4))
+(defun write-s4 (n stream)
+  (declare (optimize speed))
+  (cond ((minusp n)
+         (write-u4 (1+ (logxor (- n) #xFFFFFFFF)) stream))
+        (t
+         (write-u4 n stream))))
+
+(declaim (ftype (function (t t t) t) write-ascii))
+(defun write-ascii (string length stream)
+  (declare (type string string))
+  (declare (type (unsigned-byte 16) length))
+  (declare (type stream stream))
+  (write-u2 length stream)
+  (dotimes (i length)
+    (declare (type (unsigned-byte 16) i))
+    (write-8-bits (char-code (char string i)) stream)))
+
+
+(declaim (ftype (function (t t) t) write-utf8))
+(defun write-utf8 (string stream)
+  (declare (optimize speed))
+  (declare (type string string))
+  (declare (type stream stream))
+  (let ((length (length string))
+        (must-convert nil))
+    (declare (type fixnum length))
+    (dotimes (i length)
+      (declare (type fixnum i))
+      (unless (< 0 (char-code (char string i)) #x80)
+        (setf must-convert t)
+        (return)))
+    (if must-convert
+        (let ((octets (make-array (* length 2)
+                                  :element-type '(unsigned-byte 8)
+                                  :adjustable t
+                                  :fill-pointer 0)))
+          (declare (type (vector (unsigned-byte 8)) octets))
+          (dotimes (i length)
+            (declare (type fixnum i))
+            (let* ((c (char string i))
+                   (n (char-code c)))
+              (cond ((zerop n)
+                     (vector-push-extend #xC0 octets)
+                     (vector-push-extend #x80 octets))
+                    ((< 0 n #x80)
+                     (vector-push-extend n octets))
+                    (t
+                     (let ((char-octets (char-to-utf8 c)))
+                       (dotimes (j (length char-octets))
+                         (declare (type fixnum j))
+                         (vector-push-extend (svref char-octets j) octets)))))))
+          (write-u2 (length octets) stream)
+          (dotimes (i (length octets))
+            (declare (type fixnum i))
+            (write-8-bits (aref octets i) stream)))
+        (write-ascii string length stream))))
+
+
 (defun !write-class-file (class stream)
   "Serializes `class' to `stream', after it has been finalized."
 
