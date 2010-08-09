@@ -449,7 +449,8 @@ See `pool-add-method-ref' for remarks."
   "Returns the index of the constant-pool item denoting the float."
   (let ((entry (gethash (cons 4 float) (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-float (incf (pool-index pool)) float)
+      (setf entry (make-constant-float (incf (pool-index pool))
+                                       (sys::%float-bits float))
             (gethash (cons 4 float) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
     (constant-index entry)))
@@ -468,7 +469,8 @@ See `pool-add-method-ref' for remarks."
   "Returns the index of the constant-pool item denoting the double."
   (let ((entry (gethash (cons 6 double) (pool-entries pool))))
     (unless entry
-      (setf entry (make-constant-double (incf (pool-index pool)) double)
+      (setf entry (make-constant-double (incf (pool-index pool))
+                                        (sys::%float-bits double))
             (gethash (cons 6 double) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool))
       (incf (pool-index pool))) ;; double index increase; 'double' takes 2 slots
