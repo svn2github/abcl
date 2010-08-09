@@ -137,19 +137,15 @@ using `make-unique-class-name'."
 
 (defmacro with-class-file (class-file &body body)
   (let ((var (gensym)))
-    `(let* ((,var ,class-file)
-            (*pool*                 (abcl-class-file-pool ,var))
-            (*pool-count*           (abcl-class-file-pool-count ,var))
-            (*pool-entries*         (abcl-class-file-pool-entries ,var))
+    `(let* ((,var                   ,class-file)
+            (*class-file*           ,var)
+            (*pool*                 (abcl-class-file-constants ,var))
             (*fields*               (abcl-class-file-fields ,var))
             (*static-code*          (abcl-class-file-static-code ,var))
             (*externalized-objects* (abcl-class-file-objects ,var))
             (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
-       (setf (abcl-class-file-pool ,var)         *pool*
-             (abcl-class-file-pool-count ,var)   *pool-count*
-             (abcl-class-file-pool-entries ,var) *pool-entries*
-             (abcl-class-file-fields ,var)       *fields*
+       (setf (abcl-class-file-fields ,var)       *fields*
              (abcl-class-file-static-code ,var)  *static-code*
              (abcl-class-file-objects ,var)      *externalized-objects*
              (abcl-class-file-functions ,var)    *declared-functions*))))

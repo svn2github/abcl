@@ -45,130 +45,39 @@
   (require "JAVA"))
 
 
-(defun dump-pool ()
-  (let ((pool (reverse *pool*))
-        entry type)
-    (dotimes (index (1- *pool-count*))
-      (setq entry (car pool))
-      (setq type (case (car entry)
-                   (7 'class)
-                   (9 'field)
-                   (10 'method)
-                   (11 'interface)
-                   (8 'string)
-                   (3 'integer)
-                   (4 'float)
-                   (5 'long)
-                   (6 'double)
-                   (12 'name-and-type)
-                   (1 'utf8)))
-      (format t "~D: ~A ~S~%" (1+ index) type entry)
-      (setq pool (cdr pool))))
-  t)
+(declaim (inline pool-name pool-string pool-name-and-type
+                 pool-class pool-field pool-method pool-int
+                 pool-float pool-long pool-double))
 
-(defknown pool-get (t) (integer 1 65535))
-(defun pool-get (entry)
-  (declare (optimize speed (safety 0)))
-  (let* ((ht *pool-entries*)
-         (index (gethash1 entry ht)))
-    (declare (type hash-table ht))
-    (unless index
-      (setf index *pool-count*)
-      (push entry *pool*)
-      (setf (gethash entry ht) index)
-      (setf *pool-count* (1+ index)))
-    index))
-
-(declaim (ftype (function (string) fixnum) pool-name))
-(declaim (inline pool-name))
 (defun pool-name (name)
-  (declare (optimize speed))
-  (pool-get (list 1 (length name) name)))
+  (pool-add-utf8 *pool* name))
 
-(declaim (ftype (function (string string) fixnum) pool-name-and-type))
-(declaim (inline pool-name-and-type))
 (defun pool-name-and-type (name type)
-  (declare (optimize speed))
-  (pool-get (list 12
-                  (pool-name name)
-                  (pool-name type))))
+  (pool-add-name/type *pool* name type))
 
-;; Assumes CLASS-NAME is already in the correct form ("org/armedbear/lisp/Lisp"
-;; as opposed to "org.armedbear.lisp.Lisp").
-(declaim (ftype (function (string) fixnum) pool-class))
-(declaim (inline pool-class))
-(defun pool-class (class-name)
-  (declare (optimize speed))
-  (pool-get (list 7 (pool-name (class-name-internal class-name)))))
+(defun pool-class (name)
+  (pool-add-class *pool* name))
 
-;; (tag class-index name-and-type-index)
-(declaim (ftype (function (string string string) fixnum) pool-field))
-(declaim (inline pool-field))
-(defun pool-field (class-name field-name type-name)
-  (declare (optimize speed))
-  (pool-get (list 9
-                  (pool-class class-name)
-                  (pool-name-and-type field-name
-                                      (internal-field-ref type-name)))))
-
-;; (tag class-index name-and-type-index)
-(declaim (ftype (function (string string string) fixnum) pool-method))
-(declaim (inline pool-method))
-(defun pool-method (class-name method-name type-name)
-  (declare (optimize speed))
-  (pool-get (list 10
-                  (pool-class class-name)
-                  (pool-name-and-type method-name type-name))))
-
-(declaim (ftype (function (string) fixnum) pool-string))
 (defun pool-string (string)
-  (declare (optimize speed))
-  (pool-get (list 8 (pool-name string))))
+  (pool-add-string *pool* string))
 
-(defknown pool-int (fixnum) (integer 1 65535))
-(defun pool-int (n)
-  (declare (optimize speed))
-  (pool-get (list 3 n)))
+(defun pool-field (class-name field-name type-name)
+  (pool-add-field-ref *pool* class-name field-name type-name))
 
-(defknown pool-float (single-float) (integer 1 65535))
-(defun pool-float (n)
-  (declare (optimize speed))
-  (pool-get (list 4 (%float-bits n))))
+(defun pool-method (class-name method-name type-name)
+  (pool-add-method-ref *pool* class-name method-name type-name))
 
-(defun pool-long/double (entry)
-  (let* ((ht *pool-entries*)
-         (index (gethash1 entry ht)))
-    (declare (type hash-table ht))
-    (unless index
-      (setf index *pool-count*)
-      (push entry *pool*)
-      (setf (gethash entry ht) index)
-      ;; The Java Virtual Machine Specification, Section 4.4.5: "All 8-byte
-      ;; constants take up two entries in the constant_pool table of the class
-      ;; file. If a CONSTANT_Long_info or CONSTANT_Double_info structure is the
-      ;; item in the constant_pool table at index n, then the next usable item in
-      ;; the pool is located at index n+2. The constant_pool index n+1 must be
-      ;; valid but is considered unusable." So:
-      (setf *pool-count* (+ index 2)))
-    index))
+(defun pool-int (int)
+  (pool-add-int *pool* int))
 
-(defknown pool-long (integer) (integer 1 65535))
-(defun pool-long (n)
-  (declare (optimize speed))
-  (declare (type java-long n))
-  (let* ((entry (list 5
-                      (logand (ash n -32) #xffffffff)
-                      (logand n #xffffffff))))
-    (pool-long/double entry)))
+(defun pool-float (float)
+  (pool-add-float *pool* float))
 
-(defknown pool-double (double-float) (integer 1 65535))
-(defun pool-double (n)
-  (declare (optimize speed))
-  (let* ((n (%float-bits n))
-         (entry (list 6
-                      (logand (ash n -32) #xffffffff)
-                      (logand n #xffffffff))))
-    (pool-long/double entry)))
+(defun pool-long (long)
+  (pool-add-long *pool* long))
+
+(defun pool-double (double)
+  (pool-add-double *pool* double))
 
 (defknown u2 (fixnum) cons)
 (defun u2 (n)
@@ -332,12 +241,9 @@ the top-most value's representation being 'rep1'."
 
 (declaim (ftype (function * t) emit-invokestatic))
 (defun emit-invokestatic (class-name method-name arg-types return-type)
-  (let* ((descriptor (apply #'descriptor return-type arg-types))
-         (stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (if (null *current-code-attribute*)
-                    (pool-method class-name method-name descriptor)
-                    (pool-add-method-ref *pool* class-name
-                                         method-name (cons return-type arg-types))))
+  (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
+         (index (pool-add-method-ref *pool* class-name
+                                     method-name (cons return-type arg-types)))
          (instruction (apply #'%emit 'invokestatic (u2 index))))
     (setf (instruction-stack instruction) stack-effect)))
 
@@ -356,12 +262,9 @@ the top-most value's representation being 'rep1'."
 
 (defknown emit-invokevirtual (t t t t) t)
 (defun emit-invokevirtual (class-name method-name arg-types return-type)
-  (let* ((descriptor (apply #'descriptor return-type arg-types))
-         (stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (if (null *current-code-attribute*)
-                    (pool-method class-name method-name descriptor)
-                    (pool-add-method-ref *pool* class-name
-                                         method-name (cons return-type arg-types))))
+  (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
+         (index (pool-add-method-ref *pool* class-name
+                                     method-name (cons return-type arg-types)))
          (instruction (apply #'%emit 'invokevirtual (u2 index))))
     (declare (type (signed-byte 8) stack-effect))
     (let ((explain *explain*))
@@ -376,12 +279,9 @@ the top-most value's representation being 'rep1'."
 
 (defknown emit-invokespecial-init (string list) t)
 (defun emit-invokespecial-init (class-name arg-types)
-  (let* ((descriptor (apply #'descriptor :void arg-types))
-         (stack-effect (apply #'descriptor-stack-effect :void arg-types))
-         (index (if (null *current-code-attribute*)
-                    (pool-method class-name "<init>" descriptor)
-                    (pool-add-method-ref *pool* class-name
-                                         "<init>" (cons nil arg-types))))
+  (let* ((stack-effect (apply #'descriptor-stack-effect :void arg-types))
+         (index (pool-add-method-ref *pool* class-name
+                                     "<init>" (cons nil arg-types)))
          (instruction (apply #'%emit 'invokespecial (u2 index))))
     (declare (type (signed-byte 8) stack-effect))
     (setf (instruction-stack instruction) (1- stack-effect))))
@@ -1276,8 +1176,9 @@ representation, based on the derived type of the LispObject."
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor)
-  (if *current-code-attribute*
-      (let ((field (!make-field name descriptor '(:final :static :private))))
+  (if nil ;; *current-code-attribute*
+      (let ((field (!make-field name descriptor
+                                :flags '(:final :static :private))))
         (class-add-field *class-file* field))
       (let ((field (make-field name (internal-field-ref descriptor))))
         ;; final static <access-flags>
@@ -7200,7 +7101,7 @@ We need more thought here.
     (write-u4 #xCAFEBABE stream)
     (write-u2 3 stream)
     (write-u2 45 stream)
-    (write-constant-pool stream)
+    (write-constants *pool* stream)
     ;; access flags
     (write-u2 #x21 stream)
     (write-u2 this-index stream)
