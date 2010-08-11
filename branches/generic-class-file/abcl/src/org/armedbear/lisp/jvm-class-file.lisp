@@ -533,14 +533,14 @@ class file as UTF-8 encoded data."
 (defun class-methods-by-name (class name)
   "Returns all methods which have `name'."
   (remove name (class-file-methods class)
-          :test-not #'string= :key #'method-name))
+          :test-not #'string= :key #'!method-name))
 
 (defun class-method (class name return &rest args)
   "Return the method which is (uniquely) identified by its name AND descriptor."
   (let ((return-and-args (cons return args)))
     (find-if #'(lambda (c)
-                 (and (string= (method-name c) name)
-                      (equal (method-descriptor c) return-and-args)))
+                 (and (string= (!method-name c) name)
+                      (equal (!method-descriptor c) return-and-args)))
              (class-file-methods class))))
 
 (defun class-add-attribute (class attribute)
@@ -831,7 +831,8 @@ Returns NIL if the attribute isn't found."
   (write-attributes (field-attributes field) stream))
 
 
-(defstruct (method (:constructor %!make-method))
+(defstruct (method (:constructor %!make-method)
+                   (:conc-name !method-))
   "Holds information on the properties of methods in the class(-file)."
   access-flags
   name
@@ -862,7 +863,7 @@ be one of two keyword identifiers to identify special methods:
 (defun method-add-attribute (method attribute)
   "Add `attribute' to the list of attributes of `method',
 returning `attribute'."
-  (push attribute (method-attributes method))
+  (push attribute (!method-attributes method))
   attribute)
 
 (defun method-add-code (method)
@@ -870,8 +871,8 @@ returning `attribute'."
 returning the created attribute."
   (method-add-attribute
    method
-   (make-code-attribute (+ (length (cdr (method-descriptor method)))
-                           (if (member :static (method-access-flags method))
+   (make-code-attribute (+ (length (cdr (!method-descriptor method)))
+                           (if (member :static (!method-access-flags method))
                                0 1))))) ;; 1 == implicit 'this'
 
 (defun method-ensure-code (method)
@@ -884,29 +885,29 @@ returning the attribute."
 
 (defun method-attribute (method name)
   "Returns the first attribute of `method' with `name'."
-  (find name (method-attributes method)
+  (find name (!method-attributes method)
         :test #'string= :key #'attribute-name))
 
 
 (defun finalize-method (method class)
   "Prepares `method' for serialization."
   (let ((pool (class-file-constants class)))
-    (setf (method-access-flags method)
-          (map-flags (method-access-flags method))
-          (method-descriptor method)
-          (pool-add-utf8 pool (apply #'descriptor (method-descriptor method)))
-          (method-name method)
-          (pool-add-utf8 pool (map-method-name (method-name method)))))
-  (finalize-attributes (method-attributes method) nil class))
+    (setf (!method-access-flags method)
+          (map-flags (!method-access-flags method))
+          (!method-descriptor method)
+          (pool-add-utf8 pool (apply #'descriptor (!method-descriptor method)))
+          (!method-name method)
+          (pool-add-utf8 pool (map-method-name (!method-name method)))))
+  (finalize-attributes (!method-attributes method) nil class))
 
 
 (defun !write-method (method stream)
   "Write class file representation of `method' to `stream'."
-  (write-u2 (method-access-flags method) stream)
-  (write-u2 (method-name method) stream)
-  (sys::%format t "method-name: ~a~%" (method-name method))
-  (write-u2 (method-descriptor method) stream)
-  (write-attributes (method-attributes method) stream))
+  (write-u2 (!method-access-flags method) stream)
+  (write-u2 (!method-name method) stream)
+  ;;(sys::%format t "method-name: ~a~%" (!method-name method))
+  (write-u2 (!method-descriptor method) stream)
+  (write-attributes (!method-attributes method) stream))
 
 (defstruct attribute
   "Parent attribute structure to be included into other attributes, mainly
@@ -983,8 +984,15 @@ has been finalized."
 (defun !finalize-code (code parent class)
   "Prepares the `code' attribute for serialization, within method `parent'."
   (declare (ignore parent))
-  (let ((c (resolve-instructions (coerce (reverse (code-code code)) 'vector))))
-    (setf (code-max-stack code) (analyze-stack c))
+  (let* ((handlers (code-exception-handlers code))
+         (c (finalize-code
+                     (code-code code)
+                     (nconc (mapcar #'exception-start-pc handlers)
+                            (mapcar #'exception-end-pc handlers)
+                            (mapcar #'exception-handler-pc handlers))
+                     t)))
+    (setf (code-max-stack code)
+          (analyze-stack c (mapcar #'exception-handler-pc handlers)))
     (multiple-value-bind
           (c labels)
         (code-bytes c)
@@ -1008,23 +1016,23 @@ has been finalized."
 
 (defun !write-code (code stream)
   "Writes the attribute `code' to `stream'."
-  (sys::%format t "max-stack: ~a~%" (code-max-stack code))
+  ;;(sys::%format t "max-stack: ~a~%" (code-max-stack code))
   (write-u2 (code-max-stack code) stream)
-  (sys::%format t "max-locals: ~a~%" (code-max-locals code))
+  ;;(sys::%format t "max-locals: ~a~%" (code-max-locals code))
   (write-u2 (code-max-locals code) stream)
   (let ((code-array (code-code code)))
-    (sys::%format t "length: ~a~%" (length code-array))
+    ;;(sys::%format t "length: ~a~%" (length code-array))
     (write-u4 (length code-array) stream)
     (dotimes (i (length code-array))
       (write-u1 (svref code-array i) stream)))
 
   (write-u2 (length (code-exception-handlers code)) stream)
   (dolist (exception (reverse (code-exception-handlers code)))
-    (sys::%format t "start-pc: ~a~%" (exception-start-pc exception))
+    ;;(sys::%format t "start-pc: ~a~%" (exception-start-pc exception))
     (write-u2 (exception-start-pc exception) stream)
-    (sys::%format t "end-pc: ~a~%" (exception-end-pc exception))
+    ;;(sys::%format t "end-pc: ~a~%" (exception-end-pc exception))
     (write-u2 (exception-end-pc exception) stream)
-    (sys::%format t "handler-pc: ~a~%" (exception-handler-pc exception))
+    ;;(sys::%format t "handler-pc: ~a~%" (exception-handler-pc exception))
     (write-u2 (exception-handler-pc exception) stream)
     (write-u2 (exception-catch-type exception) stream))
 
