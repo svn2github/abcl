@@ -831,8 +831,9 @@ representation, based on the derived type of the LispObject."
 (defun make-constructor (super lambda-name args)
   (let* ((*compiler-debug* nil)
          ;; We don't normally need to see debugging output for constructors.
-         (constructor (make-method :name "<init>"
-                                   :descriptor "()V"))
+         (method (!make-method :constructor :void nil
+                               :flags '(:public)))
+         (code (method-add-code method))
          req-params-register
          opt-params-register
          key-params-register
@@ -840,8 +841,8 @@ representation, based on the derived type of the LispObject."
          keys-p
          more-keys-p
          (*code* ())
-         (*handlers* nil))
-    (setf (method-max-locals constructor) 1)
+         (*current-code-attribute* code))
+    (setf (code-max-locals code) 3)
     (unless (eq super +lisp-primitive+)
       (multiple-value-bind
             (req opt key key-p rest
@@ -856,8 +857,8 @@ representation, based on the derived type of the LispObject."
                  `(progn
                     (emit-push-constant-int (length ,params))
                     (emit-anewarray +lisp-closure-parameter+)
-                    (astore (setf ,register (method-max-locals constructor)))
-                    (incf (method-max-locals constructor))
+                    (astore (setf ,register (code-max-locals code)))
+                    (incf (code-max-locals code))
                     (do* ((,count-sym 0 (1+ ,count-sym))
                           (,params ,params (cdr ,params))
                           (,param (car ,params) (car ,params)))
@@ -937,16 +938,8 @@ representation, based on the derived type of the LispObject."
            (aver nil)))
     (setf *code* (append *static-code* *code*))
     (emit 'return)
-    (setf *code*
-          (finalize-code *code* (nconc (mapcar #'handler-from *handlers*)
-                                       (mapcar #'handler-to *handlers*)
-                                       (mapcar #'handler-code *handlers*)) nil))
-
-    (setf (method-max-stack constructor)
-          (analyze-stack *code* (mapcar #'handler-code *handlers*)))
-    (setf (method-code constructor) (code-bytes *code*))
-    (setf (method-handlers constructor) (nreverse *handlers*))
-    constructor))
+    (setf (code-code code) *code*)
+    method))
 
 (defun write-exception-table (method stream)
   (let ((handlers (method-handlers method)))
@@ -6930,6 +6923,7 @@ We need more thought here.
       (pool-name "LineNumberTable")) ; Must be in pool!
     (dolist (field (class-file-fields class-file))
       (finalize-field field class-file))
+    (finalize-method constructor class-file)
 
     (write-u4 #xCAFEBABE stream)
     (write-u2 3 stream)
@@ -6951,7 +6945,7 @@ We need more thought here.
     ;; methods
     (dolist (method (abcl-class-file-methods class-file))
       (write-method method stream))
-    (write-method constructor stream)
+    (!write-method constructor stream)
     ;; attributes count
     (cond (*file-compilation*
 	   ;; attributes count
