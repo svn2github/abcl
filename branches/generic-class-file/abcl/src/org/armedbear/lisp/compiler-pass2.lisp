@@ -842,7 +842,7 @@ representation, based on the derived type of the LispObject."
          more-keys-p
          (*code* ())
          (*current-code-attribute* code))
-    (setf (code-max-locals code) 3)
+    (setf (code-max-locals code) 1)
     (unless (eq super +lisp-primitive+)
       (multiple-value-bind
             (req opt key key-p rest
