@@ -6869,34 +6869,20 @@ We need more thought here.
     (dformat t "analyze-args args = ~S~%" args)
     (aver (not (memq '&AUX args)))
 
-    (when *child-p*
-      (when (or (memq '&KEY args)
-                (memq '&OPTIONAL args)
-                (memq '&REST args))
-        (setf *using-arg-array* t)
-        (setf *hairy-arglist-p* t)
-        (return-from analyze-args
-          (descriptor +lisp-object+ +lisp-object-array+)))
-      (return-from analyze-args
-        (cond ((<= arg-count call-registers-limit)
-               (apply #'descriptor +lisp-object+
-                      (lisp-object-arg-types arg-count)))
-              (t (setf *using-arg-array* t)
-                 (setf (compiland-arity compiland) arg-count)
-                 (descriptor +lisp-object+ +lisp-object-array+)))))
     (when (or (memq '&KEY args)
               (memq '&OPTIONAL args)
               (memq '&REST args))
-      (setf *using-arg-array* t)
-      (setf *hairy-arglist-p* t)
-      (return-from analyze-args (descriptor +lisp-object+ +lisp-object-array+)))
+      (setf *using-arg-array* t
+            *hairy-arglist-p* t)
+      (return-from analyze-args
+          (descriptor +lisp-object+ +lisp-object-array+)))
+
     (cond ((<= arg-count call-registers-limit)
            (apply #'descriptor +lisp-object+
-                      (lisp-object-arg-types (length args))))
-          (t
-           (setf *using-arg-array* t)
-           (setf (compiland-arity compiland) arg-count)
-           (descriptor +lisp-object+ +lisp-object-array+)))))
+                  (lisp-object-arg-types arg-count)))
+          (t (setf *using-arg-array* t)
+             (setf (compiland-arity compiland) arg-count)
+             (descriptor +lisp-object+ +lisp-object-array+)))))
 
 (defmacro with-open-class-file ((var class-file) &body body)
   `(with-open-file (,var (abcl-class-file-pathname ,class-file)
