@@ -123,9 +123,6 @@
   pathname ; pathname of output file
   lambda-name
   lambda-list ; as advertised
-  pool
-  (pool-count 1)
-  (pool-entries (make-hash-table :test #'equal))
   static-code
   objects ;; an alist of externalized objects and their field names
   (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions
