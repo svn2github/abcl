@@ -1208,14 +1208,15 @@ within the code section to the line numbers in the source file."
   )
 
 (defstruct line-number
-  start-pc  ;; a label, before finalization
+  start-pc  ;; a label, before finalization, or 0 for "start of function"
   line)
 
 (defun finalize-line-numbers (line-numbers code class)
   (declare (ignorable code class))
   (dolist (line-number (line-numbers-table line-numbers))
-    (setf (line-number-start-pc line-number)
-          (code-label-offset code (line-number-start-pc line-number)))))
+    (unless (zerop (line-number-start-pc line-number))
+      (setf (line-number-start-pc line-number)
+            (code-label-offset code (line-number-start-pc line-number))))))
 
 (defun write-line-numbers (line-numbers stream)
   (write-u2 (length (line-numbers-table line-numbers)) stream)
@@ -1223,7 +1224,9 @@ within the code section to the line numbers in the source file."
     (write-u2 (line-number-start-pc line-number) stream)
     (write-u2 (line-number-line line-number) stream)))
 
-
+(defun line-numbers-add-line (line-numbers start-pc line)
+  (push (make-line-number :start-pc start-pc :line line)
+        (line-numbers-table line-numbers)))
 
 (defstruct (local-variables-attribute
              (:conc-name local-var-)

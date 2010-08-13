@@ -161,6 +161,11 @@ using `make-unique-class-name'."
                                             :class class-name
                                             :lambda-name lambda-name
                                             :lambda-list lambda-list)))
+    (when *file-compilation*
+      (let ((source-attribute
+             (make-source-file-attribute
+              :filename (file-namestring *compile-file-truename*))))
+        (class-add-attribute class-file source-attribute)))
     class-file))
 
 (defmacro with-class-file (class-file &body body)

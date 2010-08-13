@@ -6939,6 +6939,10 @@ We need more thought here.
          (label-START (gensym)))
 
     (class-add-method class-file method)
+    (when (fixnump *source-line-number*)
+      (let ((table (make-line-numbers-attribute)))
+        (method-add-attribute method table)
+        (line-numbers-add-line table 0 *source-line-number*)))
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
