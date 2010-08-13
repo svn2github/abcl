@@ -797,7 +797,7 @@ representation, based on the derived type of the LispObject."
   (let* ((*compiler-debug* nil)
          ;; We don't normally need to see debugging output for constructors.
          (method (make-method :constructor :void nil
-                               :flags '(:public)))
+                              :flags '(:public)))
          (code (method-add-code method))
          req-params-register
          opt-params-register
@@ -907,25 +907,15 @@ representation, based on the derived type of the LispObject."
     method))
 
 
-(defun write-source-file-attr (source-file stream)
-  (let* ((name-index (pool-name "SourceFile"))
-         (source-file-index (pool-name source-file)))
-    (write-u2 name-index stream)
-    ;; "The value of the attribute_length item of a SourceFile_attribute
-    ;; structure must be 2."
-    (write-u4 2 stream)
-    (write-u2 source-file-index stream)))
-
 (defvar *source-line-number* nil)
 
-(defun write-line-number-table (stream)
-  (let* ((name-index (pool-name "LineNumberTable")))
-    (write-u2 name-index stream)
-    (write-u4 6 stream) ; "the length of the attribute, excluding the initial six bytes"
-    (write-u2 1 stream) ; number of entries
-    (write-u2 0 stream) ; start_pc
-    (write-u2 *source-line-number* stream)))
 
+(defun write-class-file (class stream)
+  (class-add-method class (make-constructor (class-file-superclass class)
+                                            (abcl-class-file-lambda-name class)
+                                            (abcl-class-file-lambda-list class)))
+  (finalize-class-file class)
+  (!write-class-file class stream))
 
 
 (defknown declare-field (t t t) t)
@@ -1203,7 +1193,7 @@ Code to restore the serialized object is inserted into `*code' or
   (declare-with-hashtable
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
-   (let* ((class-name (abcl-class-file-class
+   (let* ((class-name (abcl-class-file-class-name
                        (local-function-class-file local-function)))
           (*code* *static-code*))
      ;; fixme *declare-inline*
@@ -3799,6 +3789,7 @@ given a specific common representation.")
     (let ((*current-compiland* compiland))
       (with-saved-compiler-policy
 	  (p2-compiland compiland)
+;;        (finalize-class-file (compiland-class-file compiland))
 	(write-class-file (compiland-class-file compiland) stream)))))
 
 (defun set-compiland-and-write-class (class-file compiland stream)
@@ -3821,7 +3812,7 @@ given a specific common representation.")
     (cond (*file-compilation*
            (let* ((pathname (funcall *pathnames-generator*))
                   (class-file (make-abcl-class-file :pathname pathname
-                                               :lambda-list lambda-list)))
+                                                    :lambda-list lambda-list)))
              (with-open-class-file (f class-file)
                (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)))
@@ -6809,59 +6800,6 @@ We need more thought here.
 			 :if-exists :supersede)
      ,@body))
 
-(defun write-class-file (class-file stream)
-  (let* ((super (abcl-class-file-superclass class-file))
-         (this (abcl-class-file-class class-file))
-         (this-index (pool-class this))
-         (super-index (pool-class super))
-         (constructor (make-constructor super
-                                        (abcl-class-file-lambda-name class-file)
-                                        (abcl-class-file-lambda-list class-file))))
-    (pool-name "Code") ; Must be in pool!
-    (class-add-method class-file constructor)
-
-    (when *file-compilation*
-      (pool-name "SourceFile") ; Must be in pool!
-      (pool-name (file-namestring *compile-file-truename*)))
-    (when (and (boundp '*source-line-number*)
-               (fixnump *source-line-number*))
-      (pool-name "LineNumberTable")) ; Must be in pool!
-    (dolist (field (class-file-fields class-file))
-      (finalize-field field class-file))
-    (dolist (method (class-file-methods class-file))
-      (finalize-method method class-file))
-
-    (write-u4 #xCAFEBABE stream)
-    (write-u2 3 stream)
-    (write-u2 45 stream)
-    (write-constants *pool* stream)
-    ;; access flags
-    (write-u2 #x21 stream)
-    (write-u2 this-index stream)
-    (write-u2 super-index stream)
-    ;; interfaces count
-    (write-u2 0 stream)
-    ;; fields count
-    (write-u2 (length (class-file-fields class-file)) stream)
-    ;; fields
-    (dolist (field (class-file-fields class-file))
-      (write-field field stream))
-    ;; methods count
-    (write-u2 (length (abcl-class-file-methods class-file)) stream)
-    ;; methods
-    (dolist (method (abcl-class-file-methods class-file))
-      (write-method method stream))
-    ;; attributes count
-    (cond (*file-compilation*
-	   ;; attributes count
-	   (write-u2 1 stream)
-	   ;; attributes table
-	   (write-source-file-attr (file-namestring *compile-file-truename*)
-				   stream))
-	  (t
-	   ;; attributes count
-	   (write-u2 0 stream)))
-    stream))
 
 (defknown p2-compiland-process-type-declarations (list) t)
 (defun p2-compiland-process-type-declarations (body)
@@ -7130,6 +7068,7 @@ We need more thought here.
     (setf (code-max-locals code) *registers-allocated*)
     (setf (code-code code) *code*))
 
+
   t)
 
 (defun p2-with-inline-code (form target representation)
@@ -7172,6 +7111,7 @@ We need more thought here.
       ;; Pass 2.
       (with-class-file (compiland-class-file compiland)
         (p2-compiland compiland)
+;;        (finalize-class-file (compiland-class-file compiland))
         (write-class-file (compiland-class-file compiland) stream)))))
 
 (defvar *compiler-error-bailout*)

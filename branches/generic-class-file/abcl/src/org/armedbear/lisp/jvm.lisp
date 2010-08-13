@@ -121,6 +121,7 @@
 (defstruct (abcl-class-file (:include class-file)
                             (:constructor %make-abcl-class-file))
   pathname ; pathname of output file
+  class-name
   lambda-name
   lambda-list ; as advertised
   static-code
@@ -158,9 +159,11 @@ using `make-unique-class-name'."
                          (class-name-from-filespec  pathname)
                          (make-unique-class-name)))
          (class-file (%make-abcl-class-file :pathname pathname
-                                            :class class-name
+                                            :class class-name ; to be finalized
+                                            :class-name class-name
                                             :lambda-name lambda-name
-                                            :lambda-list lambda-list)))
+                                            :lambda-list lambda-list
+                                            :access-flags '(:public :final))))
     (when *file-compilation*
       (let ((source-attribute
              (make-source-file-attribute
