@@ -6862,7 +6862,7 @@ We need more thought here.
 
 
 
-;; Returns descriptor.
+;; Returns a list with the types of the arguments
 (defun analyze-args (compiland)
   (let* ((args (cadr (compiland-p1-result compiland)))
          (arg-count (length args)))
@@ -6874,15 +6874,13 @@ We need more thought here.
               (memq '&REST args))
       (setf *using-arg-array* t
             *hairy-arglist-p* t)
-      (return-from analyze-args
-          (descriptor +lisp-object+ +lisp-object-array+)))
+      (return-from analyze-args (list +lisp-object-array+)))
 
     (cond ((<= arg-count call-registers-limit)
-           (apply #'descriptor +lisp-object+
-                  (lisp-object-arg-types arg-count)))
+           (lisp-object-arg-types arg-count))
           (t (setf *using-arg-array* t)
              (setf (compiland-arity compiland) arg-count)
-             (descriptor +lisp-object+ +lisp-object-array+)))))
+             +lisp-object-array+))))
 
 (defmacro with-open-class-file ((var class-file) &body body)
   `(with-open-file (,var (abcl-class-file-pathname ,class-file)
@@ -7005,9 +7003,11 @@ We need more thought here.
 
          (*child-p* (not (null (compiland-parent compiland))))
 
-         (descriptor (analyze-args compiland))
+         (arg-types (analyze-args compiland))
          (execute-method (make-method :name "execute"
-                                      :descriptor descriptor))
+                                      :descriptor (apply #'descriptor
+                                                         +lisp-object+
+                                                         arg-types)))
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
          (*registers-allocated* 1)
