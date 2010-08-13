@@ -503,7 +503,7 @@ class file as UTF-8 encoded data."
     (constant-index entry)))
 
 (defstruct (class-file (:constructor
-                        !make-class-file (class superclass access-flags)))
+                        make-class-file (class superclass access-flags)))
   "Holds the components of a class file."
   (constants (make-pool))
   access-flags
@@ -533,14 +533,14 @@ class file as UTF-8 encoded data."
 (defun class-methods-by-name (class name)
   "Returns all methods which have `name'."
   (remove name (class-file-methods class)
-          :test-not #'string= :key #'!method-name))
+          :test-not #'string= :key #'method-name))
 
 (defun class-method (class name return &rest args)
   "Return the method which is (uniquely) identified by its name AND descriptor."
   (let ((return-and-args (cons return args)))
     (find-if #'(lambda (c)
-                 (and (string= (!method-name c) name)
-                      (equal (!method-descriptor c) return-and-args)))
+                 (and (string= (method-name c) name)
+                      (equal (method-descriptor c) return-and-args)))
              (class-file-methods class))))
 
 (defun class-add-attribute (class attribute)
@@ -673,9 +673,10 @@ The class can't be modified after finalization."
   (write-constants (class-file-constants class) stream)
   ;; flags
   (write-u2  (class-file-access-flags class) stream)
-  ;; class name
 
+  ;; class name
   (write-u2 (class-file-class class) stream)
+
   ;; superclass
   (write-u2 (class-file-superclass class) stream)
 
@@ -690,7 +691,7 @@ The class can't be modified after finalization."
   ;; methods
   (write-u2 (length (class-file-methods class)) stream)
   (dolist (method (class-file-methods class))
-    (!write-method method stream))
+    (write-method method stream))
 
   ;; attributes
   (write-attributes (class-file-attributes class) stream))
@@ -831,8 +832,8 @@ Returns NIL if the attribute isn't found."
   (write-attributes (field-attributes field) stream))
 
 
-(defstruct (method (:constructor %!make-method)
-                   (:conc-name !method-))
+(defstruct (method (:constructor %make-method)
+                   (:conc-name method-))
   "Holds information on the properties of methods in the class(-file)."
   access-flags
   name
@@ -854,16 +855,16 @@ be one of two keyword identifiers to identify special methods:
      "<init>")
     (t name)))
 
-(defun !make-method (name return args &key (flags '(:public)))
+(defun make-method (name return args &key (flags '(:public)))
   "Creates a method for addition to a class file."
-  (%!make-method :descriptor (cons return args)
+  (%make-method :descriptor (cons return args)
                 :access-flags flags
                 :name name))
 
 (defun method-add-attribute (method attribute)
   "Add `attribute' to the list of attributes of `method',
 returning `attribute'."
-  (push attribute (!method-attributes method))
+  (push attribute (method-attributes method))
   attribute)
 
 (defun method-add-code (method)
@@ -871,8 +872,8 @@ returning `attribute'."
 returning the created attribute."
   (method-add-attribute
    method
-   (make-code-attribute (+ (length (cdr (!method-descriptor method)))
-                           (if (member :static (!method-access-flags method))
+   (make-code-attribute (+ (length (cdr (method-descriptor method)))
+                           (if (member :static (method-access-flags method))
                                0 1))))) ;; 1 == implicit 'this'
 
 (defun method-ensure-code (method)
@@ -885,29 +886,29 @@ returning the attribute."
 
 (defun method-attribute (method name)
   "Returns the first attribute of `method' with `name'."
-  (find name (!method-attributes method)
+  (find name (method-attributes method)
         :test #'string= :key #'attribute-name))
 
 
 (defun finalize-method (method class)
   "Prepares `method' for serialization."
   (let ((pool (class-file-constants class)))
-    (setf (!method-access-flags method)
-          (map-flags (!method-access-flags method))
-          (!method-descriptor method)
-          (pool-add-utf8 pool (apply #'descriptor (!method-descriptor method)))
-          (!method-name method)
-          (pool-add-utf8 pool (map-method-name (!method-name method)))))
-  (finalize-attributes (!method-attributes method) nil class))
+    (setf (method-access-flags method)
+          (map-flags (method-access-flags method))
+          (method-descriptor method)
+          (pool-add-utf8 pool (apply #'descriptor (method-descriptor method)))
+          (method-name method)
+          (pool-add-utf8 pool (map-method-name (method-name method)))))
+  (finalize-attributes (method-attributes method) nil class))
 
 
-(defun !write-method (method stream)
+(defun write-method (method stream)
   "Write class file representation of `method' to `stream'."
-  (write-u2 (!method-access-flags method) stream)
-  (write-u2 (!method-name method) stream)
-  ;;(sys::%format t "method-name: ~a~%" (!method-name method))
-  (write-u2 (!method-descriptor method) stream)
-  (write-attributes (!method-attributes method) stream))
+  (write-u2 (method-access-flags method) stream)
+  (write-u2 (method-name method) stream)
+  ;;(sys::%format t "method-name: ~a~%" (method-name method))
+  (write-u2 (method-descriptor method) stream)
+  (write-attributes (method-attributes method) stream))
 
 (defstruct attribute
   "Parent attribute structure to be included into other attributes, mainly
@@ -950,8 +951,8 @@ finalizing and serializing attributes."
 (defstruct (code-attribute (:conc-name code-)
                            (:include attribute
                                      (name "Code")
-                                     (finalizer #'!finalize-code)
-                                     (writer #'!write-code))
+                                     (finalizer #'finalize-code-attribute)
+                                     (writer #'write-code-attribute))
                            (:constructor %make-code-attribute))
   "The attribute containing the actual JVM byte code;
 an attribute of a method."
@@ -981,7 +982,7 @@ has been finalized."
   (setf (code-labels code)
         (acons label offset (code-labels code))))
 
-(defun !finalize-code (code parent class)
+(defun finalize-code-attribute (code parent class)
   "Prepares the `code' attribute for serialization, within method `parent'."
   (declare (ignore parent))
   (let* ((handlers (code-exception-handlers code))
@@ -999,6 +1000,12 @@ has been finalized."
       (setf (code-code code) c
             (code-labels code) labels)))
 
+  (setf (code-exception-handlers code)
+        (remove-if #'(lambda (h)
+                       (eql (code-label-offset code (exception-start-pc h))
+                            (code-label-offset code (exception-end-pc h))))
+                   (code-exception-handlers code)))
+
   (dolist (exception (code-exception-handlers code))
     (setf (exception-start-pc exception)
           (code-label-offset code (exception-start-pc exception))
@@ -1014,7 +1021,7 @@ has been finalized."
 
   (finalize-attributes (code-attributes code) code class))
 
-(defun !write-code (code stream)
+(defun write-code-attribute (code stream)
   "Writes the attribute `code' to `stream'."
   ;;(sys::%format t "max-stack: ~a~%" (code-max-stack code))
   (write-u2 (code-max-stack code) stream)
@@ -1085,7 +1092,7 @@ After finalization, the fields contain offsets instead of labels."
   "An attribute of a field of primitive type.
 
 "
-  
+  ;;; ### TODO
   )
 
 
@@ -1129,12 +1136,10 @@ to which it has been attached has been superseded.")
 (defun save-code-specials (code)
   (setf (code-code code) *code*
         (code-max-locals code) *registers-allocated*
-;;        (code-exception-handlers code) *handlers*
         (code-current-local code) *register*))
 
 (defun restore-code-specials (code)
   (setf *code* (code-code code)
-;;        *handlers* (code-exception-handlers code)
         *registers-allocated* (code-max-locals code)
         *register* (code-current-local code)))
 

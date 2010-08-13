@@ -150,7 +150,7 @@
                                         (java:jstatic "randomUUID"
                                                       "java.util.UUID"))))))
 
-(defun make-class-file (&key pathname lambda-name lambda-list)
+(defun make-abcl-class-file (&key pathname lambda-name lambda-list)
   "Creates a `class-file' structure. If `pathname' is non-NIL, it's
 used to derive a class name. If it is NIL, a random one created
 using `make-unique-class-name'."

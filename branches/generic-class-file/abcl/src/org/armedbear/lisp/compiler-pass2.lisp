@@ -796,7 +796,7 @@ representation, based on the derived type of the LispObject."
 (defun make-constructor (super lambda-name args)
   (let* ((*compiler-debug* nil)
          ;; We don't normally need to see debugging output for constructors.
-         (method (!make-method :constructor :void nil
+         (method (make-method :constructor :void nil
                                :flags '(:public)))
          (code (method-add-code method))
          req-params-register
@@ -3808,7 +3808,7 @@ given a specific common representation.")
 
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
   `(let* ((,pathname (make-temp-file))
-	  (,class-file (make-class-file :pathname ,pathname
+	  (,class-file (make-abcl-class-file :pathname ,pathname
                                              :lambda-list ,lambda-list)))
      (unwind-protect
 	  (progn ,@body)
@@ -3820,13 +3820,13 @@ given a specific common representation.")
          (lambda-list (cadr (compiland-lambda-expression compiland))))
     (cond (*file-compilation*
            (let* ((pathname (funcall *pathnames-generator*))
-                  (class-file (make-class-file :pathname pathname
+                  (class-file (make-abcl-class-file :pathname pathname
                                                :lambda-list lambda-list)))
              (with-open-class-file (f class-file)
                (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)))
           (t
-           (let ((class-file (make-class-file :lambda-list lambda-list)))
+           (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
              (with-open-stream (stream (sys::%make-byte-array-output-stream))
                (set-compiland-and-write-class class-file compiland stream)
                (setf (local-function-class-file local-function) class-file)
@@ -3854,8 +3854,8 @@ given a specific common representation.")
          (lambda-list (cadr (compiland-lambda-expression compiland))))
     (cond (*file-compilation*
            (let* ((pathname (funcall *pathnames-generator*))
-                  (class-file (make-class-file :pathname pathname
-                                               :lambda-list lambda-list)))
+                  (class-file (make-abcl-class-file :pathname pathname
+                                                    :lambda-list lambda-list)))
              (with-open-class-file (f class-file)
                (set-compiland-and-write-class class-file compiland f))
              (setf (local-function-class-file local-function) class-file)
@@ -3863,7 +3863,7 @@ given a specific common representation.")
                (emit-make-compiled-closure-for-labels
                 local-function compiland g))))
           (t
-           (let ((class-file (make-class-file :lambda-list lambda-list)))
+           (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
              (with-open-stream (stream (sys::%make-byte-array-output-stream))
                (set-compiland-and-write-class class-file compiland stream)
                (setf (local-function-class-file local-function) class-file)
@@ -3916,8 +3916,8 @@ given a specific common representation.")
     (aver (null (compiland-class-file compiland)))
     (cond (*file-compilation*
            (setf (compiland-class-file compiland)
-                 (make-class-file :pathname (funcall *pathnames-generator*)
-                                  :lambda-list lambda-list))
+                 (make-abcl-class-file :pathname (funcall *pathnames-generator*)
+                                       :lambda-list lambda-list))
            (let ((class-file (compiland-class-file compiland)))
 	     (with-open-class-file (f class-file)
 	       (compile-and-write-to-stream class-file compiland f))
@@ -3927,7 +3927,7 @@ given a specific common representation.")
                    +lisp-object+)))
           (t
            (setf (compiland-class-file compiland)
-                 (make-class-file :lambda-list lambda-list))
+                 (make-abcl-class-file :lambda-list lambda-list))
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
              (compile-and-write-to-stream (compiland-class-file compiland)
                                           compiland stream)
@@ -6850,7 +6850,7 @@ We need more thought here.
     (write-u2 (length (abcl-class-file-methods class-file)) stream)
     ;; methods
     (dolist (method (abcl-class-file-methods class-file))
-      (!write-method method stream))
+      (write-method method stream))
     ;; attributes count
     (cond (*file-compilation*
 	   ;; attributes count
@@ -6925,7 +6925,7 @@ We need more thought here.
          (*child-p* (not (null (compiland-parent compiland))))
 
          (arg-types (analyze-args compiland))
-         (method (!make-method "execute" +lisp-object+ arg-types
+         (method (make-method "execute" +lisp-object+ arg-types
                                :flags '(:final :public)))
          (code (method-add-code method))
          (*current-code-attribute* code)
@@ -7111,7 +7111,9 @@ We need more thought here.
                                    +lisp-object-array+)))
         (astore (compiland-argument-register compiland)))
 
-      (maybe-initialize-thread-var)
+      (unless (and *hairy-arglist-p*
+                   (or (memq '&OPTIONAL args) (memq '&KEY args)))
+        (maybe-initialize-thread-var))
       (setf *code* (nconc code *code*)))
 
     (setf (abcl-class-file-superclass class-file)
@@ -7180,25 +7182,26 @@ a random Java class name is generated, if it is non-NIL, it's used
 to derive a Java class name from."
   (aver (eq (car form) 'LAMBDA))
   (catch 'compile-defun-abort
-    (let* ((class-file (make-class-file :pathname filespec
-                                        :lambda-name name
-                                        :lambda-list (cadr form)))
+    (let* ((class-file (make-abcl-class-file :pathname filespec
+                                             :lambda-name name
+                                             :lambda-list (cadr form)))
            (*compiler-error-bailout*
             `(lambda ()
-               (compile-1 (make-compiland :name ',name
-                                          :lambda-expression (make-compiler-error-form ',form)
-                                          :class-file
-                                          (make-class-file :pathname ,filespec
-                                                           :lambda-name ',name
-                                                           :lambda-list (cadr ',form)))
-			  ,stream)))
+               (compile-1
+                (make-compiland :name ',name
+                                :lambda-expression (make-compiler-error-form ',form)
+                                :class-file
+                                (make-abcl-class-file :pathname ,filespec
+                                                      :lambda-name ',name
+                                                      :lambda-list (cadr ',form)))
+                ,stream)))
            (*compile-file-environment* environment))
-        (compile-1 (make-compiland :name name
-                                   :lambda-expression
-                                   (precompiler:precompile-form form t
-                                                                environment)
-                                   :class-file class-file)
-		   stream))))
+      (compile-1 (make-compiland :name name
+                                 :lambda-expression
+                                 (precompiler:precompile-form form t
+                                                              environment)
+                                 :class-file class-file)
+                 stream))))
 
 (defvar *catch-errors* t)
 
