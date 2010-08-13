@@ -80,16 +80,8 @@
   (pool-add-double *pool* double))
 
 (defun add-exception-handler (start end handler type)
-  (if (null *current-code-attribute*)
-      (push (make-handler :from start
-                          :to end
-                          :code handler
-                          :catch-type (if (null type)
-                                          0
-                                          (pool-class type)))
-            *handlers*)
-      (code-add-exception-handler *current-code-attribute*
-                                  start end handler type)))
+  (code-add-exception-handler *current-code-attribute*
+                              start end handler type))
 
 
 
@@ -635,7 +627,7 @@ before the emitted code: the code is 'stack-neutral'."
 (defun emit-clear-values ()
   (declare (optimize speed (safety 0)))
   (ensure-thread-var-initialized)
-  (emit 'clear-values))
+  (emit 'clear-values *thread*))
 
 (defknown maybe-emit-clear-values (&rest t) t)
 (defun maybe-emit-clear-values (&rest forms)
@@ -643,7 +635,7 @@ before the emitted code: the code is 'stack-neutral'."
   (dolist (form forms)
     (unless (single-valued-p form)
       (ensure-thread-var-initialized)
-      (emit 'clear-values)
+      (emit 'clear-values *thread*)
       (return))))
 
 (defun compile-forms-and-maybe-emit-clear-values (&rest forms-and-compile-args)
@@ -776,25 +768,6 @@ representation, based on the derived type of the LispObject."
   (check-number-of-args form n t))
 
 
-
-
-(defstruct (java-method (:include method)
-                        (:conc-name method-)
-                        (:constructor %make-method))
-  name-index
-  descriptor-index
-  max-stack
-  max-locals
-  code
-  handlers)
-
-(defun make-method (&rest args &key descriptor name
-                                    descriptor-index name-index
-                               &allow-other-keys)
-  (apply #'%make-method
-         (list* :descriptor-index (or descriptor-index (pool-name descriptor))
-                :name-index (or name-index (pool-name name))
-                args)))
 
 (defun emit-constructor-lambda-name (lambda-name)
   (cond ((and lambda-name (symbolp lambda-name) (symbol-package (truly-the symbol lambda-name)))
@@ -933,14 +906,6 @@ representation, based on the derived type of the LispObject."
     (setf (code-code code) *code*)
     method))
 
-(defun write-exception-table (method stream)
-  (let ((handlers (method-handlers method)))
-    (write-u2 (length handlers) stream) ; number of entries
-    (dolist (handler handlers)
-      (write-u2 (symbol-value (handler-from handler)) stream)
-      (write-u2 (symbol-value (handler-to handler)) stream)
-      (write-u2 (symbol-value (handler-code handler)) stream)
-      (write-u2 (handler-catch-type handler) stream))))
 
 (defun write-source-file-attr (source-file stream)
   (let* ((name-index (pool-name "SourceFile"))
@@ -961,43 +926,6 @@ representation, based on the derived type of the LispObject."
     (write-u2 0 stream) ; start_pc
     (write-u2 *source-line-number* stream)))
 
-(defun write-code-attr (method stream)
-  (declare (optimize speed))
-  (declare (type stream stream))
-  (let* ((name-index (pool-name "Code"))
-         (code (method-code method))
-         (code-length (length code))
-         (line-number-available-p (and (fixnump *source-line-number*)
-                                       (plusp *source-line-number*)))
-         (length (+ code-length 12
-                    (* (length (method-handlers method)) 8)
-                    (if line-number-available-p 12 0)))
-         (max-stack (or (method-max-stack method) 20))
-         (max-locals (or (method-max-locals method) 1)))
-    (write-u2 name-index stream)
-    (write-u4 length stream)
-    (write-u2 max-stack stream)
-    (write-u2 max-locals stream)
-    (write-u4 code-length stream)
-    (dotimes (i code-length)
-      (declare (type index i))
-      (write-u1 (the (unsigned-byte 8) (svref code i)) stream))
-    (write-exception-table method stream)
-    (cond (line-number-available-p
-           ; attributes count
-           (write-u2 1 stream)
-           (write-line-number-table stream))
-          (t
-           ; attributes count
-           (write-u2 0 stream)))))
-
-(defun write-method (method stream)
-  (declare (optimize speed))
-  (write-u2 (or (method-access-flags method) #x1) stream) ; access flags
-  (write-u2 (method-name-index method) stream)
-  (write-u2 (method-descriptor-index method) stream)
-  (write-u2 1 stream) ; attributes count
-  (write-code-attr method stream))
 
 
 (defknown declare-field (t t t) t)
@@ -6890,6 +6818,7 @@ We need more thought here.
                                         (abcl-class-file-lambda-name class-file)
                                         (abcl-class-file-lambda-list class-file))))
     (pool-name "Code") ; Must be in pool!
+    (class-add-method class-file constructor)
 
     (when *file-compilation*
       (pool-name "SourceFile") ; Must be in pool!
@@ -6899,7 +6828,8 @@ We need more thought here.
       (pool-name "LineNumberTable")) ; Must be in pool!
     (dolist (field (class-file-fields class-file))
       (finalize-field field class-file))
-    (finalize-method constructor class-file)
+    (dolist (method (class-file-methods class-file))
+      (finalize-method method class-file))
 
     (write-u4 #xCAFEBABE stream)
     (write-u2 3 stream)
@@ -6917,11 +6847,10 @@ We need more thought here.
     (dolist (field (class-file-fields class-file))
       (write-field field stream))
     ;; methods count
-    (write-u2 (1+ (length (abcl-class-file-methods class-file))) stream)
+    (write-u2 (length (abcl-class-file-methods class-file)) stream)
     ;; methods
     (dolist (method (abcl-class-file-methods class-file))
-      (write-method method stream))
-    (!write-method constructor stream)
+      (!write-method method stream))
     ;; attributes count
     (cond (*file-compilation*
 	   ;; attributes count
@@ -6996,19 +6925,20 @@ We need more thought here.
          (*child-p* (not (null (compiland-parent compiland))))
 
          (arg-types (analyze-args compiland))
-         (execute-method (make-method :name "execute"
-                                      :descriptor (apply #'descriptor
-                                                         +lisp-object+
-                                                         arg-types)))
+         (method (!make-method "execute" +lisp-object+ arg-types
+                               :flags '(:final :public)))
+         (code (method-add-code method))
+         (*current-code-attribute* code)
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
          (*registers-allocated* 1)
-         (*handlers* ())
          (*visible-variables* *visible-variables*)
 
          (*thread* nil)
          (*initialize-thread-var* nil)
          (label-START (gensym)))
+
+    (class-add-method class-file method)
 
     (dolist (var (compiland-arg-vars compiland))
       (push var *visible-variables*))
@@ -7191,32 +7121,9 @@ We need more thought here.
 	    +lisp-primitive+))
 
     (setf (abcl-class-file-lambda-list class-file) args)
-    (setf (method-max-locals execute-method) *registers-allocated*)
-    (push execute-method (abcl-class-file-methods class-file))
+    (setf (code-max-locals code) *registers-allocated*)
+    (setf (code-code code) *code*))
 
-
-    ;;;  Move here
-    (setf *code* (finalize-code *code*
-                                (nconc (mapcar #'handler-from *handlers*)
-                                       (mapcar #'handler-to *handlers*)
-                                       (mapcar #'handler-code *handlers*)) t))
-
-    (setf (method-max-stack execute-method)
-          (analyze-stack *code* (mapcar #'handler-code *handlers*)))
-    (setf (method-code execute-method) (code-bytes *code*))
-
-    ;; Remove handler if its protected range is empty.
-    (setf *handlers*
-          (delete-if (lambda (handler)
-                       (eql (symbol-value (handler-from handler))
-                            (symbol-value (handler-to handler))))
-                     *handlers*))
-    ;;; to here
-    ;;; To a separate function which is part of class file finalization
-    ;;;  when we have a section of class-file-generation centered code
-
-
-    (setf (method-handlers execute-method) (nreverse *handlers*)))
   t)
 
 (defun p2-with-inline-code (form target representation)

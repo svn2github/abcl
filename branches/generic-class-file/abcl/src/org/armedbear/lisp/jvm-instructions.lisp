@@ -447,7 +447,7 @@
           (205 ; CLEAR-VALUES
            (dolist (instruction
                      (list
-                      (inst 'aload *thread*)
+                      (inst 'aload (car (instruction-args instruction)))
                       (inst 'aconst_null)
                       (inst 'putfield (u2 (pool-field +lisp-thread+ "_values"
                                                       +lisp-object-array+)))))

@@ -229,16 +229,6 @@ using `make-unique-class-name'."
 ;; Total number of registers allocated.
 (defvar *registers-allocated* 0)
 
-(defvar *handlers* ())
-
-(defstruct handler
-  from       ;; label indicating the start of the protected block
-  to         ;; label indicating the end of the protected block
-  code       ;; label to jump to if the specified exception occurs
-  catch-type ;; pool index of the class name of the exception, or 0 (zero)
-             ;; for 'all'
-  )
-
 ;; Variables visible at the current point of compilation.
 (defvar *visible-variables* nil
   "All variables visible to the form currently being
