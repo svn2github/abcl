@@ -3789,17 +3789,13 @@ given a specific common representation.")
     (emit-move-from-stack target)))
 
 (defun compile-and-write-to-stream (class-file compiland stream)
+  (setf (compiland-class-file compiland) class-file)
   (with-class-file class-file
     (let ((*current-compiland* compiland))
       (with-saved-compiler-policy
-	  (p2-compiland compiland)
+        (p2-compiland compiland)
 ;;        (finalize-class-file (compiland-class-file compiland))
-	(finish-class (compiland-class-file compiland) stream)))))
-
-(defun set-compiland-and-write-class (class-file compiland stream)
-  (setf (compiland-class-file compiland) class-file)
-  (compile-and-write-to-stream class-file compiland stream))
-
+        (finish-class (compiland-class-file compiland) stream)))))
 
 (defmacro with-temp-class-file (pathname class-file lambda-list &body body)
   `(let* ((,pathname (make-temp-file))
@@ -3818,12 +3814,12 @@ given a specific common representation.")
                   (class-file (make-abcl-class-file :pathname pathname
                                                     :lambda-list lambda-list)))
              (with-open-class-file (f class-file)
-               (set-compiland-and-write-class class-file compiland f))
+               (compile-and-write-to-stream class-file compiland f))
              (setf (local-function-class-file local-function) class-file)))
           (t
            (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
              (with-open-stream (stream (sys::%make-byte-array-output-stream))
-               (set-compiland-and-write-class class-file compiland stream)
+               (compile-and-write-to-stream class-file compiland stream)
                (setf (local-function-class-file local-function) class-file)
                (setf (local-function-function local-function)
                      (load-compiled-function
@@ -3852,7 +3848,7 @@ given a specific common representation.")
                   (class-file (make-abcl-class-file :pathname pathname
                                                     :lambda-list lambda-list)))
              (with-open-class-file (f class-file)
-               (set-compiland-and-write-class class-file compiland f))
+               (compile-and-write-to-stream class-file compiland f))
              (setf (local-function-class-file local-function) class-file)
              (let ((g (declare-local-function local-function)))
                (emit-make-compiled-closure-for-labels
@@ -3860,7 +3856,7 @@ given a specific common representation.")
           (t
            (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
              (with-open-stream (stream (sys::%make-byte-array-output-stream))
-               (set-compiland-and-write-class class-file compiland stream)
+               (compile-and-write-to-stream class-file compiland stream)
                (setf (local-function-class-file local-function) class-file)
                (let ((g (declare-object
                          (load-compiled-function
@@ -3910,10 +3906,9 @@ given a specific common representation.")
   (let* ((lambda-list (cadr (compiland-lambda-expression compiland))))
     (aver (null (compiland-class-file compiland)))
     (cond (*file-compilation*
-           (setf (compiland-class-file compiland)
-                 (make-abcl-class-file :pathname (funcall *pathnames-generator*)
-                                       :lambda-list lambda-list))
-           (let ((class-file (compiland-class-file compiland)))
+           (let ((class-file (make-abcl-class-file
+                                :pathname (funcall *pathnames-generator*)
+                                :lambda-list lambda-list)))
 	     (with-open-class-file (f class-file)
 	       (compile-and-write-to-stream class-file compiland f))
              (emit-getstatic *this-class*
@@ -3921,10 +3916,9 @@ given a specific common representation.")
                                                                 class-file))
                    +lisp-object+)))
           (t
-           (setf (compiland-class-file compiland)
-                 (make-abcl-class-file :lambda-list lambda-list))
            (with-open-stream (stream (sys::%make-byte-array-output-stream))
-             (compile-and-write-to-stream (compiland-class-file compiland)
+             (compile-and-write-to-stream (make-abcl-class-file :lambda-list
+                                                                lambda-list)
                                           compiland stream)
              (emit-load-externalized-object (load-compiled-function
                                     (sys::%get-output-stream-bytes stream))))))
