@@ -3788,42 +3788,41 @@ given a specific common representation.")
     (emit-push-nil)
     (emit-move-from-stack target)))
 
-(defun compile-and-write-to-stream (class-file compiland stream)
-  (setf (compiland-class-file compiland) class-file)
-  (with-class-file class-file
-    (let ((*current-compiland* compiland))
-      (with-saved-compiler-policy
-        (p2-compiland compiland)
-;;        (finalize-class-file (compiland-class-file compiland))
-        (finish-class (compiland-class-file compiland) stream)))))
-
-(defmacro with-temp-class-file (pathname class-file lambda-list &body body)
-  `(let* ((,pathname (make-temp-file))
-	  (,class-file (make-abcl-class-file :pathname ,pathname
-                                             :lambda-list ,lambda-list)))
-     (unwind-protect
-	  (progn ,@body)
-       (delete-file pathname))))
+(defun compile-and-write-to-stream (compiland &optional stream)
+  "Creates a class file associated with `compiland`, writing it
+either to stream or the pathname of the class file if `stream' is NIL."
+  (let* ((pathname (funcall *pathnames-generator*))
+         (class-file (make-abcl-class-file
+                      :pathname pathname
+                      :lambda-list
+                      (cadr (compiland-lambda-expression compiland)))))
+    (setf (compiland-class-file compiland) class-file)
+    (with-open-stream (f (or stream
+                             (open pathname :direction :output
+                                   :element-type '(unsigned-byte 8)
+                                   :if-exists :supersede)))
+      (with-class-file class-file
+        (let ((*current-compiland* compiland))
+          (with-saved-compiler-policy
+              (p2-compiland compiland)
+            ;;        (finalize-class-file (compiland-class-file compiland))
+            (finish-class (compiland-class-file compiland) f)))))))
 
 (defknown p2-flet-process-compiland (t) t)
 (defun p2-flet-process-compiland (local-function)
-  (let* ((compiland (local-function-compiland local-function))
-         (lambda-list (cadr (compiland-lambda-expression compiland))))
+  (let* ((compiland (local-function-compiland local-function)))
     (cond (*file-compilation*
-           (let* ((pathname (funcall *pathnames-generator*))
-                  (class-file (make-abcl-class-file :pathname pathname
-                                                    :lambda-list lambda-list)))
-             (with-open-class-file (f class-file)
-               (compile-and-write-to-stream class-file compiland f))
-             (setf (local-function-class-file local-function) class-file)))
+           (compile-and-write-to-stream compiland)
+           (setf (local-function-class-file local-function)
+                 (compiland-class-file compiland)))
           (t
-           (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
-             (with-open-stream (stream (sys::%make-byte-array-output-stream))
-               (compile-and-write-to-stream class-file compiland stream)
-               (setf (local-function-class-file local-function) class-file)
-               (setf (local-function-function local-function)
-                     (load-compiled-function
-                      (sys::%get-output-stream-bytes stream)))))))))
+           (with-open-stream (stream (sys::%make-byte-array-output-stream))
+             (compile-and-write-to-stream compiland stream)
+             (setf (local-function-class-file local-function)
+                   (compiland-class-file compiland))
+             (setf (local-function-function local-function)
+                   (load-compiled-function
+                    (sys::%get-output-stream-bytes stream))))))))
 
 (defun emit-make-compiled-closure-for-labels
     (local-function compiland declaration)
@@ -3841,28 +3840,24 @@ given a specific common representation.")
 
 (defknown p2-labels-process-compiland (t) t)
 (defun p2-labels-process-compiland (local-function)
-  (let* ((compiland (local-function-compiland local-function))
-         (lambda-list (cadr (compiland-lambda-expression compiland))))
+  (let* ((compiland (local-function-compiland local-function)))
     (cond (*file-compilation*
-           (let* ((pathname (funcall *pathnames-generator*))
-                  (class-file (make-abcl-class-file :pathname pathname
-                                                    :lambda-list lambda-list)))
-             (with-open-class-file (f class-file)
-               (compile-and-write-to-stream class-file compiland f))
-             (setf (local-function-class-file local-function) class-file)
-             (let ((g (declare-local-function local-function)))
-               (emit-make-compiled-closure-for-labels
-                local-function compiland g))))
+           (compile-and-write-to-stream compiland)
+           (setf (local-function-class-file local-function)
+                 (compiland-class-file compiland))
+           (let ((g (declare-local-function local-function)))
+             (emit-make-compiled-closure-for-labels
+              local-function compiland g)))
           (t
-           (let ((class-file (make-abcl-class-file :lambda-list lambda-list)))
-             (with-open-stream (stream (sys::%make-byte-array-output-stream))
-               (compile-and-write-to-stream class-file compiland stream)
-               (setf (local-function-class-file local-function) class-file)
-               (let ((g (declare-object
-                         (load-compiled-function
-                          (sys::%get-output-stream-bytes stream)))))
-                 (emit-make-compiled-closure-for-labels
-                  local-function compiland g))))))))
+           (with-open-stream (stream (sys::%make-byte-array-output-stream))
+             (compile-and-write-to-stream compiland stream)
+             (setf (local-function-class-file local-function)
+                   (compiland-class-file compiland))
+             (let ((g (declare-object
+                       (load-compiled-function
+                        (sys::%get-output-stream-bytes stream)))))
+               (emit-make-compiled-closure-for-labels
+                local-function compiland g)))))))
 
 (defknown p2-flet-node (t t t) t)
 (defun p2-flet-node (block target representation)
@@ -3903,35 +3898,30 @@ given a specific common representation.")
       (compile-progn-body body target representation))))
 
 (defun p2-lambda (compiland target)
-  (let* ((lambda-list (cadr (compiland-lambda-expression compiland))))
-    (aver (null (compiland-class-file compiland)))
-    (cond (*file-compilation*
-           (let ((class-file (make-abcl-class-file
-                                :pathname (funcall *pathnames-generator*)
-                                :lambda-list lambda-list)))
-	     (with-open-class-file (f class-file)
-	       (compile-and-write-to-stream class-file compiland f))
-             (emit-getstatic *this-class*
-                   (declare-local-function (make-local-function :class-file
-                                                                class-file))
-                   +lisp-object+)))
-          (t
-           (with-open-stream (stream (sys::%make-byte-array-output-stream))
-             (compile-and-write-to-stream (make-abcl-class-file :lambda-list
-                                                                lambda-list)
-                                          compiland stream)
-             (emit-load-externalized-object (load-compiled-function
-                                    (sys::%get-output-stream-bytes stream))))))
-    (cond ((null *closure-variables*))  ; Nothing to do.
-          ((compiland-closure-register *current-compiland*)
-           (duplicate-closure-array *current-compiland*)
-           (emit-invokestatic +lisp+ "makeCompiledClosure"
-                              (list +lisp-object+ +closure-binding-array+)
-                              +lisp-object+))
+  (aver (null (compiland-class-file compiland)))
+  (cond (*file-compilation*
+         (compile-and-write-to-stream compiland)
+         (emit-getstatic *this-class*
+                         (declare-local-function
+                          (make-local-function
+                           :class-file (compiland-class-file compiland)))
+                         +lisp-object+))
+        (t
+         (with-open-stream (stream (sys::%make-byte-array-output-stream))
+           (compile-and-write-to-stream compiland stream)
+           (emit-load-externalized-object (load-compiled-function
+                                           (sys::%get-output-stream-bytes stream))))))
+  (cond ((null *closure-variables*))    ; Nothing to do.
+        ((compiland-closure-register *current-compiland*)
+         (duplicate-closure-array *current-compiland*)
+         (emit-invokestatic +lisp+ "makeCompiledClosure"
+                            (list +lisp-object+ +closure-binding-array+)
+                            +lisp-object+))
                                         ; Stack: compiled-closure
-          (t
-           (aver nil))) ;; Shouldn't happen.
-    (emit-move-from-stack target)))
+        (t
+         (aver nil))) ;; Shouldn't happen.
+
+  (emit-move-from-stack target))
 
 (defknown p2-function (t t t) t)
 (defun p2-function (form target representation)
@@ -6793,9 +6783,9 @@ We need more thought here.
 
 (defmacro with-open-class-file ((var class-file) &body body)
   `(with-open-file (,var (abcl-class-file-pathname ,class-file)
-			 :direction :output
-			 :element-type '(unsigned-byte 8)
-			 :if-exists :supersede)
+                         :direction :output
+                         :element-type '(unsigned-byte 8)
+                         :if-exists :supersede)
      ,@body))
 
 
