@@ -515,7 +515,7 @@ before the emitted code: the code is 'stack-neutral'."
           +lisp-symbol+)
     (emit-invokestatic +lisp+ "type_error"
                        (lisp-object-arg-types 2) +lisp-object+)
-    (emit 'pop) ; Needed for JVM stack consistency.
+    (emit 'areturn) ; Needed for JVM stack consistency.
     (label LABEL1))
   t)
 
@@ -910,12 +910,16 @@ representation, based on the derived type of the LispObject."
 (defvar *source-line-number* nil)
 
 
-(defun write-class-file (class stream)
+(defun finish-class (class stream)
+  "Finalizes the `class' and writes the result to `stream'.
+
+The compiler calls this function to indicate it doesn't want to
+extend the class any further."
   (class-add-method class (make-constructor (class-file-superclass class)
                                             (abcl-class-file-lambda-name class)
                                             (abcl-class-file-lambda-list class)))
   (finalize-class-file class)
-  (!write-class-file class stream))
+  (write-class-file class stream))
 
 
 (defknown declare-field (t t t) t)
@@ -3790,7 +3794,7 @@ given a specific common representation.")
       (with-saved-compiler-policy
 	  (p2-compiland compiland)
 ;;        (finalize-class-file (compiland-class-file compiland))
-	(write-class-file (compiland-class-file compiland) stream)))))
+	(finish-class (compiland-class-file compiland) stream)))))
 
 (defun set-compiland-and-write-class (class-file compiland stream)
   (setf (compiland-class-file compiland) class-file)
@@ -7085,34 +7089,38 @@ We need more thought here.
         (*local-functions* *local-functions*)
         (*current-compiland* compiland))
     (with-saved-compiler-policy
-      ;; Pass 1.
-      (p1-compiland compiland)
-      ;; *all-variables* doesn't contain variables which
-      ;; are in an enclosing lexical environment (variable-environment)
-      ;; so we don't need to filter them out
-      (setf *closure-variables*
-            (remove-if #'variable-special-p
-                       (remove-if-not #'variable-used-non-locally-p
-                                                 *all-variables*)))
-      (let ((i 0))
-        (dolist (var (reverse *closure-variables*))
-          (setf (variable-closure-index var) i)
-          (dformat t "var = ~S closure index = ~S~%" (variable-name var)
-                   (variable-closure-index var))
-          (incf i)))
+        ;; Pass 1.
+        (p1-compiland compiland))
+
+    ;; *all-variables* doesn't contain variables which
+    ;; are in an enclosing lexical environment (variable-environment)
+    ;; so we don't need to filter them out
+    (setf *closure-variables*
+          (remove-if #'variable-special-p
+                     (remove-if-not #'variable-used-non-locally-p
+                                    *all-variables*)))
+    (let ((i 0))
+      (dolist (var (reverse *closure-variables*))
+        (setf (variable-closure-index var) i)
+        (dformat t "var = ~S closure index = ~S~%" (variable-name var)
+                 (variable-closure-index var))
+        (incf i)))
 
       ;; Assert that we're not refering to any variables
       ;; we're not allowed to use
-      (assert (= 0
-                 (length (remove-if (complement #'variable-references)
-                                    (remove-if #'variable-references-allowed-p
-                                               *visible-variables*)))))
+
+    (assert (= 0
+               (length (remove-if (complement #'variable-references)
+                                  (remove-if #'variable-references-allowed-p
+                                             *visible-variables*)))))
 
       ;; Pass 2.
-      (with-class-file (compiland-class-file compiland)
+
+    (with-class-file (compiland-class-file compiland)
+      (with-saved-compiler-policy
         (p2-compiland compiland)
-;;        (finalize-class-file (compiland-class-file compiland))
-        (write-class-file (compiland-class-file compiland) stream)))))
+        ;;        (finalize-class-file (compiland-class-file compiland))
+        (finish-class (compiland-class-file compiland) stream)))))
 
 (defvar *compiler-error-bailout*)
 

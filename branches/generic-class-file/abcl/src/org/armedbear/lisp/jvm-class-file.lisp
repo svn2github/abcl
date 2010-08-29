@@ -532,12 +532,13 @@ class file as UTF-8 encoded data."
 
 (defun class-methods-by-name (class name)
   "Returns all methods which have `name'."
-  (remove name (class-file-methods class)
+  (remove (map-method-name name) (class-file-methods class)
           :test-not #'string= :key #'method-name))
 
 (defun class-method (class name return &rest args)
   "Return the method which is (uniquely) identified by its name AND descriptor."
-  (let ((return-and-args (cons return args)))
+  (let ((return-and-args (cons return args))
+        (name (map-method-name name)))
     (find-if #'(lambda (c)
                  (and (string= (method-name c) name)
                       (equal (method-descriptor c) return-and-args)))
@@ -661,7 +662,7 @@ The class can't be modified after finalization."
         (write-ascii string length stream))))
 
 
-(defun !write-class-file (class stream)
+(defun write-class-file (class stream)
   "Serializes `class' to `stream', after it has been finalized."
 
   ;; header
@@ -845,11 +846,11 @@ Returns NIL if the attribute isn't found."
   "Methods should be identified by strings containing their names, or,
 be one of two keyword identifiers to identify special methods:
 
- * :class-constructor
+ * :static-initializer
  * :constructor
 "
   (cond
-    ((eq name :class-constructor)
+    ((eq name :static-initializer)
      "<clinit>")
     ((eq name :constructor)
      "<init>")
@@ -859,7 +860,7 @@ be one of two keyword identifiers to identify special methods:
   "Creates a method for addition to a class file."
   (%make-method :descriptor (cons return args)
                 :access-flags flags
-                :name name))
+                :name (map-method-name name)))
 
 (defun method-add-attribute (method attribute)
   "Add `attribute' to the list of attributes of `method',
@@ -898,7 +899,7 @@ returning the attribute."
           (method-descriptor method)
           (pool-add-utf8 pool (apply #'descriptor (method-descriptor method)))
           (method-name method)
-          (pool-add-utf8 pool (map-method-name (method-name method)))))
+          (pool-add-utf8 pool (method-name method))))
   (finalize-attributes (method-attributes method) nil class))
 
 
@@ -992,8 +993,12 @@ has been finalized."
                             (mapcar #'exception-end-pc handlers)
                             (mapcar #'exception-handler-pc handlers))
                      t)))
-    (setf (code-max-stack code)
-          (analyze-stack c (mapcar #'exception-handler-pc handlers)))
+    (unless (code-max-stack code)
+      (setf (code-max-stack code)
+            (analyze-stack c (mapcar #'exception-handler-pc handlers))))
+    (unless (code-max-locals code)
+      (setf (code-max-locals code)
+            (analyze-locals code)))
     (multiple-value-bind
           (c labels)
         (code-bytes c)
@@ -1143,14 +1148,13 @@ to which it has been attached has been superseded.")
         *registers-allocated* (code-max-locals code)
         *register* (code-current-local code)))
 
-(defmacro with-code-to-method ((class-file method &key (safe-nesting t))
-			       &body body)
+(defmacro with-code-to-method ((class-file method)
+                               &body body)
   (let ((m (gensym))
         (c (gensym)))
     `(progn
-       ,@(when safe-nesting
-           `((when *current-code-attribute*
-               (save-code-specials *current-code-attribute*))))
+       (when *current-code-attribute*
+         (save-code-specials *current-code-attribute*))
        (let* ((,m ,method)
               (,c (method-ensure-code ,method))
               (*pool* (class-file-constants ,class-file))
@@ -1160,12 +1164,10 @@ to which it has been attached has been superseded.")
               (*current-code-attribute* ,c))
          ,@body
          (setf (code-code ,c) *code*
-	       (code-current-local ,c) *register*
-;;               (code-exception-handlers ,c) *handlers*
+               (code-current-local ,c) *register*
                (code-max-locals ,c) *registers-allocated*))
-       ,@(when safe-nesting
-           `((when *current-code-attribute*
-               (restore-code-specials *current-code-attribute*)))))))
+       (when *current-code-attribute*
+         (restore-code-specials *current-code-attribute*)))))
 
 
 (defstruct (source-file-attribute (:conc-name source-)
