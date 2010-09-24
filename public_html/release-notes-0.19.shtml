@@ -51,7 +51,7 @@
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
-<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-0.16.shtml 12246 2009-11-04 22:00:47Z ehuelsmann $</div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
 </body>
 </html>
