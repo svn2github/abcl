@@ -33,6 +33,8 @@
 
 package org.armedbear.lisp;
 
+import java.dyn.CallSite;
+import java.dyn.MethodType;
 import static org.armedbear.lisp.Lisp.*;
 
 public abstract class Function extends Operator
@@ -392,5 +394,11 @@ public abstract class Function extends Operator
     public final void incrementHotCount()
     {
         ++hotCount;
+    }
+
+    public static CallSite linkLispFunction(Class caller, String name, MethodType type) {
+        System.out.println("Linking " + name + " " + caller + " " + type);
+        CallSite c = ((Symbol) Lisp.readObjectFromString(name)).addCallSite(type);
+        return c;
     }
 }

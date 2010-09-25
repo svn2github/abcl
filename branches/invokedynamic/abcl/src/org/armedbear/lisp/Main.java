@@ -33,9 +33,14 @@
 
 package org.armedbear.lisp;
 
+import java.dyn.InvokeDynamic;
+import java.dyn.Linkage;
+
 public final class Main
 {
   public static final long startTimeMillis = System.currentTimeMillis();
+
+  static { Linkage.registerBootstrapMethod(Function.class, "linkLispFunction"); }
 
   public static void main(final String[] args)
   {
@@ -51,5 +56,16 @@ public final class Main
         }
       };
     new Thread(null, r, "interpreter", 4194304L).start();
+    try {
+        for(int i = 0; i < 2; i++) {
+          Thread.sleep(5000);
+          InvokeDynamic.<LispObject>#"COMMON-LISP:PRINT"((LispObject) new SimpleString("foo"));
+          InvokeDynamic.<LispObject>#"COMMON-LISP:PRINT"((LispObject) new SimpleString("bar"));
+          InvokeDynamic.<LispObject>#"CL-USER::FOO"((LispObject) new SimpleString("baz"));
+        }
+    } catch(Throwable t) {
+      t.printStackTrace();
+    }
+    //java.dyn.InvokeDynamic.foo(new SimpleString("foo"));
   }
 }

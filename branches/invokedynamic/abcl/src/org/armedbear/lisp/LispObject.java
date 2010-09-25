@@ -33,8 +33,12 @@
 
 package org.armedbear.lisp;
 
+import java.dyn.MethodHandle;
+import java.dyn.MethodHandles;
+import java.dyn.MethodType;
 import static org.armedbear.lisp.Lisp.*;
 import java.util.WeakHashMap;
+import sun.dyn.Access;
 
 public class LispObject //extends Lisp
 {
@@ -836,6 +840,18 @@ public class LispObject //extends Lisp
   public LispObject execute(LispObject[] args)
   {
     return type_error(this, Symbol.FUNCTION);
+  }
+
+  public MethodHandle asMethodHandle(MethodType type) {
+    /*Class<?>[] params = new Class<?>[type.parameterCount()];
+    if(params.length == 1 && type.parameterType(0).isArray()) {
+      params[0] = LispObject[].class;
+    } else for(int i = 0; i < params.length; i++) {
+      params[i] = LispObject.class;
+    }*/
+    MethodHandle mh = MethodHandles.lookup().findVirtual(getClass(), "execute", type.changeReturnType(LispObject.class));
+    mh = MethodHandles.insertArguments(mh, 0, this);
+    return mh;//MethodType.methodType(LispObject.class, params));
   }
 
   // Used by COMPILE-MULTIPLE-VALUE-CALL.

@@ -33,6 +33,11 @@
 
 package org.armedbear.lisp;
 
+import java.dyn.CallSite;
+import java.dyn.MethodType;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import static org.armedbear.lisp.Lisp.*;
 
 public class Symbol extends LispObject implements java.io.Serializable
@@ -61,6 +66,7 @@ public class Symbol extends LispObject implements java.io.Serializable
   private transient LispObject function;
   private transient LispObject propertyList;
   private int flags;
+  private final Set<CallSite> callSites = Collections.newSetFromMap(new WeakHashMap<CallSite, Boolean>()); //Weak, is it correct?
 
   // Construct an uninterned symbol.
   public Symbol(String s)
@@ -92,6 +98,15 @@ public class Symbol extends LispObject implements java.io.Serializable
     name = string;
     this.hash = hash;
     this.pkg = pkg;
+  }
+
+  public CallSite addCallSite(MethodType type) {
+    LispObject f = getSymbolFunctionOrDie();
+    CallSite c = new CallSite(f.asMethodHandle(type));
+    synchronized(callSites) {
+      callSites.add(c);
+    }
+    return c;
   }
 
   @Override
@@ -404,7 +419,12 @@ public class Symbol extends LispObject implements java.io.Serializable
 
   public final void setSymbolFunction(LispObject obj)
   {
-    this.function = obj;
+    synchronized(callSites) {
+      this.function = obj;
+      for(CallSite c : callSites) {
+        c.setTarget(this.function.asMethodHandle(c.getTarget().type()));
+      }
+    }
   }
 
   /** See LispObject.getStringValue() */
