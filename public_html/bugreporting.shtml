@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Bug reporting</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>Bug reporting</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div style="margin-left:auto;margin-right:auto;width:20cm">
+
+
+
+
+
+
+
+  <h2>A quick guide to producing meaningful bug reports for ABCL</h2>
+
+This guide describes how to report bugs in ABCL. When you think you've
+found a bug, send a bug report to the <a href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">mailing list</a>. For the bug report
+to be most useful, try and do the following things:
+
+<ol>
+  <li> 
+    Use a descriptive subject, stating a brief summary of the bug, and 
+    mentioning that you're reporting a bug. Don't be fussy about the format 
+    of the subject, we don't process the bugs automatically, just try to 
+    provide a meaningful description.</li>
+  <li>
+    Add a short program snippet that demonstrates what ABCL does incorrectly,
+    and if necessary, quote any relevant portions in the <a href="http://www.lispworks.com/documentation/HyperSpec/Front/index.htm">Common Lisp standard</a>.
+  </li>
+  <li>
+    Differences between ABCL and other Common Lisp implementations are useful
+    information, if you find that some other Common Lisp implementation works
+    correctly and ABCL has a bug, it helps us in fixing the problem, so
+    try your program snippet on other implementations as well and post
+    the results.
+  </li>
+  <li>
+    Try and answer any questions asked about your bug report.
+  </li>
+  <li>
+    It is very much appreciated if you can actually find what's causing
+    the bug in ABCL codebase and even better still if you can produce
+    a <a href="contributing.shtml">patch</a> that fixes the problem. Don't
+    fret if you can't, though, reports without patches are warmly welcomed, but
+    we highly appreciate patch contibutions.
+  </li>
+</ol>
+
+After all that, sit back, relax and enjoy yourself, the bug should
+get fixed eventually. The maintainers of ABCL are usually rather
+busy, but we will take a look at all bug reports when we have time.
+</div>
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: contributing.shtml 12008 2009-06-07 21:25:48Z ehuelsmann $</div>
+</div>
+
+</body>
+</html>

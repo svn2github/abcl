@@ -101,7 +101,7 @@ td ul { margin:0 }
 <li> <a href="doc/abcl-user.html">Documentation</a> </li>
 <li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">Examples</a> </li>
 <li> <a href="testimonials.shtml">Testimonials</a> </li>
-<li> Bug reporting </li>
+<li> <a href="bugreporting.shtml">Bug reporting</a> </li>
 </ul>
 </td>
 
