@@ -133,7 +133,10 @@ initialized from the `java-dotted-name'."
 (define-class-name +java-object+ "java.lang.Object")
 (define-class-name +java-string+ "java.lang.String")
 (define-class-name +java-system+ "java.lang.System")
+(define-class-name +java-class+ "java.lang.Class")
 (define-class-name +lisp-object+ "org.armedbear.lisp.LispObject")
+(define-class-name +dyn-linkage+ "java.dyn.Linkage")
+(define-class-name +dyn-invokedynamic+ "java.dyn.InvokeDynamic")
 (defconstant +lisp-object-array+ (class-array +lisp-object+))
 (define-class-name +lisp-simple-string+ "org.armedbear.lisp.SimpleString")
 (define-class-name +lisp+ "org.armedbear.lisp.Lisp")
@@ -167,6 +170,7 @@ initialized from the `java-dotted-name'."
 (define-class-name +lisp-return+ "org.armedbear.lisp.Return")
 (define-class-name +lisp-go+ "org.armedbear.lisp.Go")
 (define-class-name +lisp-primitive+ "org.armedbear.lisp.Primitive")
+(define-class-name +lisp-function+ "org.armedbear.lisp.Function")
 (define-class-name +lisp-eql-hash-table+ "org.armedbear.lisp.EqlHashTable")
 (define-class-name +lisp-hash-table+ "org.armedbear.lisp.HashTable")
 (define-class-name +lisp-package+ "org.armedbear.lisp.Package")
@@ -276,6 +280,9 @@ take that effect into account."
     (:name-and-type 12 1)
     (:utf8           1 1)))
 
+(defun constant-type (constant)
+  (car (find (constant-tag constant) +constant-type-map+ :key #'cadr)))
+
 (defstruct (constant-class (:constructor make-constant-class (index name-index))
                            (:include constant
                                      (tag 7)))
@@ -367,20 +374,20 @@ and string contents."
 
 
 (defun pool-add-class (pool class)
-  "Returns the index of the constant-pool class item for `class'.
+  "Returns the constant-pool class item for `class'.
 
 `class' must be an instance of `class-name'."
   (let ((entry (gethash class (pool-entries pool))))
     (unless entry
-      (let ((utf8 (pool-add-utf8 pool (class-name-internal class))))
+      (let ((utf8 (constant-index (pool-add-utf8 pool (class-name-internal class)))))
         (setf entry
               (make-constant-class (incf (pool-index pool)) utf8)
               (gethash class (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-field-ref (pool class name type)
-  "Returns the index of the constant-pool item which denotes a reference
+  "Returns the constant-pool item which denotes a reference
 to the `name' field of the `class', being of `type'.
 
 `class' should be an instance of `class-name'.
@@ -388,85 +395,86 @@ to the `name' field of the `class', being of `type'.
 `type' is a field-type (see `internal-field-type')"
   (let ((entry (gethash (acons name type class) (pool-entries pool))))
     (unless entry
-      (let ((c (pool-add-class pool class))
-            (n/t (pool-add-name/type pool name type)))
+      (let ((c (constant-index (pool-add-class pool class)))
+            (n/t (constant-index (pool-add-name/type pool name type))))
         (setf entry (make-constant-field-ref (incf (pool-index pool)) c n/t)
             (gethash (acons name type class) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-method-ref (pool class name type)
-  "Returns the index of the constant-pool item which denotes a reference
+  "Returns the constant-pool item which denotes a reference
 to the method with `name' in `class', which is of `type'.
 
 Here, `type' is a method descriptor, which defines the argument types
 and return type. `class' is an instance of `class-name'."
   (let ((entry (gethash (acons name type class) (pool-entries pool))))
     (unless entry
-      (let ((c (pool-add-class pool class))
-            (n/t (pool-add-name/type pool name type)))
+      (let ((c (constant-index (pool-add-class pool class)))
+            (n/t (constant-index (pool-add-name/type pool name type))))
         (setf entry (make-constant-method-ref (incf (pool-index pool)) c n/t)
               (gethash (acons name type class) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-interface-method-ref (pool class name type)
-  "Returns the index of the constant-pool item which denotes a reference to
+  "Returns the constant-pool item which denotes a reference to
 the method `name' in the interface `class', which is of `type'.
 
 See `pool-add-method-ref' for remarks."
   (let ((entry (gethash (acons name type class) (pool-entries pool))))
     (unless entry
-      (let ((c (pool-add-class pool class))
-            (n/t (pool-add-name/type pool name type)))
+      (let ((c (constant-index (pool-add-class pool class)))
+            (n/t (constant-index (pool-add-name/type pool name type))))
         (setf entry
             (make-constant-interface-method-ref (incf (pool-index pool)) c n/t)
             (gethash (acons name type class) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-string (pool string)
-  "Returns the index of the constant-pool item denoting the string."
+  "Returns the constant-pool item denoting the string."
   (let ((entry (gethash (cons 8 string) ;; 8 == string-tag
                         (pool-entries pool))))
     (unless entry
       (let ((utf8 (pool-add-utf8 pool string)))
-        (setf entry (make-constant-string (incf (pool-index pool)) utf8)
+        (setf entry (make-constant-string (incf (pool-index pool))
+					  (constant-index utf8))
               (gethash (cons 8 string) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-int (pool int)
-  "Returns the index of the constant-pool item denoting the int."
+  "Returns the constant-pool item denoting the int."
   (let ((entry (gethash (cons 3 int) (pool-entries pool))))
     (unless entry
       (setf entry (make-constant-int (incf (pool-index pool)) int)
             (gethash (cons 3 int) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-float (pool float)
-  "Returns the index of the constant-pool item denoting the float."
+  "Returns the constant-pool item denoting the float."
   (let ((entry (gethash (cons 4 float) (pool-entries pool))))
     (unless entry
       (setf entry (make-constant-float (incf (pool-index pool))
                                        (sys::%float-bits float))
             (gethash (cons 4 float) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-long (pool long)
-  "Returns the index of the constant-pool item denoting the long."
+  "Returns the constant-pool item denoting the long."
   (let ((entry (gethash (cons 5 long) (pool-entries pool))))
     (unless entry
       (setf entry (make-constant-long (incf (pool-index pool)) long)
             (gethash (cons 5 long) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool))
       (incf (pool-index pool))) ;; double index increase; long takes 2 slots
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-double (pool double)
-  "Returns the index of the constant-pool item denoting the double."
+  "Returns constant-pool item denoting the double."
   (let ((entry (gethash (cons 6 double) (pool-entries pool))))
     (unless entry
       (setf entry (make-constant-double (incf (pool-index pool))
@@ -474,38 +482,38 @@ See `pool-add-method-ref' for remarks."
             (gethash (cons 6 double) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool))
       (incf (pool-index pool))) ;; double index increase; 'double' takes 2 slots
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-name/type (pool name type)
-  "Returns the index of the constant-pool item denoting
-the name/type identifier."
+  "Returns the constant-pool item denoting the name/type identifier."
   (let ((entry (gethash (cons name type) (pool-entries pool)))
         (internal-type (if (listp type)
                            (apply #'descriptor type)
                            (internal-field-ref type))))
     (unless entry
-      (let ((n (pool-add-utf8 pool name))
-            (i-t (pool-add-utf8 pool internal-type)))
+      (let ((n (constant-index (pool-add-utf8 pool name)))
+            (i-t (constant-index (pool-add-utf8 pool internal-type))))
         (setf entry (make-constant-name/type (incf (pool-index pool)) n i-t)
               (gethash (cons name type) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defun pool-add-utf8 (pool utf8-as-string)
-  "Returns the index of the textual value that will be stored in the
-class file as UTF-8 encoded data."
+  "Returns the textual value that will be stored in the class file as UTF-8 encoded data."
   (let ((entry (gethash (cons 11 utf8-as-string) ;; 11 == utf8
                         (pool-entries pool))))
     (unless entry
       (setf entry (make-constant-utf8 (incf (pool-index pool)) utf8-as-string)
             (gethash (cons 11 utf8-as-string) (pool-entries pool)) entry)
       (push entry (pool-entries-list pool)))
-    (constant-index entry)))
+    entry))
 
 (defstruct (class-file (:constructor
                         make-class-file (class superclass access-flags)))
   "Holds the components of a class file."
   (constants (make-pool))
+  (major-version 51)
+  (minor-version 0)
   access-flags
   class
   superclass
@@ -567,11 +575,11 @@ The class can't be modified after finalization."
   (setf (class-file-access-flags class)
         (map-flags (class-file-access-flags class)))
   (setf (class-file-superclass class)
-        (pool-add-class (class-file-constants class)
-                        (class-file-superclass class))
+        (constant-index (pool-add-class (class-file-constants class)
+					(class-file-superclass class)))
         (class-file-class class)
-        (pool-add-class (class-file-constants class)
-                        (class-file-class class)))
+        (constant-index (pool-add-class (class-file-constants class)
+					(class-file-class class))))
   ;;  (finalize-interfaces)
   (dolist (field (class-file-fields class))
     (finalize-field field class))
@@ -667,8 +675,8 @@ The class can't be modified after finalization."
 
   ;; header
   (write-u4 #xCAFEBABE stream)
-  (write-u2 3 stream)
-  (write-u2 45 stream)
+  (write-u2 (class-file-minor-version class) stream)
+  (write-u2 (class-file-major-version class) stream)
 
    ;; constants pool
   (write-constants (class-file-constants class) stream)
@@ -820,9 +828,9 @@ Returns NIL if the attribute isn't found."
     (setf (field-access-flags field)
           (map-flags (field-access-flags field))
           (field-descriptor field)
-          (pool-add-utf8 pool (internal-field-ref (field-descriptor field)))
+          (constant-index (pool-add-utf8 pool (internal-field-ref (field-descriptor field))))
           (field-name field)
-          (pool-add-utf8 pool (field-name field))))
+          (constant-index (pool-add-utf8 pool (field-name field)))))
   (finalize-attributes (field-attributes field) nil class))
 
 (defun write-field (field stream)
@@ -897,9 +905,9 @@ returning the attribute."
     (setf (method-access-flags method)
           (map-flags (method-access-flags method))
           (method-descriptor method)
-          (pool-add-utf8 pool (apply #'descriptor (method-descriptor method)))
+          (constant-index (pool-add-utf8 pool (apply #'descriptor (method-descriptor method))))
           (method-name method)
-          (pool-add-utf8 pool (method-name method))))
+          (constant-index (pool-add-utf8 pool (method-name method)))))
   (finalize-attributes (method-attributes method) nil class))
 
 
@@ -929,8 +937,8 @@ finalizing and serializing attributes."
   (dolist (attribute attributes)
     ;; assure header: make sure 'name' is in the pool
     (setf (attribute-name attribute)
-          (pool-add-utf8 (class-file-constants class)
-                         (attribute-name attribute)))
+          (constant-index (pool-add-utf8 (class-file-constants class)
+					 (attribute-name attribute))))
     ;; we're saving "root" attributes: attributes which have no parent
     (funcall (attribute-finalizer attribute) attribute att class)))
 
@@ -968,7 +976,9 @@ an attribute of a method."
   ;; labels contains offsets into the code array after it's finalized
   labels ;; an alist
 
-  (current-local 0)) ;; used for handling nested WITH-CODE-TO-METHOD blocks
+  ;; these two are used for handling nested WITH-CODE-TO-METHOD blocks
+  (current-local 0)
+  stack-map-frames)
 
 
 
@@ -985,7 +995,6 @@ has been finalized."
 
 (defun finalize-code-attribute (code parent class)
   "Prepares the `code' attribute for serialization, within method `parent'."
-  (declare (ignore parent))
   (let* ((handlers (code-exception-handlers code))
          (c (finalize-code
                      (code-code code)
@@ -999,6 +1008,8 @@ has been finalized."
     (unless (code-max-locals code)
       (setf (code-max-locals code)
             (analyze-locals code)))
+    (when (>= (class-file-major-version class) 50)
+      (code-add-attribute code (compute-stack-map-table class parent)))
     (multiple-value-bind
           (c labels)
         (code-bytes c)
@@ -1021,8 +1032,8 @@ has been finalized."
           (exception-catch-type exception)
           (if (null (exception-catch-type exception))
               0  ;; generic 'catch all' class index number
-              (pool-add-class (class-file-constants class)
-                              (exception-catch-type exception)))))
+              (constant-index (pool-add-class (class-file-constants class)
+					      (exception-catch-type exception))))))
 
   (finalize-attributes (code-attributes code) code class))
 
@@ -1117,8 +1128,8 @@ After finalization, the fields contain offsets instead of labels."
   "Prepare `checked-exceptions' for serialization."
   (setf (checked-table checked-exceptions)
         (mapcar #'(lambda (exception)
-                    (pool-add-class (class-file-constants class)
-                                    exception))
+                    (constant-index (pool-add-class (class-file-constants class)
+						    exception)))
                 (checked-table checked-exceptions))))
 
 (defun write-checked-exceptions (checked-exceptions stream)
@@ -1182,8 +1193,8 @@ it was compiled from."
 (defun finalize-source-file (source-file code class)
   (declare (ignorable code class))
   (setf (source-filename source-file)
-        (pool-add-utf8 (class-file-constants class)
-                       (source-filename source-file))))
+        (constant-index (pool-add-utf8 (class-file-constants class)
+				       (source-filename source-file)))))
 
 (defun write-source-file (source-file stream)
   (write-u2 (source-filename source-file) stream))
@@ -1258,11 +1269,11 @@ names, their type and their scope of validity."
           (- (code-label-offset code (local-length local-variable))
              (local-start-pc local-variable))
           (local-name local-variable)
-          (pool-add-utf8 (class-file-constants class)
-                         (local-name local-variable))
+          (constant-index (pool-add-utf8 (class-file-constants class)
+					 (local-name local-variable)))
           (local-descriptor local-variable)
-          (pool-add-utf8 (class-file-constants class)
-                         (local-descriptor local-variable)))))
+          (constant-index (pool-add-utf8 (class-file-constants class)
+					 (local-descriptor local-variable))))))
 
 (defun write-local-variables (local-variables stream)
   (write-u2 (length (local-var-table local-variables)) stream)
@@ -1272,6 +1283,364 @@ names, their type and their scope of validity."
     (write-u2 (local-name local-variable) stream)
     (write-u2 (local-descriptor local-variable) stream)
     (write-u2 (local-index local-variable) stream)))
+
+;;Support for the StackMapTable attribute used by the typechecking verifier
+;;from class file version number 50.0 onward (astalla)
+
+(defstruct (stack-map-table-attribute
+	     (:conc-name stack-map-table-)
+	     (:include attribute
+		       (name "StackMapTable")
+		       (finalizer #'finalize-stack-map-table-attribute)
+		       (writer #'write-stack-map-table-attribute)))
+	     ;(:constructor %make-stack-map-table-attribute))
+  "The attribute containing the stack map table, a map from bytecode offsets to frames containing information about the types of locals and values on the operand stack at that offset. This is an attribute of a method."
+  entries)
+
+(defun finalize-stack-map-table-attribute (table parent class)
+  "Prepares the `stack-map-table' attribute for serialization, within method `parent'."
+  (declare (ignore parent class)) ;;TODO
+  table)
+
+(defun write-stack-map-table-attribute (table stream)
+  (write-u2 (length (stack-map-table-entries table)) stream)
+  (dolist (frame (stack-map-table-entries table))
+    (funcall (frame-writer frame) stream)))
+
+(defstruct (stack-map-frame (:conc-name frame-))
+  offset-delta
+  writer)
+
+(defstruct (stack-map-full-frame
+	     (:conc-name full-frame-)
+	     (:include stack-map-frame
+		       (writer #'write-stack-map-full-frame)))
+  locals
+  stack-items)
+
+(defun write-stack-map-full-frame (frame stream)
+  (write-u1 255 stream)
+  (write-u2 (frame-offset-delta frame) stream)
+  (write-u2 (length (full-frame-locals frame)) stream)
+  (dolist (local (full-frame-locals frame))
+    (funcall (verification-type-info-writer local) local stream))
+  (write-u2 (length (full-frame-stack-items frame)) stream)
+  (dolist (stack-item (full-frame-stack-items frame))
+    (funcall (verification-type-info-writer stack-item) stack-item stream)))
+
+(defstruct verification-type-info tag (writer #'write-simple-verification-type-info))
+
+(defstruct (top-variable-info (:include verification-type-info (tag 0))))
+(defstruct (integer-variable-info (:include verification-type-info (tag 1))))
+(defstruct (float-variable-info (:include verification-type-info (tag 2))))
+(defstruct (double-variable-info (:include verification-type-info (tag 3))))
+(defstruct (long-variable-info (:include verification-type-info (tag 4))))
+(defstruct (null-variable-info (:include verification-type-info (tag 5))))
+(defstruct (uninitialized-this-variable-info (:include verification-type-info (tag 6))))
+(defstruct (object-variable-info
+	     (:include verification-type-info
+		       (tag 7) (writer #'write-object-variable-info)))
+  constant-pool-index)
+(defstruct (uninitialized-variable-info
+	     (:include verification-type-info
+		       (tag 8) (writer #'write-unitialized-variable-info)))
+  offset)
+
+(defun write-simple-verification-type-info (vti stream)
+  (write-u1 (verification-type-info-tag vti) stream))
+(defun write-object-variable-type-info (vti stream)
+  (write-u1 (verification-type-info-tag vti) stream)
+  (write-u2 (object-variable-info-constant-pool-index vti) stream))
+(defun write-uninitialized-verification-type-info (vti stream)
+  (write-u1 (verification-type-info-tag vti) stream)
+  (write-u2 (uninitialized-variable-info-offset vti) stream))
+
+(defconst *opcode-effect-table*
+  (make-array 256 :initial-element #'(lambda (a b) (declare (ignore b)) a)))
+
+(defun opcode-effect-function (opcode)
+  (svref *opcode-effect-table* opcode))
+
+(defvar *computed-stack* nil "The list of types on the stack calculated from the last emitted instruction, or from the method signature if no instruction has been emitted yet for the current method.")
+
+(defvar *computed-locals* nil "The list of types of local variables calculated from the last emitted instruction, or from the method signature if no instruction has been emitted yet for the current method.")
+
+(defmacro define-opcode-effect (opcode &body body)
+  `(setf (svref *opcode-effect-table*
+		(opcode-number ',opcode))
+	 #'(lambda (instruction)
+	     (declare (ignorable instruction))
+	     ,@body)))
+
+(defun update-stack-map-effect! (*computed-stack* *computed-locals* instruction)
+  (funcall (opcode-effect-function (instruction-opcode instruction))
+	   instruction)
+  (setf (instruction-stack-map-locals instruction) *computed-locals*)
+  (setf (instruction-stack-map-stack instruction) *computed-stack*)
+  instruction)
+
+(defun compute-stack-map-table (class method)
+  (let ((table (make-stack-map-table-attribute))
+	(*computed-stack* (compute-initial-method-stack class method))
+	(*computed-locals*))
+    (finalize-stack-map-table table)))
+
+(defun finalize-stack-map-table (table)
+  "Replaces all virtual types in the stack map frames with variable-info objects."
+  ;;TODO
+  table)
+
+(defun compute-initial-method-stack (class method)
+  (let (locals)
+    (unless (member :static (method-access-flags method))
+      (if (string= "<init>" (method-name method))
+	  ;;the method is a constructor.
+	  (push :uninitialized-this locals)
+	  ;;the method is an instance method.
+	  (push (class-name class) locals)))
+    (dolist (x (cdr (method-descriptor method)))
+      (push x locals))
+    locals))
+
+(defun smf-type->variable-info (type)
+  (case type))
+
+(defun smf-push (type)
+  (push type *computed-stack*))
+
+(defun smf-push2 (type)
+  (smf-push type)
+  (smf-push :top))
+
+(defun smf-pop ()
+  (pop *computed-stack*))
+
+(defun smf-popn (n)
+  (dotimes (i n)
+    (pop *computed-stack*)))
+
+(defun smf-element-of (type)
+  (if (consp type)
+      (cdr type)
+      (error "Not an array stack map type: ~S" type)))
+
+(defun smf-array-of (type)
+  (cons :array-of type))
+
+(define-opcode-effect aconst_null (smf-push :null))
+(define-opcode-effect iconst_m1 (smf-push :int))
+(define-opcode-effect iconst_0 (smf-push :int))
+(define-opcode-effect iconst_1 (smf-push :int))
+(define-opcode-effect iconst_2 (smf-push :int))
+(define-opcode-effect iconst_3 (smf-push :int))
+(define-opcode-effect iconst_4 (smf-push :int))
+(define-opcode-effect iconst_5 (smf-push :int))
+(define-opcode-effect lconst_0 (smf-push2 :long))
+(define-opcode-effect lconst_1 (smf-push2 :long))
+(define-opcode-effect fconst_0 (smf-push :float))
+(define-opcode-effect fconst_1 (smf-push :float))
+(define-opcode-effect fconst_2 (smf-push :float))
+(define-opcode-effect dconst_0 (smf-push2 :double))
+(define-opcode-effect dconst_1 (smf-push2 :double))
+(define-opcode-effect bipush (smf-push :int))
+(define-opcode-effect sipush (smf-push :int))
+(define-opcode-effect ldc
+    (case (constant-type (car (instruction-args instruction)))
+      (:int (smf-push :int))
+      (:long (smf-push2 :long))
+      (:float (smf-push :float))
+      (:double (smf-push2 :double))
+      (t (smf-push (car (instruction-args instruction))))))
+(define-opcode-effect iload (smf-push :int))
+(define-opcode-effect lload (smf-push2 :long))
+(define-opcode-effect fload (smf-push :float))
+(define-opcode-effect dload (smf-push2 :double))
+#|(define-opcode aload 25 2 1) ;;TODO
+(define-opcode iload_0 26 1 1)
+(define-opcode iload_1 27 1 1)
+(define-opcode iload_2 28 1 1)
+(define-opcode iload_3 29 1 1)
+(define-opcode lload_0 30 1 2)
+(define-opcode lload_1 31 1 2)
+(define-opcode lload_2 32 1 2)
+(define-opcode lload_3 33 1 2)
+(define-opcode fload_0 34 1 nil)
+(define-opcode fload_1 35 1 nil)
+(define-opcode fload_2 36 1 nil)
+(define-opcode fload_3 37 1 nil)
+(define-opcode dload_0 38 1 nil)
+(define-opcode dload_1 39 1 nil)
+(define-opcode dload_2 40 1 nil)
+(define-opcode dload_3 41 1 nil)
+(define-opcode aload_0 42 1 1)
+(define-opcode aload_1 43 1 1)
+(define-opcode aload_2 44 1 1)
+(define-opcode aload_3 45 1 1)|#
+(define-opcode-effect iaload (smf-popn 2) (smf-push :int))
+(define-opcode-effect laload (smf-popn 2) (smf-push2 :long))
+(define-opcode-effect faload (smf-popn 2) (smf-push :float))
+(define-opcode-effect daload (smf-popn 2) (smf-push2 :double))
+#+nil ;;until there's newarray
+(define-opcode-effect aaload
+	       (progn
+		 (smf-pop)
+		 (smf-push (smf-element-of (smf-pop)))))
+(define-opcode-effect baload (smf-popn 2) (smf-push :int))
+(define-opcode-effect caload (smf-popn 2) (smf-push :int))
+(define-opcode-effect saload (smf-popn 2) (smf-push :int))
+#|(define-opcode istore 54 2 -1)
+(define-opcode lstore 55 2 -2)
+(define-opcode fstore 56 2 nil)
+(define-opcode dstore 57 2 nil)
+(define-opcode astore 58 2 -1)
+(define-opcode istore_0 59 1 -1)
+(define-opcode istore_1 60 1 -1)
+(define-opcode istore_2 61 1 -1)
+(define-opcode istore_3 62 1 -1)
+(define-opcode lstore_0 63 1 -2)
+(define-opcode lstore_1 64 1 -2)
+(define-opcode lstore_2 65 1 -2)
+(define-opcode lstore_3 66 1 -2)
+(define-opcode fstore_0 67 1 nil)
+(define-opcode fstore_1 68 1 nil)
+(define-opcode fstore_2 69 1 nil)
+(define-opcode fstore_3 70 1 nil)
+(define-opcode dstore_0 71 1 nil)
+(define-opcode dstore_1 72 1 nil)
+(define-opcode dstore_2 73 1 nil)
+(define-opcode dstore_3 74 1 nil)
+(define-opcode astore_0 75 1 -1)
+(define-opcode astore_1 76 1 -1)
+(define-opcode astore_2 77 1 -1)
+(define-opcode astore_3 78 1 -1)
+(define-opcode iastore 79 1 -3)
+(define-opcode lastore 80 1 -4)
+(define-opcode fastore 81 1 -3)
+(define-opcode dastore 82 1 -4)
+(define-opcode aastore 83 1 -3)
+(define-opcode bastore 84 1 nil)
+(define-opcode castore 85 1 nil)
+(define-opcode sastore 86 1 nil)
+(define-opcode pop 87 1 -1)
+(define-opcode pop2 88 1 -2)
+(define-opcode dup 89 1 1)
+(define-opcode dup_x1 90 1 1)
+(define-opcode dup_x2 91 1 1)
+(define-opcode dup2 92 1 2)
+(define-opcode dup2_x1 93 1 2)
+(define-opcode dup2_x2 94 1 2)
+(define-opcode swap 95 1 0)
+(define-opcode iadd 96 1 -1)
+(define-opcode ladd 97 1 -2)
+(define-opcode fadd 98 1 -1)
+(define-opcode dadd 99 1 -2)
+(define-opcode isub 100 1 -1)
+(define-opcode lsub 101 1 -2)
+(define-opcode fsub 102 1 -1)
+(define-opcode dsub 103 1 -2)
+(define-opcode imul 104 1 -1)
+(define-opcode lmul 105 1 -2)
+(define-opcode fmul 106 1 -1)
+(define-opcode dmul 107 1 -2)
+(define-opcode idiv 108 1 nil)
+(define-opcode ldiv 109 1 nil)
+(define-opcode fdiv 110 1 nil)
+(define-opcode ddiv 111 1 nil)
+(define-opcode irem 112 1 nil)
+(define-opcode lrem 113 1 nil)
+(define-opcode frem 114 1 nil)
+(define-opcode drem 115 1 nil)
+(define-opcode ineg 116 1 0)
+(define-opcode lneg 117 1 0)
+(define-opcode fneg 118 1 0)
+(define-opcode dneg 119 1 0)
+(define-opcode ishl 120 1 -1)
+(define-opcode lshl 121 1 -1)
+(define-opcode ishr 122 1 -1)
+(define-opcode lshr 123 1 -1)
+(define-opcode iushr 124 1 nil)
+(define-opcode lushr 125 1 nil)
+(define-opcode iand 126 1 -1)
+(define-opcode land 127 1 -2)
+(define-opcode ior 128 1 -1)
+(define-opcode lor 129 1 -2)
+(define-opcode ixor 130 1 -1)
+(define-opcode lxor 131 1 -2)
+(define-opcode iinc 132 3 0)
+(define-opcode i2l 133 1 1)
+(define-opcode i2f 134 1 0)
+(define-opcode i2d 135 1 1)
+(define-opcode l2i 136 1 -1)
+(define-opcode l2f 137 1 -1)
+(define-opcode l2d 138 1 0)
+(define-opcode f2i 139 1 nil)
+(define-opcode f2l 140 1 nil)
+(define-opcode f2d 141 1 1)
+(define-opcode d2i 142 1 nil)
+(define-opcode d2l 143 1 nil)
+(define-opcode d2f 144 1 -1)
+(define-opcode i2b 145 1 nil)
+(define-opcode i2c 146 1 nil)
+(define-opcode i2s 147 1 nil)
+(define-opcode lcmp 148 1 -3)
+(define-opcode fcmpl 149 1 -1)
+(define-opcode fcmpg 150 1 -1)
+(define-opcode dcmpl 151 1 -3)
+(define-opcode dcmpg 152 1 -3)
+(define-opcode ifeq 153 3 -1)
+(define-opcode ifne 154 3 -1)
+(define-opcode iflt 155 3 -1)
+(define-opcode ifge 156 3 -1)
+(define-opcode ifgt 157 3 -1)
+(define-opcode ifle 158 3 -1)
+(define-opcode if_icmpeq 159 3 -2)
+(define-opcode if_icmpne 160 3 -2)
+(define-opcode if_icmplt 161 3 -2)
+(define-opcode if_icmpge 162 3 -2)
+(define-opcode if_icmpgt 163 3 -2)
+(define-opcode if_icmple 164 3 -2)
+(define-opcode if_acmpeq 165 3 -2)
+(define-opcode if_acmpne 166 3 -2)
+(define-opcode goto 167 3 0)
+;;(define-opcode jsr 168 3 1) Don't use these 2 opcodes: deprecated
+;;(define-opcode ret 169 2 0) their use results in JVM verifier errors
+(define-opcode tableswitch 170 0 nil)
+(define-opcode lookupswitch 171 0 nil)
+(define-opcode ireturn 172 1 nil)
+(define-opcode lreturn 173 1 nil)
+(define-opcode freturn 174 1 nil)
+(define-opcode dreturn 175 1 nil)
+(define-opcode areturn 176 1 -1)
+(define-opcode return 177 1 0)
+(define-opcode getstatic 178 3 1)
+(define-opcode putstatic 179 3 -1)
+(define-opcode getfield 180 3 0)
+(define-opcode putfield 181 3 -2)
+(define-opcode invokevirtual 182 3 nil)
+(define-opcode invokespecial 183 3 nil)
+(define-opcode invokestatic 184 3 nil)
+(define-opcode invokeinterface 185 5 nil)
+(define-opcode unused 186 0 nil)
+(define-opcode new 187 3 1)
+(define-opcode newarray 188 2 nil)
+(define-opcode anewarray 189 3 0)
+(define-opcode arraylength 190 1 0)
+(define-opcode athrow 191 1 0)
+(define-opcode checkcast 192 3 0)
+(define-opcode instanceof 193 3 0)
+(define-opcode monitorenter 194 1 -1)
+(define-opcode monitorexit 195 1 -1)
+(define-opcode wide 196 0 nil)
+(define-opcode multianewarray 197 4 nil)
+(define-opcode ifnull 198 3 -1)
+(define-opcode ifnonnull 199 3 nil)
+(define-opcode goto_w 200 5 nil)
+;; (define-opcode jsr_w 201 5 nil) Don't use: deprecated
+(define-opcode label 202 0 0)  ;; virtual: does not exist in the JVM
+;; (define-opcode push-value 203 nil 1)
+;; (define-opcode store-value 204 nil -1)
+(define-opcode clear-values 205 0 0)  ;; virtual: does not exist in the JVM
+;;(define-opcode var-ref 206 0 0)|#
 
 #|
 

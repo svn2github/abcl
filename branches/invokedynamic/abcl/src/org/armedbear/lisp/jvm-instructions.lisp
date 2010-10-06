@@ -449,8 +449,9 @@
                      (list
                       (inst 'aload (car (instruction-args instruction)))
                       (inst 'aconst_null)
-                      (inst 'putfield (u2 (pool-field +lisp-thread+ "_values"
-                                                      +lisp-object-array+)))))
+                      (inst 'putfield (u2 (constant-index
+					   (pool-field +lisp-thread+ "_values"
+						       +lisp-object-array+))))))
              (vector-push-extend instruction vector)))
           (t
            (vector-push-extend instruction vector)))))))
@@ -654,16 +655,17 @@
   (let* ((args (instruction-args instruction)))
     (unless (= (length args) 1)
       (error "Wrong number of args for LDC."))
-    (if (> (car args) 255)
-        (inst 19 (u2 (car args))) ; LDC_W
-        (inst 18 args))))
+    (let ((index (constant-index (car args))))
+      (if (> index 255)
+	  (inst 19 (u2 index)) ; LDC_W
+	  (inst 18 args)))))
 
 ;; ldc2_w
 (define-resolver 20 (instruction)
   (let* ((args (instruction-args instruction)))
     (unless (= (length args) 1)
       (error "Wrong number of args for LDC2_W."))
-    (inst 20 (u2 (car args)))))
+    (inst 20 (u2 (constant-index (car args))))))
 
 ;; iinc
 (define-resolver 132 (instruction)
@@ -984,8 +986,9 @@
           (unless (= (instruction-opcode instruction) 202) ; LABEL
             (setf (svref bytes index) (instruction-opcode instruction))
             (incf index)
-            (dolist (byte (instruction-args instruction))
-              (setf (svref bytes index) byte)
+            (dolist (arg (instruction-args instruction))
+              (setf (svref bytes index)
+		    (if (constant-p arg) (constant-index arg) arg))
               (incf index)))))
       (values bytes labels))))
 

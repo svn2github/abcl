@@ -117,13 +117,13 @@ public class JavaClassLoader extends URLClassLoader {
                 resolveClass(c);
                 return c;
             }
-        }
-        catch (VerifyError e)
-          {
+        } catch (VerifyError e) {
             error(new LispError("Class verification failed: " + e.getMessage()));
-          }
-        catch (Throwable t) {
+	} catch (Throwable t) {
+	    Debug.trace("Classloading error for " + className);
             Debug.trace(t);
+	    LispThread.currentThread().printBacktrace();
+	    Debug.trace("Classloading error for " + className);
         }
         return null;
     }

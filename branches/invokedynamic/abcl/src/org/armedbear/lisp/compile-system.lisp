@@ -270,24 +270,29 @@
     t))
 
 (defun compile-system (&key quit (zip t) output-path)
-  (let ((status -1))
-    (check-lisp-home)
-    (time
-     (with-compilation-unit ()
-       (let ((*compile-file-zip* zip)
-             failure-p)
-         (handler-bind (((or warning
-                             compiler-error)
-                         #'(lambda (c)
-                             (declare (ignore c))
-                             (setf failure-p t)
-                             ;; only register that we had this type of signal
-                             ;; defer the actual handling to another handler
-                             nil)))
-           (%compile-system :output-path output-path))
-         (unless failure-p
-           (setf status 0)))))
-    (create-system-logical-translations output-path)
+  (let ((status -1) failure)
+    (handler-bind ((error #'(lambda (c)
+			      (declare (ignore c))
+			      (let ((*print-circle* t))
+				(pprint (sys::backtrace-as-list)))
+			      nil)))
+      (check-lisp-home)
+      (time
+       (with-compilation-unit ()
+	 (let ((*compile-file-zip* zip))
+	   (handler-bind (((or warning
+			       compiler-error)
+			   #'(lambda (c)
+			       (setf failure c)
+			       ;; only register that we had this type of signal
+			       ;; defer the actual handling to another handler
+			       nil)))
+	     (%compile-system :output-path output-path))
+	   (unless failure
+	     (setf status 0)))))
+      (create-system-logical-translations output-path))
+    (when failure
+      (format t "Failure: ~A~%" failure))
     (when quit
       (quit :status status))))
 

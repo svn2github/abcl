@@ -204,8 +204,9 @@ the top-most value's representation being 'rep1'."
 (declaim (ftype (function * t) emit-invokestatic))
 (defun emit-invokestatic (class-name method-name arg-types return-type)
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (pool-add-method-ref *pool* class-name
-                                     method-name (cons return-type arg-types)))
+         (index (constant-index (pool-add-method-ref
+				 *pool* class-name
+				 method-name (cons return-type arg-types))))
          (instruction (apply #'%emit 'invokestatic (u2 index))))
     (setf (instruction-stack instruction) stack-effect)))
 
@@ -225,8 +226,9 @@ the top-most value's representation being 'rep1'."
 (defknown emit-invokevirtual (t t t t) t)
 (defun emit-invokevirtual (class-name method-name arg-types return-type)
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (pool-add-method-ref *pool* class-name
-                                     method-name (cons return-type arg-types)))
+         (index (constant-index (pool-add-method-ref
+				 *pool* class-name
+				 method-name (cons return-type arg-types))))
          (instruction (apply #'%emit 'invokevirtual (u2 index))))
     (declare (type (signed-byte 8) stack-effect))
     (let ((explain *explain*))
@@ -242,8 +244,9 @@ the top-most value's representation being 'rep1'."
 (defknown emit-invokespecial-init (string list) t)
 (defun emit-invokespecial-init (class-name arg-types)
   (let* ((stack-effect (apply #'descriptor-stack-effect :void arg-types))
-         (index (pool-add-method-ref *pool* class-name
-                                     "<init>" (cons nil arg-types)))
+         (index (constant-index (pool-add-method-ref
+				 *pool* class-name
+				 "<init>" (cons nil arg-types))))
          (instruction (apply #'%emit 'invokespecial (u2 index))))
     (declare (type (signed-byte 8) stack-effect))
     (setf (instruction-stack instruction) (1- stack-effect))))
@@ -283,42 +286,42 @@ the top-most value's representation being 'rep1'."
 (declaim (inline emit-getstatic emit-putstatic))
 (defknown emit-getstatic (t t t) t)
 (defun emit-getstatic (class-name field-name type)
-  (let ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getstatic (u2 index))))
+  (let ((ref (pool-add-field-ref *pool* class-name field-name type)))
+    (apply #'%emit 'getstatic (u2 (constant-index ref)))))
 
 (defknown emit-putstatic (t t t) t)
 (defun emit-putstatic (class-name field-name type)
-  (let ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putstatic (u2 index))))
+  (let ((ref (pool-add-field-ref *pool* class-name field-name type)))
+    (apply #'%emit 'putstatic (u2 (constant-index ref)))))
 
 (declaim (inline emit-getfield emit-putfield))
 (defknown emit-getfield (t t t) t)
 (defun emit-getfield (class-name field-name type)
-  (let* ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getfield (u2 index))))
+  (let* ((ref (pool-add-field-ref *pool* class-name field-name type)))
+    (apply #'%emit 'getfield (u2 (constant-index ref)))))
 
 (defknown emit-putfield (t t t) t)
 (defun emit-putfield (class-name field-name type)
-  (let* ((index (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putfield (u2 index))))
+  (let* ((ref (pool-add-field-ref *pool* class-name field-name type)))
+    (apply #'%emit 'putfield (u2 (constant-index ref)))))
 
 
 (defknown emit-new (t) t)
 (declaim (inline emit-new emit-anewarray emit-checkcast emit-instanceof))
 (defun emit-new (class-name)
-  (apply #'%emit 'new (u2 (pool-class class-name))))
+  (apply #'%emit 'new (u2 (constant-index (pool-class class-name)))))
 
 (defknown emit-anewarray (t) t)
 (defun emit-anewarray (class-name)
-  (apply #'%emit 'anewarray (u2 (pool-class class-name))))
+  (apply #'%emit 'anewarray (u2 (constant-index (pool-class class-name)))))
 
 (defknown emit-checkcast (t) t)
 (defun emit-checkcast (class-name)
-  (apply #'%emit 'checkcast (u2 (pool-class class-name))))
+  (apply #'%emit 'checkcast (u2 (constant-index (pool-class class-name)))))
 
 (defknown emit-instanceof (t) t)
 (defun emit-instanceof (class-name)
-  (apply #'%emit 'instanceof (u2 (pool-class class-name))))
+  (apply #'%emit 'instanceof (u2 (constant-index (pool-class class-name)))))
 
 
 (defvar type-representations '((:int fixnum)
@@ -907,6 +910,24 @@ representation, based on the derived type of the LispObject."
     method))
 
 
+(defun make-static-initializer ()
+  (let* ((*compiler-debug* nil)
+         ;; We don't normally need to see debugging output for <clinit>.
+         (method (make-method :static-initializer
+			      :void nil :flags '(:public :static)))
+         (code (method-add-code method))
+         (*code* ())
+         (*current-code-attribute* code))
+    (setf (code-max-locals code) 1)
+    (emit 'ldc (pool-class +lisp-function+))
+    (emit 'ldc (pool-string "linkLispFunction"))
+    (emit-invokestatic +dyn-linkage+ "registerBootstrapMethod"
+		       (list +java-class+ +java-string+) :void)
+    ;(setf *code* (append *static-code* *code*))
+    (emit 'return)
+    (setf (code-code code) *code*)
+    method))
+
 (defvar *source-line-number* nil)
 
 
@@ -918,9 +939,9 @@ extend the class any further."
   (class-add-method class (make-constructor (class-file-superclass class)
                                             (abcl-class-file-lambda-name class)
                                             (abcl-class-file-lambda-list class)))
+  (class-add-method class (make-static-initializer))
   (finalize-class-file class)
   (write-class-file class stream))
-
 
 (defknown declare-field (t t t) t)
 (defun declare-field (name descriptor)
