@@ -943,59 +943,12 @@
       (print-code code)))
   code)
 
-
-
-
-(defun code-bytes (code)
-  (let ((length 0)
-        labels ;; alist
-        )
-    (declare (type (unsigned-byte 16) length))
-    ;; Pass 1: calculate label offsets and overall length.
-    (dotimes (i (length code))
-      (declare (type (unsigned-byte 16) i))
-      (let* ((instruction (aref code i))
-             (opcode (instruction-opcode instruction)))
-        (if (= opcode 202) ; LABEL
-            (let ((label (car (instruction-args instruction))))
-              (set label length)
-              (setf labels
-                    (acons label length labels)))
-            (incf length (opcode-size opcode)))))
-    ;; Pass 2: replace labels with calculated offsets.
-    (let ((index 0))
-      (declare (type (unsigned-byte 16) index))
-      (dotimes (i (length code))
-        (declare (type (unsigned-byte 16) i))
-        (let ((instruction (aref code i)))
-          (when (branch-p (instruction-opcode instruction))
-            (let* ((label (car (instruction-args instruction)))
-                   (offset (- (the (unsigned-byte 16)
-                                (symbol-value (the symbol label)))
-                              index)))
-              (setf (instruction-args instruction) (s2 offset))))
-          (unless (= (instruction-opcode instruction) 202) ; LABEL
-            (incf index (opcode-size (instruction-opcode instruction)))))))
-    ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
-    (let ((bytes (make-array length))
-          (index 0))
-      (declare (type (unsigned-byte 16) index))
-      (dotimes (i (length code))
-        (declare (type (unsigned-byte 16) i))
-        (let ((instruction (aref code i)))
-          (unless (= (instruction-opcode instruction) 202) ; LABEL
-            (setf (svref bytes index) (instruction-opcode instruction))
-            (incf index)
-            (dolist (arg (instruction-args instruction))
-              (setf (svref bytes index)
-		    (if (constant-p arg) (constant-index arg) arg))
-              (incf index)))))
-      (values bytes labels))))
-
 (defun finalize-code (code handler-labels optimize)
   (setf code (coerce (nreverse code) 'vector))
   (when optimize
     (setf code (optimize-code code handler-labels)))
   (resolve-instructions (expand-virtual-instructions code)))
+
+;;Opcode effects on locals & stack - for computing the stack map table
 
 (provide '#:opcodes)

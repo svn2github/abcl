@@ -847,7 +847,8 @@ Returns NIL if the attribute isn't found."
   access-flags
   name
   descriptor
-  attributes)
+  attributes
+  initial-locals)
 
 
 (defun map-method-name (name)
@@ -902,13 +903,15 @@ returning the attribute."
 (defun finalize-method (method class)
   "Prepares `method' for serialization."
   (let ((pool (class-file-constants class)))
-    (setf (method-access-flags method)
+    (setf (method-initial-locals method)
+	  (compute-initial-method-locals class method)
+	  (method-access-flags method)
           (map-flags (method-access-flags method))
           (method-descriptor method)
           (constant-index (pool-add-utf8 pool (apply #'descriptor (method-descriptor method))))
           (method-name method)
           (constant-index (pool-add-utf8 pool (method-name method)))))
-  (finalize-attributes (method-attributes method) nil class))
+    (finalize-attributes (method-attributes method) method class))
 
 
 (defun write-method (method stream)
@@ -1001,20 +1004,21 @@ has been finalized."
                      (nconc (mapcar #'exception-start-pc handlers)
                             (mapcar #'exception-end-pc handlers)
                             (mapcar #'exception-handler-pc handlers))
-                     t)))
+                     t))
+	 (compute-stack-map-table-p (>= (class-file-major-version class) 50)))
     (unless (code-max-stack code)
       (setf (code-max-stack code)
             (analyze-stack c (mapcar #'exception-handler-pc handlers))))
     (unless (code-max-locals code)
       (setf (code-max-locals code)
             (analyze-locals code)))
-    (when (>= (class-file-major-version class) 50)
-      (code-add-attribute code (compute-stack-map-table class parent)))
     (multiple-value-bind
-          (c labels)
-        (code-bytes c)
+          (c labels stack-map-table)
+        (resolve-code c class parent compute-stack-map-table-p)
       (setf (code-code code) c
-            (code-labels code) labels)))
+            (code-labels code) labels)
+      (when compute-stack-map-table-p
+	#+todo (code-add-attribute code stack-map-table))))
 
   (setf (code-exception-handlers code)
         (remove-if #'(lambda (h)
@@ -1087,6 +1091,68 @@ type, control is transferred to label `handler'."
                         :handler-pc handler
                         :catch-type type)
         (code-exception-handlers code)))
+
+(defun resolve-code (code class method compute-stack-map-table-p)
+  "Walks the code, replacing symbolic labels with numeric offsets, and optionally computing the stack map table."
+  (declare (ignore class))
+  (let* ((length 0)
+	 labels ;; alist
+	 stack-map-table
+	 (*basic-block* (when compute-stack-map-table-p
+			  (make-basic-block
+			   :offset 0
+			   :input-locals
+			   (method-initial-locals method))))
+	 (root-block *basic-block*)
+	 *basic-blocks*)
+    (declare (type (unsigned-byte 16) length))
+    ;; Pass 1: calculate label offsets and overall length.
+    (dotimes (i (length code))
+      (declare (type (unsigned-byte 16) i))
+      (let* ((instruction (aref code i))
+             (opcode (instruction-opcode instruction)))
+        (if (= opcode 202) ; LABEL
+            (let ((label (car (instruction-args instruction))))
+              (set label length)
+              (setf labels
+                    (acons label length labels))
+	      (incf length (opcode-size opcode))))))
+    ;; Pass 2: replace labels with calculated offsets.
+    (let ((index 0))
+      (declare (type (unsigned-byte 16) index))
+      (dotimes (i (length code))
+        (declare (type (unsigned-byte 16) i))
+        (let ((instruction (aref code i)))
+          (when (branch-p (instruction-opcode instruction))
+            (let* ((label (car (instruction-args instruction)))
+                   (offset (- (the (unsigned-byte 16)
+                                (symbol-value (the symbol label)))
+                              index)))
+              (setf (instruction-args instruction) (s2 offset))))
+	  (when compute-stack-map-table-p
+	    (funcall (opcode-effect-function opcode)
+		     instruction index))
+          (unless (= (instruction-opcode instruction) 202) ; LABEL
+            (incf index (opcode-size (instruction-opcode instruction)))))))
+    ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
+    (let ((bytes (make-array length))
+          (index 0))
+      (declare (type (unsigned-byte 16) index))
+      (dotimes (i (length code))
+        (declare (type (unsigned-byte 16) i))
+        (let ((instruction (aref code i)))
+          (unless (= (instruction-opcode instruction) 202) ; LABEL
+            (setf (svref bytes index) (instruction-opcode instruction))
+            (incf index)
+            (dolist (arg (instruction-args instruction))
+              (setf (svref bytes index)
+		    (if (constant-p arg) (constant-index arg) arg))
+              (incf index)))))
+      (values bytes labels stack-map-table))))
+
+(defun ends-basic-block-p (opcode)
+  (or (branch-p opcode)
+      (>= 172 opcode 177))) ;;return variants
 
 (defstruct exception
   "Exception handler information.
@@ -1297,8 +1363,12 @@ names, their type and their scope of validity."
   "The attribute containing the stack map table, a map from bytecode offsets to frames containing information about the types of locals and values on the operand stack at that offset. This is an attribute of a method."
   entries)
 
+(defun add-stack-map-frame (stack-map-table instruction-offset locals
+			    stack-items)
+  (error "TODO!"))
+
 (defun finalize-stack-map-table-attribute (table parent class)
-  "Prepares the `stack-map-table' attribute for serialization, within method `parent'."
+  "Prepares the `stack-map-table' attribute for serialization, within method `parent': replaces all virtual types in the stack map frames with variable-info objects."
   (declare (ignore parent class)) ;;TODO
   table)
 
@@ -1356,76 +1426,83 @@ names, their type and their scope of validity."
   (write-u2 (uninitialized-variable-info-offset vti) stream))
 
 (defconst *opcode-effect-table*
-  (make-array 256 :initial-element #'(lambda (a b) (declare (ignore b)) a)))
+  (make-array 256 :initial-element #'(lambda (&rest args) (car args))))
 
 (defun opcode-effect-function (opcode)
   (svref *opcode-effect-table* opcode))
 
-(defvar *computed-stack* nil "The list of types on the stack calculated from the last emitted instruction, or from the method signature if no instruction has been emitted yet for the current method.")
+(defstruct basic-block label offset input-locals input-stack output-locals output-stack successors)
 
-(defvar *computed-locals* nil "The list of types of local variables calculated from the last emitted instruction, or from the method signature if no instruction has been emitted yet for the current method.")
+(defun basic-block-add-successor (basic-block successor)
+  (push successor (basic-block-successors basic-block)))
+
+(defvar *basic-block*)
+(defvar *basic-blocks* nil "An alist that associates labels with corresponding basic blocks")
+
+(defun label-basic-block (label)
+  (or (cdr (assoc label *basic-blocks*))
+      (setf (assoc label *basic-blocks*)
+	    (make-basic-block :label label
+			      :offset (symbol-value label)))))
 
 (defmacro define-opcode-effect (opcode &body body)
   `(setf (svref *opcode-effect-table*
 		(opcode-number ',opcode))
-	 #'(lambda (instruction)
-	     (declare (ignorable instruction))
-	     ,@body)))
+	 (if (and (symbolp (car body)) (null (cdr body)))
+	     `(function ,(car body))
+	     #'(lambda (instruction offset)
+		 (declare (ignorable instruction offset))
+		 ,@body))))
 
-(defun update-stack-map-effect! (*computed-stack* *computed-locals* instruction)
-  (funcall (opcode-effect-function (instruction-opcode instruction))
-	   instruction)
-  (setf (instruction-stack-map-locals instruction) *computed-locals*)
-  (setf (instruction-stack-map-stack instruction) *computed-stack*)
-  instruction)
-
-(defun compute-stack-map-table (class method)
-  (let ((table (make-stack-map-table-attribute))
-	(*computed-stack* (compute-initial-method-stack class method))
-	(*computed-locals*))
-    (finalize-stack-map-table table)))
-
-(defun finalize-stack-map-table (table)
-  "Replaces all virtual types in the stack map frames with variable-info objects."
-  ;;TODO
-  table)
-
-(defun compute-initial-method-stack (class method)
+(defun compute-initial-method-locals (class method)
   (let (locals)
     (unless (member :static (method-access-flags method))
       (if (string= "<init>" (method-name method))
 	  ;;the method is a constructor.
 	  (push :uninitialized-this locals)
 	  ;;the method is an instance method.
-	  (push (class-name class) locals)))
+	  (push (class-file-class class) locals)))
     (dolist (x (cdr (method-descriptor method)))
       (push x locals))
-    locals))
+    (nreverse locals)))
 
 (defun smf-type->variable-info (type)
   (case type))
 
-(defun smf-push (type)
-  (push type *computed-stack*))
+(defun smf-get (pos)
+  (or (nth pos (basic-block-output-locals *basic-block*))
+      (error "Locals inconsistency: get ~A but locals are ~A"
+	     pos (length (basic-block-output-locals *basic-block*)))))
 
-(defun smf-push2 (type)
-  (smf-push type)
-  (smf-push :top))
+(defun smf-set (pos type)
+  (if (< pos (length (basic-block-output-locals *basic-block*)))
+      (setf (nth pos (basic-block-output-locals *basic-block*)) type)
+      (progn
+	(setf (basic-block-output-locals *basic-block*)
+	      (append (basic-block-output-locals *basic-block*) (list nil)))
+	(smf-set pos type))))
+
+(defun smf-push (type)
+  (push type (basic-block-output-stack *basic-block*))
+  (when (or (eq type :long) (eq type :double))
+    (push :top (basic-block-output-stack *basic-block*))))
 
 (defun smf-pop ()
-  (pop *computed-stack*))
+  (pop (basic-block-output-stack *basic-block*)))
 
 (defun smf-popn (n)
   (dotimes (i n)
-    (pop *computed-stack*)))
+    (pop (basic-block-output-stack *basic-block*))))
 
 (defun smf-element-of (type)
-  (if (consp type)
+  (if (and (consp type) (eq (car type) :array-of))
       (cdr type)
-      (error "Not an array stack map type: ~S" type)))
+      (cons :element-of type)))
 
 (defun smf-array-of (type)
-  (cons :array-of type))
+  (if (and (consp type) (eq (car type) :element-of))
+      (cdr type)
+      (cons :array-of type)))
 
 (define-opcode-effect aconst_null (smf-push :null))
 (define-opcode-effect iconst_m1 (smf-push :int))
@@ -1435,51 +1512,46 @@ names, their type and their scope of validity."
 (define-opcode-effect iconst_3 (smf-push :int))
 (define-opcode-effect iconst_4 (smf-push :int))
 (define-opcode-effect iconst_5 (smf-push :int))
-(define-opcode-effect lconst_0 (smf-push2 :long))
-(define-opcode-effect lconst_1 (smf-push2 :long))
+(define-opcode-effect lconst_0 (smf-push :long))
+(define-opcode-effect lconst_1 (smf-push :long))
 (define-opcode-effect fconst_0 (smf-push :float))
 (define-opcode-effect fconst_1 (smf-push :float))
 (define-opcode-effect fconst_2 (smf-push :float))
-(define-opcode-effect dconst_0 (smf-push2 :double))
-(define-opcode-effect dconst_1 (smf-push2 :double))
+(define-opcode-effect dconst_0 (smf-push :double))
+(define-opcode-effect dconst_1 (smf-push :double))
 (define-opcode-effect bipush (smf-push :int))
 (define-opcode-effect sipush (smf-push :int))
-(define-opcode-effect ldc
-    (case (constant-type (car (instruction-args instruction)))
-      (:int (smf-push :int))
-      (:long (smf-push2 :long))
-      (:float (smf-push :float))
-      (:double (smf-push2 :double))
-      (t (smf-push (car (instruction-args instruction))))))
+(define-opcode-effect ldc (smf-push (car (instruction-args instruction))))
 (define-opcode-effect iload (smf-push :int))
-(define-opcode-effect lload (smf-push2 :long))
+(define-opcode-effect lload (smf-push :long))
 (define-opcode-effect fload (smf-push :float))
-(define-opcode-effect dload (smf-push2 :double))
-#|(define-opcode aload 25 2 1) ;;TODO
-(define-opcode iload_0 26 1 1)
-(define-opcode iload_1 27 1 1)
-(define-opcode iload_2 28 1 1)
-(define-opcode iload_3 29 1 1)
-(define-opcode lload_0 30 1 2)
-(define-opcode lload_1 31 1 2)
-(define-opcode lload_2 32 1 2)
-(define-opcode lload_3 33 1 2)
-(define-opcode fload_0 34 1 nil)
-(define-opcode fload_1 35 1 nil)
-(define-opcode fload_2 36 1 nil)
-(define-opcode fload_3 37 1 nil)
-(define-opcode dload_0 38 1 nil)
-(define-opcode dload_1 39 1 nil)
-(define-opcode dload_2 40 1 nil)
-(define-opcode dload_3 41 1 nil)
-(define-opcode aload_0 42 1 1)
-(define-opcode aload_1 43 1 1)
-(define-opcode aload_2 44 1 1)
-(define-opcode aload_3 45 1 1)|#
+(define-opcode-effect dload (smf-push :double))
+(define-opcode-effect aload
+    (smf-push (smf-get (car (instruction-args instruction)))))
+(define-opcode-effect iload_0 (smf-push :int))
+(define-opcode-effect iload_1 (smf-push :int))
+(define-opcode-effect iload_2 (smf-push :int))
+(define-opcode-effect iload_3 (smf-push :int))
+(define-opcode-effect lload_0 (smf-push :long))
+(define-opcode-effect lload_1 (smf-push :long))
+(define-opcode-effect lload_2 (smf-push :long))
+(define-opcode-effect lload_3 (smf-push :long))
+(define-opcode-effect fload_0 (smf-push :float))
+(define-opcode-effect fload_1 (smf-push :float))
+(define-opcode-effect fload_2 (smf-push :float))
+(define-opcode-effect fload_3 (smf-push :float))
+(define-opcode-effect dload_0 (smf-push :double))
+(define-opcode-effect dload_1 (smf-push :double))
+(define-opcode-effect dload_2 (smf-push :double))
+(define-opcode-effect dload_3 (smf-push :double))
+#|(define-opcode-effect aload_0 42 1 1)
+(define-opcode-effect aload_1 43 1 1)
+(define-opcode-effect aload_2 44 1 1)
+(define-opcode-effect aload_3 45 1 1)|#
 (define-opcode-effect iaload (smf-popn 2) (smf-push :int))
-(define-opcode-effect laload (smf-popn 2) (smf-push2 :long))
+(define-opcode-effect laload (smf-popn 2) (smf-push :long))
 (define-opcode-effect faload (smf-popn 2) (smf-push :float))
-(define-opcode-effect daload (smf-popn 2) (smf-push2 :double))
+(define-opcode-effect daload (smf-popn 2) (smf-push :double))
 #+nil ;;until there's newarray
 (define-opcode-effect aaload
 	       (progn
@@ -1488,12 +1560,35 @@ names, their type and their scope of validity."
 (define-opcode-effect baload (smf-popn 2) (smf-push :int))
 (define-opcode-effect caload (smf-popn 2) (smf-push :int))
 (define-opcode-effect saload (smf-popn 2) (smf-push :int))
-#|(define-opcode istore 54 2 -1)
-(define-opcode lstore 55 2 -2)
-(define-opcode fstore 56 2 nil)
-(define-opcode dstore 57 2 nil)
-(define-opcode astore 58 2 -1)
-(define-opcode istore_0 59 1 -1)
+
+(defun iaf-store-effect (instruction offset)
+  (declare (ignore offset))
+  (let ((t1 (smf-pop))
+	  (arg (car (instruction-args instruction))))
+      (smf-set arg t1)
+      (when (> arg 0)
+	(let ((t2 (smf-get (1- arg))))
+	  (when (or (eq t2 :long) (eq t2 :double))
+	    (smf-set (1- arg) :top))))))
+
+(defun ld-store-effect (instruction offset)
+  (declare (ignore offset))
+  (smf-pop)
+  (let ((t1 (smf-pop))
+	  (arg (car (instruction-args instruction))))
+      (smf-set arg t1)
+      (smf-set (1+ arg) :top)
+      (when (> arg 0)
+	(let ((t2 (smf-get (1- arg))))
+	  (when (or (eq t2 :long) (eq t2 :double))
+	    (smf-set (1- arg) :top))))))
+
+(define-opcode-effect istore iaf-store-effect)
+(define-opcode-effect lstore ld-store-effect)
+(define-opcode-effect fstore iaf-store-effect)
+(define-opcode-effect dstore ld-store-effect)
+(define-opcode-effect astore iaf-store-effect)
+#|(define-opcode istore_0 59 1 -1)
 (define-opcode istore_1 60 1 -1)
 (define-opcode istore_2 61 1 -1)
 (define-opcode istore_3 62 1 -1)
@@ -1509,8 +1604,9 @@ names, their type and their scope of validity."
 (define-opcode dstore_1 72 1 nil)
 (define-opcode dstore_2 73 1 nil)
 (define-opcode dstore_3 74 1 nil)
-(define-opcode astore_0 75 1 -1)
-(define-opcode astore_1 76 1 -1)
+(define-opcode astore_0 75 1 -1)|#
+;;TODO
+#|(define-opcode astore_1 76 1 -1)
 (define-opcode astore_2 77 1 -1)
 (define-opcode astore_3 78 1 -1)
 (define-opcode iastore 79 1 -3)
