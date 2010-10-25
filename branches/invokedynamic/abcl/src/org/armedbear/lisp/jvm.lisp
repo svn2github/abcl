@@ -124,7 +124,8 @@
   class-name
   lambda-name
   lambda-list ; as advertised
-  static-code
+  static-initializer
+  constructor
   objects ;; an alist of externalized objects and their field names
   (functions (make-hash-table :test 'equal)) ;; because of (SETF ...) functions
   )
@@ -163,7 +164,18 @@ using `make-unique-class-name'."
                                             :class-name class-name
                                             :lambda-name lambda-name
                                             :lambda-list lambda-list
-                                            :access-flags '(:public :final))))
+                                            :access-flags '(:public :final)))
+	 (static-initializer (make-method :static-initializer
+					  :void nil :flags '(:public :static)))
+	 (constructor (make-method :constructor :void nil
+				   :flags '(:public))))
+
+    (setf (abcl-class-file-static-initializer class-file) static-initializer)
+    (class-add-method class-file static-initializer)
+
+    (setf (abcl-class-file-constructor class-file) constructor)
+    (class-add-method class-file constructor)
+
     (when *file-compilation*
       (let ((source-attribute
              (make-source-file-attribute
@@ -176,12 +188,10 @@ using `make-unique-class-name'."
     `(let* ((,var                   ,class-file)
             (*class-file*           ,var)
             (*pool*                 (abcl-class-file-constants ,var))
-            (*static-code*          (abcl-class-file-static-code ,var))
             (*externalized-objects* (abcl-class-file-objects ,var))
             (*declared-functions*   (abcl-class-file-functions ,var)))
        (progn ,@body)
-       (setf (abcl-class-file-static-code ,var)  *static-code*
-             (abcl-class-file-objects ,var)      *externalized-objects*
+       (setf (abcl-class-file-objects ,var)      *externalized-objects*
              (abcl-class-file-functions ,var)    *declared-functions*))))
 
 (defstruct compiland

@@ -796,150 +796,136 @@ representation, based on the derived type of the LispObject."
 (defun emit-read-from-string (object)
   (emit-constructor-lambda-list object))
 
-(defun make-constructor (super lambda-name args)
+(defun make-constructor (class)
   (let* ((*compiler-debug* nil)
          ;; We don't normally need to see debugging output for constructors.
-         (method (make-method :constructor :void nil
-                              :flags '(:public)))
-         (code (method-add-code method))
-         req-params-register
+	 (super (class-file-superclass class))
+	 (lambda-name (abcl-class-file-lambda-name class))
+	 (args (abcl-class-file-lambda-list class))
+	 req-params-register
          opt-params-register
          key-params-register
          rest-p
          keys-p
-         more-keys-p
-         (*code* ())
-         (*current-code-attribute* code))
-    (setf (code-max-locals code) 1)
-    (unless (eq super +lisp-primitive+)
-      (multiple-value-bind
-            (req opt key key-p rest
-                 allow-other-keys-p)
-          (parse-lambda-list args)
-        (setf rest-p rest
-              more-keys-p allow-other-keys-p
-              keys-p key-p)
-        (macrolet
-            ((parameters-to-array ((param params register) &body body)
-               (let ((count-sym (gensym)))
-                 `(progn
-                    (emit-push-constant-int (length ,params))
-                    (emit-anewarray +lisp-closure-parameter+)
-                    (astore (setf ,register (code-max-locals code)))
-                    (incf (code-max-locals code))
-                    (do* ((,count-sym 0 (1+ ,count-sym))
-                          (,params ,params (cdr ,params))
-                          (,param (car ,params) (car ,params)))
-                        ((endp ,params))
-                      (declare (ignorable ,param))
-                      (aload ,register)
-                      (emit-push-constant-int ,count-sym)
-                      (emit-new +lisp-closure-parameter+)
-                      (emit 'dup)
-                      ,@body
-                      (emit 'aastore))))))
-          ;; process required args
-          (parameters-to-array (ignore req req-params-register)
-             (emit-push-t) ;; we don't need the actual symbol
-             (emit-invokespecial-init +lisp-closure-parameter+
-                                      (list +lisp-symbol+)))
+         more-keys-p)
+    (with-code-to-method (class (abcl-class-file-constructor class))
+      (setf (code-max-locals *current-code-attribute*) 1)
+      (unless (eq super +lisp-primitive+)
+	(multiple-value-bind
+	      (req opt key key-p rest
+		   allow-other-keys-p)
+	    (parse-lambda-list args)
+	  (setf rest-p rest
+		more-keys-p allow-other-keys-p
+		keys-p key-p)
+	  (macrolet
+	      ((parameters-to-array ((param params register) &body body)
+		 (let ((count-sym (gensym)))
+		   `(progn
+		      (emit-push-constant-int (length ,params))
+		      (emit-anewarray +lisp-closure-parameter+)
+		      (astore (setf ,register (code-max-locals *current-code-attribute*)))
+		      (incf (code-max-locals *current-code-attribute*))
+		      (do* ((,count-sym 0 (1+ ,count-sym))
+			    (,params ,params (cdr ,params))
+			    (,param (car ,params) (car ,params)))
+			   ((endp ,params))
+			(declare (ignorable ,param))
+			(aload ,register)
+			(emit-push-constant-int ,count-sym)
+			(emit-new +lisp-closure-parameter+)
+			(emit 'dup)
+			,@body
+			(emit 'aastore))))))
+	    ;; process required args
+	    (parameters-to-array (ignore req req-params-register)
+               (emit-push-t) ;; we don't need the actual symbol
+	       (emit-invokespecial-init +lisp-closure-parameter+
+					(list +lisp-symbol+)))
 
-          (parameters-to-array (param opt opt-params-register)
-             (emit-push-t) ;; we don't need the actual variable-symbol
-             (emit-read-from-string (second param)) ;; initform
-             (if (null (third param))               ;; supplied-p
-                 (emit-push-nil)
-                 (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit-getstatic +lisp-closure+ "OPTIONAL" :int)
-             (emit-invokespecial-init +lisp-closure-parameter+
-                                      (list +lisp-symbol+ +lisp-object+
-                                            +lisp-object+ :int)))
+	    (parameters-to-array (param opt opt-params-register)
+               (emit-push-t) ;; we don't need the actual variable-symbol
+	       (emit-read-from-string (second param)) ;; initform
+	       (if (null (third param))               ;; supplied-p
+		   (emit-push-nil)
+		   (emit-push-t)) ;; we don't need the actual supplied-p symbol
+	       (emit-getstatic +lisp-closure+ "OPTIONAL" :int)
+	       (emit-invokespecial-init +lisp-closure-parameter+
+					(list +lisp-symbol+ +lisp-object+
+					      +lisp-object+ :int)))
+	    
+	    (parameters-to-array (param key key-params-register)
+               (let ((keyword (fourth param)))
+		 (if (keywordp keyword)
+		     (progn
+		       (emit 'ldc (pool-string (symbol-name keyword)))
+		       (emit-invokestatic +lisp+ "internKeyword"
+					  (list +java-string+) +lisp-symbol+))
+		     ;; symbol is not really a keyword; yes, that's allowed!
+		     (progn
+		       (emit 'ldc (pool-string (symbol-name keyword)))
+		       (emit 'ldc (pool-string
+				   (package-name (symbol-package keyword))))
+		       (emit-invokestatic +lisp+ "internInPackage"
+					  (list +java-string+ +java-string+)
+					  +lisp-symbol+))))
+	       (emit-push-t) ;; we don't need the actual variable-symbol
+	       (emit-read-from-string (second (car key)))
+	       (if (null (third param))
+		   (emit-push-nil)
+		   (emit-push-t)) ;; we don't need the actual supplied-p symbol
+	       (emit-invokespecial-init +lisp-closure-parameter+
+					(list +lisp-symbol+ +lisp-symbol+
+					      +lisp-object+ +lisp-object+))))))
+      (aload 0) ;; this
+      (cond ((eq super +lisp-primitive+)
+	     (emit-constructor-lambda-name lambda-name)
+	     (emit-constructor-lambda-list args)
+	     (emit-invokespecial-init super (lisp-object-arg-types 2)))
+	    ((equal super +lisp-compiled-closure+) ;;### only needs EQ when SUPER is guaranteed to be CLASS-NAME
+	     (aload req-params-register)
+	     (aload opt-params-register)
+	     (aload key-params-register)
+	     (if keys-p
+		 (emit-push-t)
+		 (emit-push-nil-symbol))
+	     (if rest-p
+		 (emit-push-t)
+		 (emit-push-nil-symbol))
+	     (if more-keys-p
+		 (emit-push-t)
+		 (emit-push-nil-symbol))
+	     (emit-invokespecial-init super
+				      (list +lisp-closure-parameter-array+
+					    +lisp-closure-parameter-array+
+					    +lisp-closure-parameter-array+
+					    +lisp-symbol+
+					    +lisp-symbol+ +lisp-symbol+)))
+	    (t
+	     (sys::%format t "MAKE-CONSTRUCTOR doesn't know how to handle superclass ~S~%" super)
+	     (aver nil))))))
 
-          (parameters-to-array (param key key-params-register)
-             (let ((keyword (fourth param)))
-               (if (keywordp keyword)
-                   (progn
-                     (emit 'ldc (pool-string (symbol-name keyword)))
-                     (emit-invokestatic +lisp+ "internKeyword"
-                                        (list +java-string+) +lisp-symbol+))
-                   ;; symbol is not really a keyword; yes, that's allowed!
-                   (progn
-                     (emit 'ldc (pool-string (symbol-name keyword)))
-                     (emit 'ldc (pool-string
-                                 (package-name (symbol-package keyword))))
-                     (emit-invokestatic +lisp+ "internInPackage"
-                                        (list +java-string+ +java-string+)
-                                        +lisp-symbol+))))
-             (emit-push-t) ;; we don't need the actual variable-symbol
-             (emit-read-from-string (second (car key)))
-             (if (null (third param))
-                 (emit-push-nil)
-                 (emit-push-t)) ;; we don't need the actual supplied-p symbol
-             (emit-invokespecial-init +lisp-closure-parameter+
-                                      (list +lisp-symbol+ +lisp-symbol+
-                                            +lisp-object+ +lisp-object+))))))
-    (aload 0) ;; this
-    (cond ((eq super +lisp-primitive+)
-           (emit-constructor-lambda-name lambda-name)
-           (emit-constructor-lambda-list args)
-           (emit-invokespecial-init super (lisp-object-arg-types 2)))
-          ((equal super +lisp-compiled-closure+) ;;### only needs EQ when SUPER is guaranteed to be CLASS-NAME
-           (aload req-params-register)
-           (aload opt-params-register)
-           (aload key-params-register)
-           (if keys-p
-               (emit-push-t)
-               (emit-push-nil-symbol))
-           (if rest-p
-               (emit-push-t)
-               (emit-push-nil-symbol))
-           (if more-keys-p
-               (emit-push-t)
-               (emit-push-nil-symbol))
-           (emit-invokespecial-init super
-                                    (list +lisp-closure-parameter-array+
-                                          +lisp-closure-parameter-array+
-                                          +lisp-closure-parameter-array+
-                                          +lisp-symbol+
-                                          +lisp-symbol+ +lisp-symbol+)))
-          (t
-           (aver nil)))
-    (setf *code* (append *static-code* *code*))
-    (emit 'return)
-    (setf (code-code code) *code*)
-    method))
-
-
-(defun make-static-initializer ()
-  (let* ((*compiler-debug* nil)
-         ;; We don't normally need to see debugging output for <clinit>.
-         (method (make-method :static-initializer
-			      :void nil :flags '(:public :static)))
-         (code (method-add-code method))
-         (*code* ())
-         (*current-code-attribute* code))
-    (setf (code-max-locals code) 1)
-    (emit 'ldc (pool-class +lisp-function+))
-    (emit 'ldc (pool-string "linkLispFunction"))
-    (emit-invokestatic +dyn-linkage+ "registerBootstrapMethod"
-		       (list +java-class+ +java-string+) :void)
-    ;(setf *code* (append *static-code* *code*))
-    (emit 'return)
-    (setf (code-code code) *code*)
-    method))
+(defun make-static-initializer (class)
+  (let ((*compiler-debug* nil))
+    ;; We don't normally need to see debugging output for <clinit>.
+    (with-code-to-method (class (abcl-class-file-static-initializer class))
+      (setf (code-max-locals *current-code-attribute*) 1)
+      (emit 'ldc (pool-class +lisp-function+))
+      (emit 'ldc (pool-string "linkLispFunction"))
+      (emit-invokestatic +dyn-linkage+ "registerBootstrapMethod"
+			 (list +java-class+ +java-string+) :void)
+      (emit 'return))))
 
 (defvar *source-line-number* nil)
-
 
 (defun finish-class (class stream)
   "Finalizes the `class' and writes the result to `stream'.
 
 The compiler calls this function to indicate it doesn't want to
 extend the class any further."
-  (class-add-method class (make-constructor (class-file-superclass class)
-                                            (abcl-class-file-lambda-name class)
-                                            (abcl-class-file-lambda-list class)))
-  (class-add-method class (make-static-initializer))
+  (with-code-to-method (class (abcl-class-file-constructor class))
+    (emit 'return))
+  (make-static-initializer class)
   (finalize-class-file class)
   (write-class-file class stream))
 
@@ -1106,8 +1092,8 @@ Returns the name of the field (in `*this-class*') from which
 the value of the object can be loaded. Objects may be coalesced based
 on the equality indicator in the `serialization-table'.
 
-Code to restore the serialized object is inserted into `*code' or
-`*static-code*' if `*declare-inline*' is non-nil.
+Code to restore the serialized object is inserted into the current method or
+the constructor if `*declare-inline*' is non-nil.
 "
   ;; TODO: rewrite to become EMIT-LOAD-EXTERNALIZED-OBJECT which
   ;; - instead of returning the name of the field - returns the type
@@ -1137,23 +1123,23 @@ Code to restore the serialized object is inserted into `*code' or
 
       (cond
         ((not *file-compilation*)
-         (let ((*code* *static-code*))
+	 (with-code-to-method
+	     (*class-file* (abcl-class-file-constructor *class-file*))
            (remember field-name object)
            (emit 'ldc (pool-string field-name))
            (emit-invokestatic +lisp+ "recall"
                               (list +java-string+) +lisp-object+)
            (when (not (eq field-type +lisp-object+))
              (emit-checkcast field-type))
-           (emit-putstatic *this-class* field-name field-type)
-           (setf *static-code* *code*)))
+           (emit-putstatic *this-class* field-name field-type)))
         (*declare-inline*
          (funcall dispatch-fn object)
          (emit-putstatic *this-class* field-name field-type))
         (t
-         (let ((*code* *static-code*))
+	 (with-code-to-method
+	     (*class-file* (abcl-class-file-constructor *class-file*))
            (funcall dispatch-fn object)
-           (emit-putstatic *this-class* field-name field-type)
-           (setf *static-code* *code*))))
+           (emit-putstatic *this-class* field-name field-type))))
 
       (emit-getstatic *this-class* field-name field-type)
       (when cast
@@ -1183,30 +1169,26 @@ Code to restore the serialized object is inserted into `*code' or
                        (declare-object-as-string symbol)
                        (declare-object symbol))
               class *this-class*))
-     (let (saved-code)
-       (let ((*code* (if *declare-inline* *code* *static-code*)))
-         (if (eq class *this-class*)
-             (progn ;; generated by the DECLARE-OBJECT*'s above
-               (emit-getstatic class name +lisp-object+)
-               (emit-checkcast +lisp-symbol+))
-             (emit-getstatic class name +lisp-symbol+))
-         (emit-invokevirtual +lisp-symbol+
-                             (if setf
-                                 "getSymbolSetfFunctionOrDie"
-                                 "getSymbolFunctionOrDie")
-                             nil +lisp-object+)
-         ;; make sure we're not cacheing a proxied function
-         ;; (AutoloadedFunctionProxy) by allowing it to resolve itself
-         (emit-invokevirtual +lisp-object+
-                             "resolve" nil +lisp-object+)
-         (emit-putstatic *this-class* f +lisp-object+)
-         (if *declare-inline*
-             (setf saved-code *code*)
-             (setf *static-code* *code*))
-         (setf (gethash symbol ht) f))
-       (when *declare-inline*
-         (setf *code* saved-code))
-       f))))
+     (with-code-to-method (*class-file*
+			   (if *declare-inline* *method*
+			       (abcl-class-file-constructor *class-file*)))
+       (if (eq class *this-class*)
+	   (progn ;; generated by the DECLARE-OBJECT*'s above
+	     (emit-getstatic class name +lisp-object+)
+	     (emit-checkcast +lisp-symbol+))
+	   (emit-getstatic class name +lisp-symbol+))
+       (emit-invokevirtual +lisp-symbol+
+			   (if setf
+			       "getSymbolSetfFunctionOrDie"
+			       "getSymbolFunctionOrDie")
+			   nil +lisp-object+)
+       ;; make sure we're not cacheing a proxied function
+       ;; (AutoloadedFunctionProxy) by allowing it to resolve itself
+       (emit-invokevirtual +lisp-object+
+			   "resolve" nil +lisp-object+)
+       (emit-putstatic *this-class* f +lisp-object+))
+     (setf (gethash symbol ht) f)
+     f)))
 
 (defknown declare-setf-function (name) string)
 (defun declare-setf-function (name)
@@ -1218,17 +1200,17 @@ Code to restore the serialized object is inserted into `*code' or
   (declare-with-hashtable
    local-function *declared-functions* ht g
    (setf g (symbol-name (gensym "LFUN")))
-   (let* ((class-name (abcl-class-file-class-name
-                       (local-function-class-file local-function)))
-          (*code* *static-code*))
+   (let ((class-name (abcl-class-file-class-name
+		      (local-function-class-file local-function))))
+     (with-code-to-method
+	 (*class-file* (abcl-class-file-constructor *class-file*))
      ;; fixme *declare-inline*
-     (declare-field g +lisp-object+)
-     (emit-new class-name)
-     (emit 'dup)
-     (emit-invokespecial-init class-name '())
-     (emit-putstatic *this-class* g +lisp-object+)
-     (setf *static-code* *code*)
-     (setf (gethash local-function ht) g))))
+       (declare-field g +lisp-object+)
+       (emit-new class-name)
+       (emit 'dup)
+       (emit-invokespecial-init class-name '())
+       (emit-putstatic *this-class* g +lisp-object+)
+       (setf (gethash local-function ht) g)))))
 
 
 (defknown declare-object-as-string (t) string)
@@ -1241,44 +1223,38 @@ Code to restore the serialized object is inserted into `*code' or
   ;;  The solution is to rewrite externalize-object to
   ;;  EMIT-LOAD-EXTERNALIZED-OBJECT, which serializes *and*
   ;;  emits the right loading code (not just de-serialization anymore)
-  (let (saved-code
-        (g (symbol-name (gensym "OBJSTR"))))
-    (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
-           (*code* (if *declare-inline* *code* *static-code*)))
-      ;; strings may contain evaluated bits which may depend on
-      ;; previous statements
-      (declare-field g +lisp-object+)
-      (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp+ "readObjectFromString"
-                         (list +java-string+) +lisp-object+)
-      (emit-putstatic *this-class* g +lisp-object+)
-      (if *declare-inline*
-          (setf saved-code *code*)
-          (setf *static-code* *code*)))
-    (when *declare-inline*
-      (setf *code* saved-code))
-    g))
+  (let ((g (symbol-name (gensym "OBJSTR")))
+	(s (with-output-to-string (stream) (dump-form obj stream))))
+     (with-code-to-method
+	 (*class-file*
+	  (if *declare-inline* *method*
+	      (abcl-class-file-constructor *class-file*)))
+       ;; strings may contain evaluated bits which may depend on
+       ;; previous statements
+       (declare-field g +lisp-object+)
+       (emit 'ldc (pool-string s))
+       (emit-invokestatic +lisp+ "readObjectFromString"
+			  (list +java-string+) +lisp-object+)
+       (emit-putstatic *this-class* g +lisp-object+))
+     g))
 
 (defun declare-load-time-value (obj)
   (let ((g (symbol-name (gensym "LTV")))
-        saved-code)
-    (let* ((s (with-output-to-string (stream) (dump-form obj stream)))
-           (*code* (if *declare-inline* *code* *static-code*)))
-      ;; The readObjectFromString call may require evaluation of
-      ;; lisp code in the string (think #.() syntax), of which the outcome
-      ;; may depend on something which was declared inline
-      (declare-field g +lisp-object+)
-      (emit 'ldc (pool-string s))
-      (emit-invokestatic +lisp+ "readObjectFromString"
-                         (list +java-string+) +lisp-object+)
-      (emit-invokestatic +lisp+ "loadTimeValue"
-                         (lisp-object-arg-types 1) +lisp-object+)
-      (emit-putstatic *this-class* g +lisp-object+)
-      (if *declare-inline*
-          (setf saved-code *code*)
-          (setf *static-code* *code*)))
-    (when *declare-inline*
-      (setf *code* saved-code))
+	(s (with-output-to-string (stream) (dump-form obj stream))))
+     (with-code-to-method
+	 (*class-file*
+	  (if *declare-inline* *method*
+	      (abcl-class-file-constructor *class-file*)))
+       ;; The readObjectFromString call may require evaluation of
+       ;; lisp code in the string (think #.() syntax), of which the outcome
+       ;; may depend on something which was declared inline
+       (declare-field g +lisp-object+)
+       (emit 'ldc (pool-string s))
+       (emit-invokestatic +lisp+ "readObjectFromString"
+			  (list +java-string+) +lisp-object+)
+       (emit-invokestatic +lisp+ "loadTimeValue"
+			  (lisp-object-arg-types 1) +lisp-object+)
+       (emit-putstatic *this-class* g +lisp-object+))
     g))
 
 (declaim (ftype (function (t) string) declare-object))
@@ -1290,14 +1266,14 @@ The field type of the object is specified by OBJ-REF."
   (let ((g (symbol-name (gensym "OBJ"))))
     ;; fixme *declare-inline*?
     (remember g obj)
-    (let* ((*code* *static-code*))
+    (with-code-to-method
+	(*class-file* (abcl-class-file-constructor *class-file*))
       (declare-field g +lisp-object+)
       (emit 'ldc (pool-string g))
       (emit-invokestatic +lisp+ "recall"
                          (list +java-string+) +lisp-object+)
-      (emit-putstatic *this-class* g +lisp-object+)
-      (setf *static-code* *code*)
-      g)))
+      (emit-putstatic *this-class* g +lisp-object+))
+    g))
 
 (defknown compile-constant (t t t) t)
 (defun compile-constant (form target representation)
@@ -3823,6 +3799,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                    :element-type '(unsigned-byte 8)
                                    :if-exists :supersede)))
       (with-class-file class-file
+	(make-constructor class-file)
         (let ((*current-compiland* compiland))
           (with-saved-compiler-policy
               (p2-compiland compiland)
@@ -6875,6 +6852,8 @@ We need more thought here.
          (method (make-method "execute" +lisp-object+ arg-types
                                :flags '(:final :public)))
          (code (method-add-code method))
+	 (*code-locals* (code-computed-locals code)) ;;TODO in this and other cases, use with-code-to-method
+	 (*code-stack* (code-computed-stack code))
          (*current-code-attribute* code)
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
@@ -6883,7 +6862,8 @@ We need more thought here.
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (label-START (gensym)))
+         (label-START (gensym))
+	 prologue)
 
     (class-add-method class-file method)
     (when (fixnump *source-line-number*)
@@ -6895,6 +6875,36 @@ We need more thought here.
       (push var *visible-variables*))
     (dolist (var (compiland-free-specials compiland))
       (push var *visible-variables*))
+
+    ;;Prologue
+    (let ((arity (compiland-arity compiland)))
+      (when arity
+	(generate-arg-count-check arity)))
+    
+    (when *hairy-arglist-p*
+      (aload 0) ; this
+      (aver (not (null (compiland-argument-register compiland))))
+      (aload (compiland-argument-register compiland)) ; arg vector
+      (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
+	     (ensure-thread-var-initialized)
+	     (maybe-initialize-thread-var)
+	     (emit-push-current-thread)
+	     (emit-invokevirtual *this-class* "processArgs"
+				 (list +lisp-object-array+ +lisp-thread+)
+				 +lisp-object-array+))
+	    (t
+	     (emit-invokevirtual *this-class* "fastProcessArgs"
+				 (list +lisp-object-array+)
+				 +lisp-object-array+)))
+      (astore (compiland-argument-register compiland)))
+    
+    (unless (and *hairy-arglist-p*
+		 (or (memq '&OPTIONAL args) (memq '&KEY args)))
+      (maybe-initialize-thread-var))
+    
+    (setf prologue *code*
+	  *code* ())
+    ;;;;
 
     (when *using-arg-array*
       (setf (compiland-argument-register compiland) (allocate-register)))
@@ -7039,7 +7049,7 @@ We need more thought here.
     (check-for-unused-variables (compiland-arg-vars compiland))
 
     ;; Go back and fill in prologue.
-    (let ((code *code*))
+    #+nil (let ((code *code*))
       (setf *code* ())
       (let ((arity (compiland-arity compiland)))
         (when arity
@@ -7066,6 +7076,8 @@ We need more thought here.
                    (or (memq '&OPTIONAL args) (memq '&KEY args)))
         (maybe-initialize-thread-var))
       (setf *code* (nconc code *code*)))
+    
+    (setf *code* (nconc prologue *code*))
 
     (setf (abcl-class-file-superclass class-file)
           (if (or *hairy-arglist-p*
@@ -7076,8 +7088,6 @@ We need more thought here.
     (setf (abcl-class-file-lambda-list class-file) args)
     (setf (code-max-locals code) *registers-allocated*)
     (setf (code-code code) *code*))
-
-
   t)
 
 (defun p2-with-inline-code (form target representation)
@@ -7122,6 +7132,7 @@ We need more thought here.
       ;; Pass 2.
 
     (with-class-file (compiland-class-file compiland)
+      (make-constructor *class-file*)
       (with-saved-compiler-policy
         (p2-compiland compiland)
         ;;        (finalize-class-file (compiland-class-file compiland))
