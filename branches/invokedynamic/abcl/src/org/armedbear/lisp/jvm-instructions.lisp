@@ -61,6 +61,16 @@
 			   (declare (ignorable instruction))
 			   ,@body))))
 
+(defun record-jump-to-label (label)
+  "Records a jump to a label appearing further down in the code."
+  ;;TODO: check that multiple jumps are compatible
+  (setf (get label 'jump-target-p)
+	t
+	(get label '*code-locals*)
+	*code-locals*
+	(get label '*code-stack*)
+	*code-stack*))
+
 ;; name number size stack-effect (nil if unknown)
 (define-opcode nop 0 1 0)
 (define-opcode aconst_null 1 1 1 (smf-push :null))
@@ -125,7 +135,6 @@
 
 (defun iaf-store-effect (arg)
   (let ((t1 (smf-pop)))
-    (sys::%format t "iaf-store ~S~%" (list arg t1))
     (smf-set arg t1)
     (when (> arg 0)
       (let ((t2 (smf-get (1- arg))))
@@ -260,7 +269,6 @@
 (define-opcode ixor 130 1 -1 (smf-popn 2) (smf-push :int))
 (define-opcode lxor 131 1 -2 (smf-popn 4) (smf-push :long))
 (define-opcode iinc 132 3 0
-  (sys::%format t "AAAAAAAAAAAA ~A~%" (instruction-args instruction))
   (smf-set (car (instruction-args instruction)) :int))
 (define-opcode i2l 133 1 1 (smf-pop) (smf-push :long))
 (define-opcode i2f 134 1 0 (smf-pop) (smf-push :float))
@@ -282,12 +290,24 @@
 (define-opcode fcmpg 150 1 -1 (smf-popn 2) (smf-push :int))
 (define-opcode dcmpl 151 1 -3 (smf-popn 4) (smf-push :int))
 (define-opcode dcmpg 152 1 -3 (smf-popn 4) (smf-push :int))
-(define-opcode ifeq 153 3 -1 (smf-pop))
-(define-opcode ifne 154 3 -1 (smf-pop))
-(define-opcode iflt 155 3 -1 (smf-pop))
-(define-opcode ifge 156 3 -1 (smf-pop))
-(define-opcode ifgt 157 3 -1 (smf-pop))
-(define-opcode ifle 158 3 -1 (smf-pop))
+(define-opcode ifeq 153 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
+(define-opcode ifne 154 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
+(define-opcode iflt 155 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
+(define-opcode ifge 156 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
+(define-opcode ifgt 157 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
+(define-opcode ifle 158 3 -1
+  (smf-pop)
+  (record-jump-to-label (first (instruction-args instruction))))
 (define-opcode if_icmpeq 159 3 -2 (smf-popn 2))
 (define-opcode if_icmpne 160 3 -2 (smf-popn 2))
 (define-opcode if_icmplt 161 3 -2 (smf-popn 2))
@@ -296,7 +316,8 @@
 (define-opcode if_icmple 164 3 -2 (smf-popn 2))
 (define-opcode if_acmpeq 165 3 -2 (smf-popn 2))
 (define-opcode if_acmpne 166 3 -2 (smf-popn 2))
-(define-opcode goto 167 3 0)
+(define-opcode goto 167 3 0
+  (record-jump-to-label (first (instruction-args instruction))))
 ;;(define-opcode jsr 168 3 1) Don't use these 2 opcodes: deprecated
 ;;(define-opcode ret 169 2 0) their use results in JVM verifier errors
 (define-opcode tableswitch 170 0 nil (smf-pop))
@@ -308,30 +329,50 @@
 (define-opcode areturn 176 1 -1 (smf-pop))
 (define-opcode return 177 1 0)
 (define-opcode getstatic 178 3 1
-  (sys::%format t "GETSTATIC ~A~%" (third (instruction-args instruction)))
-  ;;TODO!!!
-  (smf-push (third (instruction-args instruction))))
+  (let ((field-type
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    (smf-push field-type)))
 (define-opcode putstatic 179 3 -1
-  (sys::%format t "PUTSTATIC ~A~%" (third (instruction-args instruction)))
-  (smf-popt (third (instruction-args instruction))))
+  (let ((field-type
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    (smf-popt field-type)))
 (define-opcode getfield 180 3 0
   (smf-pop)
-  (smf-push (third (instruction-args instruction))))
+  (let ((field-type
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    (smf-push field-type)))
 (define-opcode putfield 181 3 -2
-  (smf-popt (third (instruction-args instruction)))
+  (let ((field-type
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    (smf-popt field-type))
   (smf-pop))
 (define-opcode invokevirtual 182 3 nil
-  (smf-popt (third (instruction-args instruction)))
-  (smf-pop)
-  (smf-push (third (instruction-args instruction))))
+  (let ((method-return-and-arg-types
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    ;;(sys::%format t "invokevirtual ~S~%" method-return-and-arg-types)
+    (map nil #'smf-popt (cdr method-return-and-arg-types))
+    (smf-pop)
+    (smf-push (car method-return-and-arg-types))))
 (define-opcode invokespecial 183 3 nil
-  (smf-popt (third (instruction-args instruction)))
-  (smf-pop)
-  (smf-push (third (instruction-args instruction))))
+  (let ((method-return-and-arg-types
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    ;;(sys::%format t "invokespecial ~S~%" method-return-and-arg-types)
+    (map nil #'smf-popt (cdr method-return-and-arg-types))
+    (smf-pop)
+    (smf-push (car method-return-and-arg-types))))
 (define-opcode invokestatic 184 3 nil
-  (sys::%format t "invokestatic ~S~%" (instruction-args instruction))
-  (smf-popt (third (instruction-args instruction)))
-  (smf-push (third (instruction-args instruction))))
+  (let ((method-return-and-arg-types
+	 (constant-name/type-type
+	  (constant-member-ref-name/type (first (instruction-args instruction))))))
+    ;;(sys::%format t "invokestatic ~S~%" method-return-and-arg-types)
+    (map nil #'smf-popt (cdr method-return-and-arg-types))
+    (smf-push (car method-return-and-arg-types))))
 (define-opcode invokeinterface 185 5 nil
   (smf-popt (third (instruction-args instruction)))
   (smf-pop)
@@ -365,7 +406,15 @@
 (define-opcode ifnonnull 199 3 nil (smf-pop))
 (define-opcode goto_w 200 5 nil)
 ;; (define-opcode jsr_w 201 5 nil) Don't use: deprecated
-(define-opcode label 202 0 0)  ;; virtual: does not exist in the JVM
+(define-opcode label 202 0 0 ;; virtual: does not exist in the JVM
+  (if (get (first (instruction-args instruction)) 'jump-target-p)
+    ;;This label is the target of a jump emitted earlier
+    (setf *code-locals*
+	  (get (first (instruction-args instruction)) '*code-locals*)
+	  *code-stack*
+	  (get (first (instruction-args instruction)) '*code-stack*))
+    ;;Else simulate a jump to self to store locals and stack
+    (record-jump-to-label (first (instruction-args instruction)))))
 ;; (define-opcode push-value 203 nil 1)
 ;; (define-opcode store-value 204 nil -1)
 (define-opcode clear-values 205 0 0)  ;; virtual: does not exist in the JVM
@@ -410,6 +459,8 @@
 		    pos *code-locals*)))
 
 (defun smf-set (pos type)
+  (when (null type)
+    (sys::%format t "smf-set null! pos ~A ~S~%" pos 42 #+nil(subseq (sys::backtrace-as-list) 2 10)))
   (if (< pos (length *code-locals*))
       (setf (nth pos *code-locals*) type)
       (progn
@@ -423,12 +474,12 @@
     (push :top *code-stack)))
 
 (defun smf-pop ()
-  ;(sys::%format t "smf-pop ~A~%" *code-stack*)
   (pop *code-stack*))
 
 (defun smf-popt (type)
-  (declare (ignore type)) ;TODO
-  (pop *code-stack*))
+  (pop *code-stack*)
+  (when (or (eq type :long) (eq type :double)) ;TODO
+    (pop *code-stack*)))
 
 (defun smf-popn (n)
   (dotimes (i n)
@@ -465,8 +516,6 @@
                            (remove :wide-prefix args)))))
     (when (memq :wide-prefix args)
       (setf (inst-wide inst) t))
-    (setf (instruction-input-locals inst) *code-locals*)
-    (setf (instruction-input-stack inst) *code-stack*)
     inst))
 
 (defun print-instruction (instruction)
@@ -522,18 +571,18 @@
              (eq (car instr) 'QUOTE)
              (symbolp (cadr instr)))
     (setf instr (opcode-number (cadr instr))))
-  (let ((instruction (gensym)))
-    `(let ((,instruction
-	    ,(if (fixnump instr)
-		 `(%%emit ,instr ,@args)
-		 `(%emit ,instr ,@args))))
-       ;(sys::%format t "EMIT ~S ~S~%" ',instr ',args)
-       (funcall (opcode-effect-function (instruction-opcode ,instruction))
-		,instruction)
-       (setf (instruction-output-locals ,instruction) *code-locals*)
-       (setf (instruction-output-stack ,instruction) *code-stack*)
-       ,instruction)))
+  (if (fixnump instr)
+      `(%%emit ,instr ,@args)
+      `(%emit ,instr ,@args)))
 
+(defun simulate-instruction-effect (instruction)
+  (setf (instruction-input-locals instruction) *code-locals*)
+  (setf (instruction-input-stack instruction) *code-stack*)
+  (funcall (opcode-effect-function (instruction-opcode instruction))
+	   instruction)
+  (setf (instruction-output-locals instruction) *code-locals*)
+  (setf (instruction-output-stack instruction) *code-stack*)
+  instruction)
 
 ;;  Helper routines
 
@@ -619,9 +668,8 @@
                      (list
                       (inst 'aload (car (instruction-args instruction)))
                       (inst 'aconst_null)
-                      (inst 'putfield (u2 (constant-index
-					   (pool-field +lisp-thread+ "_values"
-						       +lisp-object-array+))))))
+                      (inst 'putfield (pool-field +lisp-thread+ "_values"
+						  +lisp-object-array+))))
              (vector-push-extend instruction vector)))
           (t
            (vector-push-extend instruction vector)))))))

@@ -229,6 +229,7 @@ in JVM-internal representation."
         (princ arg-string s))
       (princ #\) s)
       (princ ret-string s))
+    ;(sys::%format t "descriptor ~S ~S -> ~S~%" return-type argument-types str)
     str)
 ;;  (format nil "(~{~A~})~A" 
 ;;          (internal-field-ref return-type))
@@ -355,12 +356,14 @@ in the constant pool."
 (defstruct (constant-name/type (:constructor
                                 make-constant-name/type (index
                                                          name
+							 type
                                                          descriptor))
                                (:include constant
                                          (tag 12)))
   "Structure holding information on a 'name-and-type' type item in the
 constant pool; this type of element is used by 'member-ref' type items."
   name
+  type
   descriptor)
 
 (defstruct (constant-utf8 (:constructor make-constant-utf8 (index value))
@@ -493,7 +496,8 @@ See `pool-add-method-ref' for remarks."
     (unless entry
       (let ((n (pool-add-utf8 pool name))
             (i-t (pool-add-utf8 pool internal-type)))
-        (setf entry (make-constant-name/type (incf (pool-index pool)) n i-t)
+        (setf entry (make-constant-name/type
+		     (incf (pool-index pool)) n type i-t)
               (gethash (cons name type) (pool-entries pool)) entry))
       (push entry (pool-entries-list pool)))
     entry))
@@ -756,7 +760,7 @@ to allow debugging output of the constant section of the class file.")
       ((3 4) (sys::%format t "f/i: ~a~%" (constant-float/int-value entry)))
       ((5 6) (sys::%format t "d/l: ~a~%" (constant-double/long-value entry)))
       ((9 10 11) (sys::%format t "ref: ~a,~a~%"
-                               (constant-member-ref-class-index entry)
+                               (constant-member-ref-class entry)
                                (constant-member-ref-name/type entry)))
       (12 (sys::%format t "n/t: ~a,~a~%"
                         (constant-name/type-name entry)
@@ -976,8 +980,7 @@ an attribute of a method."
 
   ;; these are used for handling nested WITH-CODE-TO-METHOD blocks
   (current-local 0)
-  computed-locals
-  computed-stack)
+  computed-locals)
 
 
 
@@ -1010,7 +1013,7 @@ has been finalized."
             (analyze-locals code)))
     (multiple-value-bind
           (c labels stack-map-table)
-        (resolve-code c class parent compute-stack-map-table-p)
+        (resolve-code code c class parent compute-stack-map-table-p)
       (setf (code-code code) c
             (code-labels code) labels)
       (when compute-stack-map-table-p
@@ -1089,12 +1092,15 @@ type, control is transferred to label `handler'."
                         :catch-type type)
         (code-exception-handlers code)))
 
-(defun resolve-code (code class method compute-stack-map-table-p)
+(defun resolve-code (code-attr code class method compute-stack-map-table-p)
   "Walks the code, replacing symbolic labels with numeric offsets, and optionally computing the stack map table."
   (declare (ignore class))
   (let* ((length 0)
 	 labels ;; alist
-	 stack-map-table)
+	 stack-map-table
+	 (computing-stack-map-table compute-stack-map-table-p)
+	 (*code-locals* (code-computed-locals code-attr))
+	 *code-stack*)
 #||	 (*basic-block* (when compute-stack-map-table-p
 			  (make-basic-block
 			   :offset 0
@@ -1102,14 +1108,31 @@ type, control is transferred to label `handler'."
 			   (method-initial-locals method))))
 	 (root-block *basic-block*)
 	 *basic-blocks*)||#
-    compute-stack-map-table-p :todo
     (declare (type (unsigned-byte 16) length))
-    ;; Pass 1: calculate label offsets and overall length.
+    ;; Pass 1: calculate label offsets and overall length and, if
+    ;; compute-stack-map-table-p is true, also simulate the effect of the
+    ;; instructions on the stack and locals.
     (dotimes (i (length code))
       (declare (type (unsigned-byte 16) i))
       (let* ((instruction (aref code i))
              (opcode (instruction-opcode instruction)))
 	(setf (instruction-offset instruction) length)
+	;;(sys::format t "simulating instruction ~S ~S stack ~S locals ~S ~%"
+	;;opcode (mapcar #'type-of (instruction-args instruction))
+	;;(length *code-stack*) (length *code-locals*))
+	(if computing-stack-map-table
+	    (progn
+	      (when (= opcode 202) ;;label: simulate a jump
+		(record-jump-to-label (car (instruction-args instruction))))
+	      (simulate-instruction-effect instruction)
+	      ;;Simulation must be stopped if we encounter a goto, it will be
+	      ;;resumed by the next label that is the target of a jump
+	      (setf computing-stack-map-table (not (unconditional-jump-p opcode))))
+	    (when (and (= opcode 202) ; LABEL
+		       (get (first (instruction-args instruction))
+			    'jump-target-p))
+	      (simulate-instruction-effect instruction)
+	      (setf computing-stack-map-table t)))
         (if (= opcode 202) ; LABEL
             (let ((label (car (instruction-args instruction))))
               (set label length)
@@ -1127,6 +1150,8 @@ type, control is transferred to label `handler'."
                    (offset (- (the (unsigned-byte 16)
                                 (symbol-value (the symbol label)))
                               index)))
+	      (unless (get label 'jump-target-p)
+		(sys::%format "error - label not target of a jump ~S~%" label))
               (setf (instruction-args instruction) (s2 offset))))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
             (incf index (opcode-size (instruction-opcode instruction)))))))
@@ -1141,14 +1166,29 @@ type, control is transferred to label `handler'."
             (setf (svref bytes index) (instruction-opcode instruction))
             (incf index)
             (dolist (arg (instruction-args instruction))
-              (setf (svref bytes index)
-		    (if (constant-p arg) (constant-index arg) arg))
-              (incf index)))))
+	      (if (constant-p arg)
+		  (let ((idx (constant-index arg))
+			(opcode (instruction-opcode instruction)))
+		    ;;(sys::%format t "constant ~A ~A index-size ~A index ~A~%" (type-of arg) idx (constant-index-size arg) index)
+		    (if (or (<= 178 opcode 187)
+			    (= opcode 189)
+			    (= opcode 192)
+			    (= opcode 193))
+			(let ((idx (u2 idx)))
+			  (setf (svref bytes index) (car idx)
+				(svref bytes (1+ index)) (cadr idx))
+			  (incf index 2))
+			(progn
+			  (setf (svref bytes index) idx)
+			  (incf index))))
+		  (progn
+		    (setf (svref bytes index) arg)
+		    (incf index)))))))
+      (sys::%format t "~%~%~%BYTES ~S~%~%~%" bytes)
       (values bytes labels stack-map-table))))
 
-(defun ends-basic-block-p (opcode)
-  (or (branch-p opcode)
-      (>= 172 opcode 177))) ;;return variants
+(defun unconditional-jump-p (opcode)
+  (= opcode 167))
 
 (defstruct exception
   "Exception handler information.
@@ -1234,17 +1274,13 @@ to which it has been attached has been superseded.")
               (,c (method-ensure-code ,method))
               (*pool* (class-file-constants ,class-file))
               (*code* (code-code ,c))
-              (*code-locals* (code-computed-locals ,c))
-	      (*code-stack* (code-computed-stack ,c))
               (*registers-allocated* (code-max-locals ,c))
               (*register* (code-current-local ,c))
               (*current-code-attribute* ,c))
          ,@body
          (setf (code-code ,c) *code*
                (code-current-local ,c) *register*
-               (code-max-locals ,c) *registers-allocated*
-	       (code-computed-locals ,c) *code-locals*
-	       (code-computed-stack ,c) *code-stack*))
+               (code-max-locals ,c) *registers-allocated*))
        (when *current-code-attribute*
          (restore-code-specials *current-code-attribute*)))))
 

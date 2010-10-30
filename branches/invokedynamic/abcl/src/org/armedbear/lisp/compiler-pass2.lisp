@@ -204,10 +204,12 @@ the top-most value's representation being 'rep1'."
 (declaim (ftype (function * t) emit-invokestatic))
 (defun emit-invokestatic (class-name method-name arg-types return-type)
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (constant-index (pool-add-method-ref
-				 *pool* class-name
-				 method-name (cons return-type arg-types))))
-         (instruction (apply #'%emit 'invokestatic (u2 index))))
+         (method (pool-add-method-ref
+		  *pool* class-name
+		  method-name (cons return-type arg-types)))
+         (instruction (%emit 'invokestatic method)))
+    (when (string= method-name "recall")
+      (sys::%format t "RECALL!!! ~S ~S~%" (cons return-type arg-types) method))
     (setf (instruction-stack instruction) stack-effect)))
 
 
@@ -226,10 +228,10 @@ the top-most value's representation being 'rep1'."
 (defknown emit-invokevirtual (t t t t) t)
 (defun emit-invokevirtual (class-name method-name arg-types return-type)
   (let* ((stack-effect (apply #'descriptor-stack-effect return-type arg-types))
-         (index (constant-index (pool-add-method-ref
-				 *pool* class-name
-				 method-name (cons return-type arg-types))))
-         (instruction (apply #'%emit 'invokevirtual (u2 index))))
+         (method (pool-add-method-ref
+		  *pool* class-name
+		  method-name (cons return-type arg-types)))
+         (instruction (%emit 'invokevirtual method)))
     (declare (type (signed-byte 8) stack-effect))
     (let ((explain *explain*))
       (when (and explain (memq :java-calls explain))
@@ -244,10 +246,10 @@ the top-most value's representation being 'rep1'."
 (defknown emit-invokespecial-init (string list) t)
 (defun emit-invokespecial-init (class-name arg-types)
   (let* ((stack-effect (apply #'descriptor-stack-effect :void arg-types))
-         (index (constant-index (pool-add-method-ref
-				 *pool* class-name
-				 "<init>" (cons nil arg-types))))
-         (instruction (apply #'%emit 'invokespecial (u2 index))))
+         (method (pool-add-method-ref
+		  *pool* class-name
+		  "<init>" (cons nil arg-types)))
+         (instruction (%emit 'invokespecial method)))
     (declare (type (signed-byte 8) stack-effect))
     (setf (instruction-stack instruction) (1- stack-effect))))
 
@@ -287,41 +289,45 @@ the top-most value's representation being 'rep1'."
 (defknown emit-getstatic (t t t) t)
 (defun emit-getstatic (class-name field-name type)
   (let ((ref (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getstatic (u2 (constant-index ref)))))
+    (%emit 'getstatic ref)))
 
 (defknown emit-putstatic (t t t) t)
 (defun emit-putstatic (class-name field-name type)
   (let ((ref (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putstatic (u2 (constant-index ref)))))
+    (%emit 'putstatic ref)))
 
 (declaim (inline emit-getfield emit-putfield))
 (defknown emit-getfield (t t t) t)
 (defun emit-getfield (class-name field-name type)
   (let* ((ref (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'getfield (u2 (constant-index ref)))))
+    (%emit 'getfield ref)))
 
 (defknown emit-putfield (t t t) t)
 (defun emit-putfield (class-name field-name type)
   (let* ((ref (pool-add-field-ref *pool* class-name field-name type)))
-    (apply #'%emit 'putfield (u2 (constant-index ref)))))
+    (%emit 'putfield ref)))
 
 
 (defknown emit-new (t) t)
 (declaim (inline emit-new emit-anewarray emit-checkcast emit-instanceof))
 (defun emit-new (class-name)
-  (apply #'%emit 'new (u2 (constant-index (pool-class class-name)))))
+  (let ((class (pool-class class-name)))
+    (%emit 'new class)))
 
 (defknown emit-anewarray (t) t)
 (defun emit-anewarray (class-name)
-  (apply #'%emit 'anewarray (u2 (constant-index (pool-class class-name)))))
+  (let ((class (pool-class class-name)))
+    (%emit 'anewarray class)))
 
 (defknown emit-checkcast (t) t)
 (defun emit-checkcast (class-name)
-  (apply #'%emit 'checkcast (u2 (constant-index (pool-class class-name)))))
+  (let ((class (pool-class class-name)))
+    (%emit 'checkcast class)))
 
 (defknown emit-instanceof (t) t)
 (defun emit-instanceof (class-name)
-  (apply #'%emit 'instanceof (u2 (constant-index (pool-class class-name)))))
+  (let ((class (pool-class class-name)))
+    (%emit 'instanceof class)))
 
 
 (defvar type-representations '((:int fixnum)
@@ -3799,7 +3805,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
                                    :element-type '(unsigned-byte 8)
                                    :if-exists :supersede)))
       (with-class-file class-file
-	(make-constructor class-file)
         (let ((*current-compiland* compiland))
           (with-saved-compiler-policy
               (p2-compiland compiland)
@@ -4558,113 +4563,6 @@ either to stream or the pathname of the class file if `stream' is NIL."
       (aload value-register)
       (fix-boxing representation nil)
       (emit-move-from-stack target representation))))
-
-(defun p2-make-array (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  (cond ((and (< *safety* 3)
-              (= (length form) 2)
-              (fixnum-type-p (derive-compiler-type (second form)))
-              (null representation))
-         (let ((arg (second form)))
-           (emit-new +lisp-simple-vector+)
-           (emit 'dup)
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-vector+ '(:int))
-           (emit-move-from-stack target representation)))
-        (t
-         (compile-function-call form target representation))))
-
-;; make-sequence result-type size &key initial-element => sequence
-(define-inlined-function p2-make-sequence (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  ((and (< *safety* 3)
-               (= (length form) 3)
-               (null representation)))
-  (let* ((args (cdr form))
-         (arg1 (first args))
-         (arg2 (second args)))
-    (when (and (consp arg1)
-               (= (length arg1) 2)
-               (eq (first arg1) 'QUOTE))
-      (let* ((result-type (second arg1))
-             (class
-              (case result-type
-                ((STRING SIMPLE-STRING)
-                 (setf class +lisp-simple-string+))
-                ((VECTOR SIMPLE-VECTOR)
-                 (setf class +lisp-simple-vector+)))))
-        (when class
-          (emit-new class)
-          (emit 'dup)
-	  (compile-forms-and-maybe-emit-clear-values arg2 'stack :int)
-          (emit-invokespecial-init class '(:int))
-          (emit-move-from-stack target representation)
-          (return-from p2-make-sequence)))))
-  (compile-function-call form target representation))
-
-(defun p2-make-string (form target representation)
-  ;; In safe code, we want to make sure the requested length does not exceed
-  ;; ARRAY-DIMENSION-LIMIT.
-  (cond ((and (< *safety* 3)
-              (= (length form) 2)
-              (null representation))
-         (let ((arg (second form)))
-           (emit-new +lisp-simple-string+)
-           (emit 'dup)
-	   (compile-forms-and-maybe-emit-clear-values arg 'stack :int)
-           (emit-invokespecial-init +lisp-simple-string+ '(:int))
-           (emit-move-from-stack target representation)))
-        (t
-         (compile-function-call form target representation))))
-
-(defun p2-%make-structure (form target representation)
-  (cond ((and (check-arg-count form 2)
-              (eq (derive-type (%cadr form)) 'SYMBOL))
-         (emit-new +lisp-structure-object+)
-         (emit 'dup)
-         (compile-form (%cadr form) 'stack nil)
-         (emit-checkcast +lisp-symbol+)
-         (compile-form (%caddr form) 'stack nil)
-         (maybe-emit-clear-values (%cadr form) (%caddr form))
-         (emit-invokevirtual +lisp-object+ "copyToArray"
-                             nil +lisp-object-array+)
-         (emit-invokespecial-init +lisp-structure-object+
-                                  (list +lisp-symbol+ +lisp-object-array+))
-         (emit-move-from-stack target representation))
-        (t
-         (compile-function-call form target representation))))
-
-(defun p2-make-structure (form target representation)
-  (let* ((args (cdr form))
-         (slot-forms (cdr args))
-         (slot-count (length slot-forms)))
-    (cond ((and (<= 1 slot-count 6)
-                (eq (derive-type (%car args)) 'SYMBOL))
-           (emit-new +lisp-structure-object+)
-           (emit 'dup)
-           (compile-form (%car args) 'stack nil)
-           (emit-checkcast +lisp-symbol+)
-           (dolist (slot-form slot-forms)
-             (compile-form slot-form 'stack nil))
-           (apply 'maybe-emit-clear-values args)
-           (emit-invokespecial-init +lisp-structure-object+
-                                    (append (list +lisp-symbol+)
-                                            (make-list slot-count :initial-element +lisp-object+)))
-           (emit-move-from-stack target representation))
-          (t
-           (compile-function-call form target representation)))))
-
-(defun p2-make-hash-table (form target representation)
-  (cond ((= (length form) 1) ; no args
-         (emit-new +lisp-eql-hash-table+)
-         (emit 'dup)
-         (emit-invokespecial-init +lisp-eql-hash-table+ nil)
-         (fix-boxing representation nil)
-         (emit-move-from-stack target representation))
-        (t
-         (compile-function-call form target representation))))
 
 (defknown p2-stream-element-type (t t t) t)
 (define-inlined-function p2-stream-element-type (form target representation)
@@ -6852,8 +6750,6 @@ We need more thought here.
          (method (make-method "execute" +lisp-object+ arg-types
                                :flags '(:final :public)))
          (code (method-add-code method))
-	 (*code-locals* (code-computed-locals code)) ;;TODO in this and other cases, use with-code-to-method
-	 (*code-stack* (code-computed-stack code))
          (*current-code-attribute* code)
          (*code* ())
          (*register* 1) ;; register 0: "this" pointer
@@ -6862,10 +6758,18 @@ We need more thought here.
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (label-START (gensym))
-	 prologue)
+         (label-START (gensym)))
 
     (class-add-method class-file method)
+
+    (setf (abcl-class-file-superclass class-file)
+          (if (or *hairy-arglist-p*
+		  (and *child-p* *closure-variables*))
+	      +lisp-compiled-closure+
+	    +lisp-primitive+))
+
+    (make-constructor class-file)
+
     (when (fixnump *source-line-number*)
       (let ((table (make-line-numbers-attribute)))
         (method-add-attribute method table)
@@ -6875,36 +6779,6 @@ We need more thought here.
       (push var *visible-variables*))
     (dolist (var (compiland-free-specials compiland))
       (push var *visible-variables*))
-
-    ;;Prologue
-    (let ((arity (compiland-arity compiland)))
-      (when arity
-	(generate-arg-count-check arity)))
-    
-    (when *hairy-arglist-p*
-      (aload 0) ; this
-      (aver (not (null (compiland-argument-register compiland))))
-      (aload (compiland-argument-register compiland)) ; arg vector
-      (cond ((or (memq '&OPTIONAL args) (memq '&KEY args))
-	     (ensure-thread-var-initialized)
-	     (maybe-initialize-thread-var)
-	     (emit-push-current-thread)
-	     (emit-invokevirtual *this-class* "processArgs"
-				 (list +lisp-object-array+ +lisp-thread+)
-				 +lisp-object-array+))
-	    (t
-	     (emit-invokevirtual *this-class* "fastProcessArgs"
-				 (list +lisp-object-array+)
-				 +lisp-object-array+)))
-      (astore (compiland-argument-register compiland)))
-    
-    (unless (and *hairy-arglist-p*
-		 (or (memq '&OPTIONAL args) (memq '&KEY args)))
-      (maybe-initialize-thread-var))
-    
-    (setf prologue *code*
-	  *code* ())
-    ;;;;
 
     (when *using-arg-array*
       (setf (compiland-argument-register compiland) (allocate-register)))
@@ -7049,7 +6923,7 @@ We need more thought here.
     (check-for-unused-variables (compiland-arg-vars compiland))
 
     ;; Go back and fill in prologue.
-    #+nil (let ((code *code*))
+    (let ((code *code*))
       (setf *code* ())
       (let ((arity (compiland-arity compiland)))
         (when arity
@@ -7076,14 +6950,6 @@ We need more thought here.
                    (or (memq '&OPTIONAL args) (memq '&KEY args)))
         (maybe-initialize-thread-var))
       (setf *code* (nconc code *code*)))
-    
-    (setf *code* (nconc prologue *code*))
-
-    (setf (abcl-class-file-superclass class-file)
-          (if (or *hairy-arglist-p*
-		  (and *child-p* *closure-variables*))
-	      +lisp-compiled-closure+
-	    +lisp-primitive+))
 
     (setf (abcl-class-file-lambda-list class-file) args)
     (setf (code-max-locals code) *registers-allocated*)
@@ -7132,7 +6998,6 @@ We need more thought here.
       ;; Pass 2.
 
     (with-class-file (compiland-class-file compiland)
-      (make-constructor *class-file*)
       (with-saved-compiler-policy
         (p2-compiland compiland)
         ;;        (finalize-class-file (compiland-class-file compiland))
@@ -7374,7 +7239,6 @@ to derive a Java class name from."
                                nth
                                progn))
   (install-p2-handler '%ldb                'p2-%ldb)
-  (install-p2-handler '%make-structure     'p2-%make-structure)
   (install-p2-handler '*                   'p2-times)
   (install-p2-handler '+                   'p2-plus)
   (install-p2-handler '-                   'p2-minus)
@@ -7429,11 +7293,6 @@ to derive a Java class name from."
   (install-p2-handler 'logior              'p2-logior)
   (install-p2-handler 'lognot              'p2-lognot)
   (install-p2-handler 'logxor              'p2-logxor)
-  (install-p2-handler 'make-array          'p2-make-array)
-  (install-p2-handler 'make-hash-table     'p2-make-hash-table)
-  (install-p2-handler 'make-sequence       'p2-make-sequence)
-  (install-p2-handler 'make-string         'p2-make-string)
-  (install-p2-handler 'make-structure      'p2-make-structure)
   (install-p2-handler 'max                 'p2-min/max)
   (install-p2-handler 'memq                'p2-memq)
   (install-p2-handler 'memql               'p2-memql)
@@ -7494,6 +7353,6 @@ to derive a Java class name from."
     (let ((sys:*enable-autocompile* nil))
       (values (compile nil function)))))
 
-(setf sys:*enable-autocompile* t)
+(setf sys:*enable-autocompile* nil)
 
 (provide "COMPILER-PASS2")
