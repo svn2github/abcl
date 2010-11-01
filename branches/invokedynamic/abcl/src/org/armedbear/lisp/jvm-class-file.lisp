@@ -1017,7 +1017,9 @@ has been finalized."
       (setf (code-code code) c
             (code-labels code) labels)
       (when compute-stack-map-table-p
-	#+todo (code-add-attribute code stack-map-table))))
+	(code-add-attribute
+	 code
+	 (make-stack-map-table-attribute :entries stack-map-table)))))
 
   (setf (code-exception-handlers code)
         (remove-if #'(lambda (h)
@@ -1094,7 +1096,6 @@ type, control is transferred to label `handler'."
 
 (defun resolve-code (code-attr code class method compute-stack-map-table-p)
   "Walks the code, replacing symbolic labels with numeric offsets, and optionally computing the stack map table."
-  (declare (ignore class))
   (let* ((length 0)
 	 labels ;; alist
 	 stack-map-table
@@ -1123,7 +1124,7 @@ type, control is transferred to label `handler'."
 	(if computing-stack-map-table
 	    (progn
 	      (when (= opcode 202) ;;label: simulate a jump
-		(record-jump-to-label (car (instruction-args instruction))))
+		(record-jump-to-label (first (instruction-args instruction))))
 	      (simulate-instruction-effect instruction)
 	      ;;Simulation must be stopped if we encounter a goto, it will be
 	      ;;resumed by the next label that is the target of a jump
@@ -1139,7 +1140,36 @@ type, control is transferred to label `handler'."
               (setf labels
                     (acons label length labels)))
 	    (incf length (opcode-size opcode)))))
-    ;; Pass 2: replace labels with calculated offsets.
+    ;;Pass 2 (optional): compute the stack map table
+    (when compute-stack-map-table-p
+      (let ((last-frame-offset 0)
+	    (must-emit-frame nil))
+	(dotimes (i (length code))
+	  (let ((instruction (aref code i))
+		(make-variable-info (lambda (type)
+				      (smf-type->variable-info type class))))
+	    (cond
+	      ((= (instruction-opcode instruction) 202) ; LABEL
+	       (let* ((label (car (instruction-args instruction)))
+		      (offset (symbol-value label))
+		      (*print-circle* t))
+		 (if (get label 'jump-target-p)
+		     (let ((frame
+			    (make-stack-map-full-frame
+			     :offset-delta (- offset last-frame-offset)
+			     :locals
+			     (mapcar make-variable-info
+				     (instruction-input-locals instruction))
+			     :stack-items
+			     (mapcar make-variable-info
+				     (instruction-input-stack instruction)))))
+		       (push frame stack-map-table)
+		       (sys::%format t "emit frame ~S @ ~A (~A)~%"
+				     frame offset (- offset last-frame-offset))
+		       (setf last-frame-offset offset))
+		     (sys::%format t "error - label not target of a jump: ~S~%" label))
+		 )))))))
+    ;;Pass 3: replace labels with calculated offsets.
     (let ((index 0))
       (declare (type (unsigned-byte 16) index))
       (dotimes (i (length code))
@@ -1150,12 +1180,11 @@ type, control is transferred to label `handler'."
                    (offset (- (the (unsigned-byte 16)
                                 (symbol-value (the symbol label)))
                               index)))
-	      (unless (get label 'jump-target-p)
-		(sys::%format "error - label not target of a jump ~S~%" label))
               (setf (instruction-args instruction) (s2 offset))))
           (unless (= (instruction-opcode instruction) 202) ; LABEL
             (incf index (opcode-size (instruction-opcode instruction)))))))
-    ;; Expand instructions into bytes, skipping LABEL pseudo-instructions.
+    ;;Pass 4: expand instructions into bytes,
+    ;;skipping LABEL pseudo-instructions.
     (let ((bytes (make-array length))
           (index 0))
       (declare (type (unsigned-byte 16) index))
@@ -1169,7 +1198,6 @@ type, control is transferred to label `handler'."
 	      (if (constant-p arg)
 		  (let ((idx (constant-index arg))
 			(opcode (instruction-opcode instruction)))
-		    ;;(sys::%format t "constant ~A ~A index-size ~A index ~A~%" (type-of arg) idx (constant-index-size arg) index)
 		    (if (or (<= 178 opcode 187)
 			    (= opcode 189)
 			    (= opcode 192)
@@ -1184,8 +1212,7 @@ type, control is transferred to label `handler'."
 		  (progn
 		    (setf (svref bytes index) arg)
 		    (incf index)))))))
-      (sys::%format t "~%~%~%BYTES ~S~%~%~%" bytes)
-      (values bytes labels stack-map-table))))
+      (values bytes labels (nreverse stack-map-table)))))
 
 (defun unconditional-jump-p (opcode)
   (= opcode 167))
@@ -1401,10 +1428,6 @@ names, their type and their scope of validity."
   "The attribute containing the stack map table, a map from bytecode offsets to frames containing information about the types of locals and values on the operand stack at that offset. This is an attribute of a method."
   entries)
 
-(defun add-stack-map-frame (stack-map-table instruction-offset locals
-			    stack-items)
-  (error "TODO!"))
-
 (defun finalize-stack-map-table-attribute (table parent class)
   "Prepares the `stack-map-table' attribute for serialization, within method `parent': replaces all virtual types in the stack map frames with variable-info objects."
   (declare (ignore parent class)) ;;TODO
@@ -1413,7 +1436,7 @@ names, their type and their scope of validity."
 (defun write-stack-map-table-attribute (table stream)
   (write-u2 (length (stack-map-table-entries table)) stream)
   (dolist (frame (stack-map-table-entries table))
-    (funcall (frame-writer frame) stream)))
+    (funcall (frame-writer frame) frame stream)))
 
 (defstruct (stack-map-frame (:conc-name frame-))
   offset-delta
@@ -1429,6 +1452,9 @@ names, their type and their scope of validity."
 (defun write-stack-map-full-frame (frame stream)
   (write-u1 255 stream)
   (write-u2 (frame-offset-delta frame) stream)
+;;  (write-u2 0 stream)
+;;  (write-u2 0 stream)
+;;  (return-from write-stack-map-full-frame)
   (write-u2 (length (full-frame-locals frame)) stream)
   (dolist (local (full-frame-locals frame))
     (funcall (verification-type-info-writer local) local stream))
@@ -1456,10 +1482,10 @@ names, their type and their scope of validity."
 
 (defun write-simple-verification-type-info (vti stream)
   (write-u1 (verification-type-info-tag vti) stream))
-(defun write-object-variable-type-info (vti stream)
+(defun write-object-variable-info (vti stream)
   (write-u1 (verification-type-info-tag vti) stream)
   (write-u2 (object-variable-info-constant-pool-index vti) stream))
-(defun write-uninitialized-verification-type-info (vti stream)
+(defun write-uninitialized-variable-info (vti stream)
   (write-u1 (verification-type-info-tag vti) stream)
   (write-u2 (uninitialized-variable-info-offset vti) stream))
 
@@ -1475,8 +1501,18 @@ names, their type and their scope of validity."
       (push x locals))
     (nreverse locals)))
 
-(defun smf-type->variable-info (type)
-  :todo)
+(defun smf-type->variable-info (type class)
+  (cond
+    ((eq type :this)
+     (make-object-variable-info :constant-pool-index (class-file-class class)))
+    ((eq type :int) (make-integer-variable-info))
+    ((typep type 'constant-class)
+     (make-object-variable-info :constant-pool-index (constant-index type)))
+    ((typep type 'class-name)
+     (make-object-variable-info
+      :constant-pool-index
+      (constant-index (pool-add-class (class-file-constants class) type))))
+    (t (sys::%format t "Don't know how to translate type ~S~%" type) type)))
 
 #|
 
