@@ -143,8 +143,8 @@ The project welcomes initiatives to improve performance.</p>
   improve this measure too.</p>
 
 <p>ABCL 0.23.0 fails 31 out of 21702 tests in the ANSI test suite
-  in interpreted and compiled modes, coming from ca 44 in the last
-  release.</p>
+  in interpreted and compiled modes, a constant number over the past
+  releases.  Most failures relate to pretty printing.</p>
 <p>As a measure of 'improvement achieved', the development team refers
   to the number of failing tests in the Maxima test suite too.
   ABCL 0.23.0 is able to run the test suite without failures, coming from
