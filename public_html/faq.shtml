@@ -25,6 +25,8 @@
     <li><a href="#bug-reporting">How/Where should I report bugs?</a></li>
     <li><a href="#speed">Is ABCL faster or slower than implementation XYZ?</a></li>
     <li><a href="#qa">What is the quality of the implementation? How can you tell?</a></li>
+    <li><a href="#repository">Where is ABCL's source code repository?</a></li>
+    <li><a href="#documentation">Where is ABCL's documentation?</a></li>
   </ol>
   </li> <!-- general -->
 </ol>
@@ -140,13 +142,14 @@ The project welcomes initiatives to improve performance.</p>
   Additionally, compilation of <a href="http://ap5.com/">AP5</a> is used to
   improve this measure too.</p>
 
-<p>ABCL 0.15.0 fails 34 out of 21702 tests in the ANSI test suite
+<p>ABCL 0.23.0 fails 31 out of 21702 tests in the ANSI test suite
   in interpreted and compiled modes, coming from ca 44 in the last
   release.</p>
 <p>As a measure of 'improvement achieved', the development team refers
   to the number of failing tests in the Maxima test suite too.
-  ABCL 0.15.0 is able to run the test suite with 'only' ca 75 failing
-  tests, coming from ca 1400 failures around October 2008.</p>
+  ABCL 0.23.0 is able to run the test suite without failures, coming from
+  'only' ca 75 failing tests at the time of 0.15.0, and even 1400 failures
+  around October 2008.</p>
 
 </div>
 
@@ -159,6 +162,21 @@ svn://common-lisp.net/project/armedbear/svn/trunk/abcl.</p>
 
 </div>
 
+<div class="h3" title="documentation" id="documentation">
+<h3>Where is ABCL's documentation?</h3>
+
+<p>Documentation on ABCL can be found in several places, depending on the
+  kind of documentation you're looking for.</p>
+
+<ol>
+  <li>Our <a href="http://trac.common-lisp.net/project/wiki">wiki</a></li>
+  <li>The <a href="http://trac.common-lisp.net/armedbear/browser">source
+    code (JavaDoc and general comments)</a></li>
+  <li>Specific <a
+href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">examples</a></li>
+</ol>
+
+</div>
 
 </div>
 
