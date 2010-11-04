@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v0.23</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version 0.23</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 0.23</h2>
+
+
+<p><a href="release-notes-0.22.shtml">Release notes for older releases</a>.</p>
+
+<dl>
+  <dt>No more failures in Maxima's test suite</dt>
+  <dd>Working together with the developers from the Maxima program, we've been
+    able to identify the causes for the last few remaining failures and
+    apply fixes - mostly to ABCL, but some in Maxima too.  Thanks guys!</dd>
+  <dt>Fixes to stop JRockit JVM's optimizer from crashing</dt>
+  <dd>Some specific aspects of the byte code we generated was a problem
+    for the optimizer in JRockit JVM.  JRockit has been fixed, but the release
+    won't be out for some time.  Since we identified the offending code, we
+    decided to change our byte code as well.</dd>
+  <dt>Fixes to CLOS thread safety.</dt>
+  <dd>Taking advantage of the java.util.concurrent package, we have both been
+    able to eliminate many synchronized blocks, reducing chances for
+    contention as well as increasing protection by using types with built-in
+    protection.
+  </dd>
+  <dt>Updated ASDF2</dt>
+  <dd>ASDF2 has been updated to its latest version 2.010.1</dd>
+  <dt>Experimental support for the long form of DEFINE-METHOD-COMBINATION</dt>
+  <dd>Support for the long form of DEFINE-METHOD-COMBINATION has been added,
+    however, this support is derived from Sacla and XCL, which probably means
+    that the code hasn't been excercised all that much and does contain
+    bugs.  You're strongly urged to help debug and define test-cases in order
+    to fix any issues in the code.</dd>
+  <dt>A new (generic) class writer</dt>
+  <dd>Our compiler used to contain code to generate class files which exactly
+    match ABCL's usage patterns.  However, in order to expand ABCL's compiler
+    possibilities - as well as providing support for extension of Java classes
+    at runtime - a more generic class file generator is required.  We have one
+    now! </dd>
+
+</dl>
+
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-0.22.shtml 12925 2010-09-26 17:39:13Z ehuelsmann $</div>
+</div>
+</body>
+</html>
