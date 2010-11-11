@@ -28,6 +28,17 @@ dd { margin-top: 0.3cm;
 
 <h1>Testimonials</h1>
 
+<dt>Alessio Stalla - November, 2010
+</dt>
+<dd>With my Java background and my love for Lisp, I've found ABCL to be the ideal choice for my open source projects, in particular:
+<ul>
+  <li>DynaSpring (<a href="http://code.google.com/p/dynaspring/">http://code.google.com/p/dynaspring/</a>), a Lisp-based DSL for the Spring framework: it replaces the ugly-ugly XML with our beloved parentheses, bringing new features to Spring (conditional evaluation, modularity constructs, etc.) and making it much more user-extensible;</li>
+  <li>Snow (<a href="http://common-lisp.net/project/snow/">http://common-lisp.net/project/snow/</a>), a declarative GUI language in the vein of XUL, but obviously Lisp-based, targeting Swing. While still lacking many things, it combines a Lisp DSL with existing Java libraries to concisely describe the structure and layout of the GUI, and to make it easy to connect the UI with the application, thanks to its integration with Cells;</li>
+  <li>and all the other experimental, unreleased stuff I do as a hobby (mainly related to web development and enterprise application development).</li>
+</ul>
+For me ABCL's selling point is of course its interoperability with Java and the consequent access to Java libraries, but I also appreciate its simplicity, portability (even FASLs are cross-platform, thanks to the JVM), and last but not least, the small but vibrant and helpful community.
+</dd>
+
 <dl>
 <dt>David Kirkman (Astronomer at University of California, San Diego)
   - June 7, 2010</dt>
@@ -75,17 +86,6 @@ So to all of you who have contributed (and still contribute!) to
 the development of this terrific package, a big THANK YOU!!!"
 </dt>
 
-<dt>Alessio Stalla - November, 2010
-</dt>
-<dd>With my Java background and my love for Lisp, I've found ABCL to be the ideal choice for my open source projects, in particular:
-<ul>
-  <li>DynaSpring (<a href="http://code.google.com/p/dynaspring/">http://code.google.com/p/dynaspring/</a>), a Lisp-based DSL for the Spring framework: it replaces the ugly-ugly XML with our beloved parentheses, bringing new features to Spring (conditional evaluation, modularity constructs, etc.) and making it much more user-extensible;</li>
-  <li>Snow (<a href="http://common-lisp.net/project/snow/">http://common-lisp.net/project/snow/</a>), a declarative GUI language in the vein of XUL, but obviously Lisp-based, targeting Swing. While still lacking many things, it combines a Lisp DSL with existing Java libraries to concisely describe the structure and layout of the GUI, and to make it easy to connect the UI with the application, thanks to its integration with Cells;</li>
-  <li>and all the other experimental, unreleased stuff I do as a hobby (mainly related to web development and enterprise application development).</li>
-</ul>
-For me ABCL's selling point is of course its interoperability with Java and the consequent access to Java libraries, but I also appreciate its simplicity, portability (even FASLs are cross-platform, thanks to the JVM), and last but not least, the small but vibrant and helpful community.
-</dd>
-
 <dt>Hunter Monroe
 </dt>
 <dd>"Maxima algebraic computation software compiles with ABCL. The test suite
@@ -93,7 +93,8 @@ runs fairly quickly on Windows XP and, after work by Robert Dodier, 86
 percent of the test suite is passed successfully, although some individual
 tests crash the suite. If you want to compile Maxima with ABCL lisp, check
 out the Maxima source code and following the instructions in INSTALL.lisp."
-</dd>
+</dd><p><em>Editor's note: the Maxima test suite runs without crashes and
+succesfully completes without failures as of 10-11-2010.</em></p>
 
 <dt>Ted Kosan
 </dt>
