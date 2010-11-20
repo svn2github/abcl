@@ -20,6 +20,8 @@ Features
 Fixes
 -----
 
+* [svn r13039] Restore the Lisp-based build
+
 * [ticket #108][svn r13027] Fix download problems with ASDF-INSTALL
 
 * [ticket #110][svn r13024,r13026] Fix #\+ in JAR pathnames does not work
