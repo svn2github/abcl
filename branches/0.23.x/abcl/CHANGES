@@ -13,6 +13,8 @@ Features
 
 * [svn r12994] New java-interop macros: CHAIN and JMETHOD-LET
 
+* [svn r13031] Ensure that the ASDF registry contains the ASDF-INSTALL locations.
+
 Fixes
 -----
 

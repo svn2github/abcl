@@ -115,8 +115,8 @@ namestrings.")
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
 
-(defvar *gpg-command* "gpg"
-  "Location of the gpg binary, if for some reason, it does appear in
-  the default path for /bin/sh.")
-
-
+#+abcl
+(eval-when (:load-toplevel)
+  (require 'asdf)
+  (dolist (location *locations*)
+    (pushnew (second location) asdf:*central-registry*)))
