@@ -1159,14 +1159,16 @@
                   ;; Both COMPILE and COMPILE-FILE bind this variable.
                   ;; This function is also triggered by MACROEXPAND, though
                   jvm::*file-compilation*)
-             `(fset ',name ,lambda-expression))
+             `(progn
+                (fset ',name ,lambda-expression)
+                ',name))
             (t
              (when (and env (empty-environment-p env))
                (setf env nil))
              (when (null env)
                (setf lambda-expression (precompiler:precompile-form lambda-expression nil)))
-             `(progn
-                (%defun ',name ,lambda-expression)
+             `(prog1
+                  (%defun ',name ,lambda-expression)
                 ,@(when doc
                    `((%set-documentation ',name 'function ,doc)))))))))
 
