@@ -796,8 +796,8 @@ representation, based on the derived type of the LispObject."
 (defun make-constructor (super lambda-name args)
   (let* ((*compiler-debug* nil)
          ;; We don't normally need to see debugging output for constructors.
-         (method (make-method :constructor :void nil
-                              :flags '(:public)))
+         (method (make-jvm-method :constructor :void nil
+                                  :flags '(:public)))
          (code (method-add-code method))
          req-params-register
          opt-params-register
@@ -905,7 +905,6 @@ representation, based on the derived type of the LispObject."
     (emit 'return)
     (setf (code-code code) *code*)
     method))
-
 
 (defvar *source-line-number* nil)
 
@@ -6754,7 +6753,7 @@ We need more thought here.
          (*child-p* (not (null (compiland-parent compiland))))
 
          (arg-types (analyze-args compiland))
-         (method (make-method "execute" +lisp-object+ arg-types
+         (method (make-jvm-method "execute" +lisp-object+ arg-types
                                :flags '(:final :public)))
          (code (method-add-code method))
          (*current-code-attribute* code)
