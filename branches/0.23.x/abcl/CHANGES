@@ -1,7 +1,7 @@
 Version 0.23.1
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.23.1/abcl
-(unreleased)
+(1 December, 2010)
 
 Fixes
 -----
@@ -17,8 +17,8 @@ Fixes
   RFC3986.  
 
 
-Version 0.23
-============
+Version 0.23.0
+==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.23.0/abcl
 (25 November, 2010)
 
