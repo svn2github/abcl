@@ -468,6 +468,7 @@ where each of the vars returned is a list with these elements:
   (declare (type cons form))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-let/let*-node))
+	 (*block* block)
          (op (%car form))
          (varlist (cadr form))
          (body (cddr form)))
@@ -506,6 +507,7 @@ where each of the vars returned is a list with these elements:
 (defun p1-locally (form)
   (let* ((*visible-variables* *visible-variables*)
          (block (make-locally-node))
+	 (*block* block)
          (free-specials (process-declarations-for-vars (cdr form) nil block)))
     (setf (locally-free-specials block) free-specials)
     (dolist (special free-specials)
@@ -523,6 +525,7 @@ where each of the vars returned is a list with these elements:
       (return-from p1-m-v-b (p1-let/let* new-form))))
   (let* ((*visible-variables* *visible-variables*)
          (block (make-m-v-b-node))
+	 (*block* block)
          (varlist (cadr form))
          ;; Process the values-form first. ("The scopes of the name binding and
          ;; declarations do not include the values-form.")
@@ -552,6 +555,7 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-block (form)
   (let* ((block (make-block-node (cadr form)))
+	 (*block* block)
          (*blocks* (cons block *blocks*)))
     (setf (cddr form) (p1-body (cddr form)))
     (setf (block-form block) form)
@@ -568,6 +572,7 @@ where each of the vars returned is a list with these elements:
   (let* ((tag (p1 (cadr form)))
          (body (cddr form))
          (block (make-catch-node))
+	 (*block* block)
          ;; our subform processors need to know
          ;; they're enclosed in a CATCH block
          (*blocks* (cons block *blocks*))
@@ -591,6 +596,7 @@ where each of the vars returned is a list with these elements:
   (let* ((synchronized-object (p1 (cadr form)))
          (body (cddr form))
          (block (make-synchronized-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          result)
     (dolist (subform body)
@@ -614,6 +620,7 @@ where each of the vars returned is a list with these elements:
       ;; However, p1 transforms the forms being processed, so, we
       ;; need to copy the forms to create a second copy.
       (let* ((block (make-unwind-protect-node))
+	     (*block* block)
              ;; a bit of jumping through hoops...
              (unwinding-forms (p1-body (copy-tree (cddr form))))
              (unprotected-forms (p1-body (cddr form)))
@@ -629,9 +636,6 @@ where each of the vars returned is a list with these elements:
 
 (defknown p1-return-from (t) t)
 (defun p1-return-from (form)
-  (let ((new-form (rewrite-return-from form)))
-    (when (neq form new-form)
-      (return-from p1-return-from (p1 new-form))))
   (let* ((name (second form))
          (block (find-block name)))
     (when (null block)
@@ -661,6 +665,7 @@ where each of the vars returned is a list with these elements:
 
 (defun p1-tagbody (form)
   (let* ((block (make-tagbody-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          (*visible-tags* *visible-tags*)
          (local-tags '())
@@ -927,6 +932,7 @@ where each of the vars returned is a list with these elements:
       ((with-saved-compiler-policy
 	 (process-optimization-declarations (cddr form))
 	 (let* ((block (make-flet-node))
+		(*block* block)
 		(*blocks* (cons block *blocks*))
 		(body (cddr form))
 		(*visible-variables* *visible-variables*))
@@ -965,6 +971,7 @@ where each of the vars returned is a list with these elements:
 	       (*current-compiland* (local-function-compiland local-function)))
 	   (p1-compiland (local-function-compiland local-function))))
        (let* ((block (make-labels-node))
+	      (*block* block)
               (*blocks* (cons block *blocks*))
               (body (cddr form))
               (*visible-variables* *visible-variables*))
@@ -1068,13 +1075,10 @@ where each of the vars returned is a list with these elements:
 (defknown p1-progv (t) t)
 (defun p1-progv (form)
   ;; We've already checked argument count in PRECOMPILE-PROGV.
-
-  (let ((new-form (rewrite-progv form)))
-    (when (neq new-form form)
-      (return-from p1-progv (p1 new-form))))
   (let* ((symbols-form (p1 (cadr form)))
          (values-form (p1 (caddr form)))
          (block (make-progv-node))
+	 (*block* block)
          (*blocks* (cons block *blocks*))
          (body (cdddr form)))
 ;;  The (commented out) block below means to detect compile-time
@@ -1089,20 +1093,6 @@ where each of the vars returned is a list with these elements:
           (progv-form block)
           `(progv ,symbols-form ,values-form ,@(p1-body body)))
     block))
-
-(defknown rewrite-progv (t) t)
-(defun rewrite-progv (form)
-  (let ((symbols-form (cadr form))
-        (values-form (caddr form))
-        (body (cdddr form)))
-    (cond ((or (unsafe-p symbols-form) (unsafe-p values-form))
-           (let ((g1 (gensym))
-                 (g2 (gensym)))
-             `(let ((,g1 ,symbols-form)
-                    (,g2 ,values-form))
-                (progv ,g1 ,g2 ,@body))))
-          (t
-           form))))
 
 (defun p1-quote (form)
   (unless (= (length form) 2)
@@ -1197,55 +1187,8 @@ the args causes a Java exception handler to be installed, which
               (when (unsafe-p arg)
                 (return t))))))))
 
-(defknown rewrite-return-from (t) t)
-(defun rewrite-return-from (form)
-  (let* ((args (cdr form))
-         (result-form (second args))
-         (var (gensym)))
-    (if (unsafe-p (cdr args))
-        (if (single-valued-p result-form)
-            `(let ((,var ,result-form))
-               (return-from ,(first args) ,var))
-            `(let ((,var (multiple-value-list ,result-form)))
-               (return-from ,(first args) (values-list ,var))))
-        form)))
-
-
-(defknown rewrite-throw (t) t)
-(defun rewrite-throw (form)
-  (let ((args (cdr form)))
-    (if (unsafe-p args)
-        (let ((syms ())
-              (lets ()))
-          ;; Tag.
-          (let ((arg (first args)))
-            (if (constantp arg)
-                (push arg syms)
-                (let ((sym (gensym)))
-                  (push sym syms)
-                  (push (list sym arg) lets))))
-          ;; Result. "If the result-form produces multiple values, then all the
-          ;; values are saved."
-          (let ((arg (second args)))
-            (if (constantp arg)
-                (push arg syms)
-                (let ((sym (gensym)))
-                  (cond ((single-valued-p arg)
-                         (push sym syms)
-                         (push (list sym arg) lets))
-                        (t
-                         (push (list 'VALUES-LIST sym) syms)
-                         (push (list sym
-                                     (list 'MULTIPLE-VALUE-LIST arg))
-                               lets))))))
-          (list 'LET* (nreverse lets) (list* 'THROW (nreverse syms))))
-        form)))
-
 (defknown p1-throw (t) t)
 (defun p1-throw (form)
-  (let ((new-form (rewrite-throw form)))
-    (when (neq new-form form)
-      (return-from p1-throw (p1 new-form))))
   (list* 'THROW (mapcar #'p1 (cdr form))))
 
 (defknown rewrite-function-call (t) t)

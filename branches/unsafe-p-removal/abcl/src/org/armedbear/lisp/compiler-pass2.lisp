@@ -645,6 +645,88 @@ before the emitted code: the code is 'stack-neutral'."
             collecting form)))
     (apply #'maybe-emit-clear-values forms-for-emit-clear)))
 
+
+(declaim (special *saved-operands* *operand-representations*))
+(defmacro with-operand-accumulation ((&body argument-buildup-body)
+				     &body funcall-body)
+  `(let (*saved-operands*
+	 *operand-representations*
+	 (*register* *register*)) ;; hmm can we do this?? either body
+                                  ;; could allocate registers ...
+     ,@argument-buildup-body
+     (load-saved-operands)
+     ,@funcall-body))
+
+(defun load-saved-operands ()
+  "Load any operands which have been saved into registers
+back onto the stack in preparation of the execution of the opcode."
+  (dolist (operand (reverse *saved-operands*))
+    (emit 'aload operand)))
+
+(defun save-existing-operands ()
+  "If any operands have been compiled to the stack,
+save them in registers."
+  (dotimes (i (length *operand-representations*))
+    (let ((register (allocate-register)))
+      (push register *saved-operands*)
+      (emit 'astore register)))
+
+  (setf *saved-operands* (nreverse *saved-operands*)))
+
+(defun compile-operand (form representation)
+  "Compiles `form` into `representation`, storing the resulting value
+on the operand stack, if it's safe to do so. Otherwise stores the value
+in a register"
+  (let ((unsafe (or *saved-operands*
+		    (some-nested-block #'block-opstack-unsafe-p
+				       (find-enclosed-blocks form)))))
+    (when (and unsafe (null *saved-operands*))
+      (save-existing-operands))
+    
+    (compile-form form 'stack representation)
+    (when unsafe
+      (let ((register (allocate-register)))
+	(push register *saved-operands*)
+	(assert (null representation))
+	(emit 'astore register)))
+    
+  (push representation *operand-representations*)))
+
+(defun emit-variable-operand (variable)
+  "Pushes a variable onto the operand stack, if it's safe to do so. Otherwise
+stores the value in a register."
+  (push (variable-representation variable) *operand-representations*)
+  (cond
+   ((and *saved-operands*
+	 (variable-register variable))
+    ;; we're in 'safe mode' and the  variable is in a register,
+    ;; instead of binding a new register, just load the existing one
+    (push (variable-register variable) *saved-operands*))
+   (t
+    (emit-push-variable variable)
+    (when *saved-operands* ;; safe-mode
+      (let ((register (allocate-register)))
+	(push register *saved-operands*)
+	(assert (null (variable-representation variable)))
+	(emit 'astore register))))))
+
+(defun emit-thread-operand ()
+  (push nil *operand-representations*)
+  (emit-push-current-thread)
+  (when *saved-operands*
+    (let ((register (allocate-register)))
+	(push register *saved-operands*)
+	(emit 'astore register))))
+  
+
+(defun emit-load-externalized-object-operand (object)
+  (push nil *operand-representations*)
+  (emit-load-externalized-object object)
+  (when *saved-operands* ;; safe-mode
+    (let ((register (allocate-register)))
+	(push register *saved-operands*)
+	(emit 'astore register))))
+
 (defknown emit-unbox-fixnum () t)
 (defun emit-unbox-fixnum ()
   (declare (optimize speed))
@@ -3651,12 +3733,13 @@ given a specific common representation.")
           (return-from p2-return-from))))
     ;; Non-local RETURN.
     (aver (block-non-local-return-p block))
-    (emit-push-variable (block-id-variable block))
-    (emit-load-externalized-object (block-name block))
     (emit-clear-values)
-    (compile-form result-form 'stack nil)
-    (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
-                       +lisp-object+)
+    (with-operand-accumulation
+         ((emit-variable-operand (block-id-variable block))
+	  (emit-load-externalized-object-operand (block-name block))
+	  (compile-operand result-form nil))
+       (emit-invokestatic +lisp+ "nonLocalReturn" (lisp-object-arg-types 3)
+			  +lisp-object+))
     ;; Following code will not be reached, but is needed for JVM stack
     ;; consistency.
     (emit 'areturn)))
@@ -3723,17 +3806,18 @@ given a specific common representation.")
          (environment-register
           (setf (progv-environment-register block) (allocate-register)))
          (label-START (gensym)))
-    (compile-form symbols-form 'stack nil)
-    (compile-form values-form 'stack nil)
-    (unless (and (single-valued-p symbols-form)
-                 (single-valued-p values-form))
-      (emit-clear-values))
-    (save-dynamic-environment environment-register)
-    (label label-START)
-    ;; Compile call to Lisp.progvBindVars().
-    (emit-push-current-thread)
-    (emit-invokestatic +lisp+ "progvBindVars"
-                       (list +lisp-object+ +lisp-object+ +lisp-thread+) nil)
+    (with-operand-accumulation
+        ((compile-operand symbols-form nil)
+	 (compile-operand values-form nil))
+      (unless (and (single-valued-p symbols-form)
+		   (single-valued-p values-form))
+	(emit-clear-values))
+      (save-dynamic-environment environment-register)
+      (label label-START)
+      ;; Compile call to Lisp.progvBindVars().
+      (emit-push-current-thread)
+      (emit-invokestatic +lisp+ "progvBindVars"
+			 (list +lisp-object+ +lisp-object+ +lisp-thread+) nil))
       ;; Implicit PROGN.
     (let ((*blocks* (cons block *blocks*)))
       (compile-progn-body (cdddr form) target representation))
@@ -6499,12 +6583,13 @@ We need more thought here.
 (defun p2-throw (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore representation))
-  (emit-push-current-thread)
-  (compile-form (second form) 'stack nil) ; Tag.
-  (emit-clear-values) ; Do this unconditionally! (MISC.503)
-  (compile-form (third form) 'stack nil) ; Result.
-  (emit-invokevirtual +lisp-thread+ "throwToTag"
-                      (lisp-object-arg-types 2) nil)
+  (with-operand-accumulation
+      ((emit-thread-operand)
+       (compile-operand (second form) nil) ; Tag.
+       (emit-clear-values) ; Do this unconditionally! (MISC.503)
+       (compile-operand (third form) nil)) ; Result.
+    (emit-invokevirtual +lisp-thread+ "throwToTag"
+			 (lisp-object-arg-types 2) nil))
   ;; Following code will not be reached.
   (when target
     (emit-push-nil)
