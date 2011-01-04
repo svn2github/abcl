@@ -6148,14 +6148,6 @@ We need more thought here.
         (t
          (compile-function-call form target representation))))
 
-(declaim (ftype (function (t) t) rewrite-setq))
-(defun rewrite-setq (form)
-  (let ((expr (%caddr form)))
-    (if (unsafe-p expr)
-        (let ((sym (gensym)))
-          (list 'LET (list (list sym expr)) (list 'SETQ (%cadr form) sym)))
-        form)))
-
 (defknown p2-setq (t t t) t)
 (defun p2-setq (form target representation)
   (unless (= (length form) 3)
@@ -6164,37 +6156,44 @@ We need more thought here.
          (variable (find-visible-variable name))
          (value-form (%caddr form)))
     (when (or (null variable)
-              (variable-special-p variable))
-      (let ((new-form (rewrite-setq form)))
-        (when (neq new-form form)
-          (return-from p2-setq (compile-form (p1 new-form) target representation))))
+	      (variable-special-p variable))
       ;; We're setting a special variable.
       (cond ((and variable
                   (variable-binding-register variable)
                   (eq (variable-compiland variable) *current-compiland*)
                   (not (enclosed-by-runtime-bindings-creating-block-p
                         (variable-block variable))))
-             (aload (variable-binding-register variable))
+	     ;; ### choose this compilation order to prevent
+	     ;; with-operand-accumulation
              (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
-             (emit 'dup_x1) ;; copy past th
+	     (emit 'dup)
+             (aload (variable-binding-register variable))
+             (emit 'swap)
              (emit-putfield +lisp-special-binding+ "value"
                    +lisp-object+))
             ((and (consp value-form)
                   (eq (first value-form) 'CONS)
                   (= (length value-form) 3)
                   (var-ref-p (third value-form))
-                  (eq (variable-name (var-ref-variable (third value-form))) name))
-             (emit-push-current-thread)
-             (emit-load-externalized-object name)
-             (compile-forms-and-maybe-emit-clear-values (second value-form) 'stack nil)
-             (emit-invokevirtual +lisp-thread+ "pushSpecial"
-                                 (list +lisp-symbol+ +lisp-object+) +lisp-object+))
+                  (eq (variable-name (var-ref-variable (third value-form)))
+		      name))
+	     (with-operand-accumulation
+	         ((emit-thread-operand)
+		  (emit-load-externalized-object-operand name)
+		  (compile-operand (second value-form) nil)
+		  (maybe-emit-clear-values (second value-form)))
+		(emit-invokevirtual +lisp-thread+ "pushSpecial"
+				    (list +lisp-symbol+ +lisp-object+)
+				    +lisp-object+)))
             (t
-             (emit-push-current-thread)
-             (emit-load-externalized-object name)
-             (compile-forms-and-maybe-emit-clear-values value-form 'stack nil)
-             (emit-invokevirtual +lisp-thread+ "setSpecialVariable"
-                                 (list +lisp-symbol+ +lisp-object+) +lisp-object+)))
+	     (with-operand-accumulation
+	         ((emit-thread-operand)
+		  (emit-load-externalized-object-operand name)
+		  (compile-operand value-form nil)
+		  (maybe-emit-clear-values value-form))
+	       (emit-invokevirtual +lisp-thread+ "setSpecialVariable"
+				   (list +lisp-symbol+ +lisp-object+)
+				   +lisp-object+))))
       (fix-boxing representation nil)
       (emit-move-from-stack target representation)
       (return-from p2-setq))
