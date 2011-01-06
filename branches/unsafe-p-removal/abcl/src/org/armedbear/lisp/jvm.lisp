@@ -464,7 +464,10 @@ if that parent belongs to the same compiland."
   non-local-return-p
   ;; Contains a variable whose value uniquely identifies the
   ;; lexical scope from this block, to be used by RETURN-FROM
-  id-variable)
+  id-variable
+  ;; A list of all RETURN-FROM value forms associated with this block
+  return-value-forms)
+
 (defknown make-block-node (t) t)
 (defun make-block-node (name)
   (let ((block (%make-block-node name)))

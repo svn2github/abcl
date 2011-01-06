@@ -643,8 +643,10 @@ where each of the vars returned is a list with these elements:
           (t
            (setf (block-non-local-return-p block) t)))
     (when (block-non-local-return-p block)
-      (dformat t "non-local return from block ~S~%" (block-name block))))
-  (list* 'RETURN-FROM (cadr form) (mapcar #'p1 (cddr form))))
+      (dformat t "non-local return from block ~S~%" (block-name block)))
+    (let ((value-form (p1 (caddr form))))
+      (push value-form (block-return-value-forms block))
+      (list 'RETURN-FROM name value-form))))
 
 (defun p1-tagbody (form)
   (let* ((block (make-tagbody-node))
