@@ -398,24 +398,7 @@ where each of the vars returned is a list with these elements:
   (setf (cdr form) (p1-body (cdr form)))
   form)
 
-(defknown p1-if (t) t)
-(defun p1-if (form)
-  (let ((test (cadr form)))
-    (cond ((unsafe-p test)
-           (cond ((and (consp test)
-                       (memq (%car test) '(GO RETURN-FROM THROW)))
-                  (p1 test))
-                 (t
-                  (let* ((var (gensym))
-                         (new-form
-                          `(let ((,var ,test))
-                             (if ,var ,(third form) ,(fourth form)))))
-                    (p1 new-form)))))
-          (t
-           (p1-default form)))))
-
-
-(defmacro p1-let/let*-vars 
+(defmacro p1-let/let*-vars
     (block varlist variables-var var body1 body2)
   (let ((varspec (gensym))
 	(initform (gensym))
@@ -1358,7 +1341,11 @@ the args causes a Java exception handler to be installed, which
                   (FUNCALL              p1-funcall)
                   (FUNCTION             p1-function)
                   (GO                   p1-go)
-                  (IF                   p1-if)
+                  (IF                   p1-default)
+                  ;; used to be p1-if, which was used to rewrite the test
+                  ;; form to a LET-binding; that's not necessary, because
+                  ;; the test form doesn't lead to multiple operands on the
+                  ;; operand stack
                   (LABELS               p1-labels)
                   (LAMBDA               p1-lambda)
                   (LET                  p1-let/let*)
