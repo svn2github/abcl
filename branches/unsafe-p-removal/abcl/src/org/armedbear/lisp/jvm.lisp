@@ -53,6 +53,14 @@
 (defvar *closure-variables* nil)
 
 (defvar *enable-dformat* nil)
+(defvar *callbacks* nil
+  "A list of functions to be called by the compiler and code generator
+in order to generate 'compilation events'.")
+
+(declaim (inline invoke-callbacks))
+(defun invoke-callbacks (&rest args)
+  (dolist (cb *callbacks*)
+    (apply cb args)))
 
 #+nil
 (defun dformat (destination control-string &rest args)
