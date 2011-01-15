@@ -483,6 +483,21 @@ if that parent belongs to the same compiland."
     (add-node-child *block* block)
     block))
 
+(defstruct (jump-node (:conc-name jump-)
+                      (:include node)
+                      (:constructor
+                       %make-jump-node (non-local-p target-block target-tag)))
+  non-local-p
+  target-block
+  target-tag)
+(defun make-jump-node (form non-local-p target-block &optional target-tag)
+  (let ((node (%make-jump-node non-local-p target-block target-tag)))
+    ;; Don't push into compiland blocks, as this as a node rather than a block
+    (setf (node-form node) form)
+    (add-node-child *block* node)
+    node))
+
+
 ;; binding blocks: LET, LET*, FLET, LABELS, M-V-B, PROGV, LOCALLY
 ;;
 ;; Binding blocks can carry references to local (optionally special) variable bindings,
@@ -619,11 +634,14 @@ field of the immediate enclosed blocks."
   (when *blocks*
     ;; when the innermost enclosing block doesn't have node-children,
     ;;  there's really nothing to search for.
-    (when (null (node-children (car *blocks*)))
-      (return-from find-enclosed-blocks)))
+    (let ((first-enclosing-block (car *blocks*)))
+      (when (and (eq *current-compiland*
+                     (node-compiland first-enclosing-block))
+                 (null (node-children first-enclosing-block)))
+        (return-from find-enclosed-blocks))))
 
   (%find-enclosed-blocks form))
-    
+
 
 (defun some-nested-block (predicate blocks)
   "Applies `predicate` recursively to the `blocks` and its children,
@@ -661,10 +679,15 @@ than just restore the lastSpecialBinding (= dynamic environment).
       (catch-node-p object)
       (synchronized-node-p object)))
 
-(defun block-opstack-unsafe-p (block)
-  (or (when (tagbody-node-p block) (tagbody-non-local-go-p block))
-      (when (block-node-p block) (block-non-local-return-p block))
-      (catch-node-p block)))
+(defun node-opstack-unsafe-p (node)
+  (or (when (jump-node-p node)
+        (let ((target-block (jump-target-block node)))
+          (and (null (jump-non-local-p node))
+               (eq (node-compiland target-block) *current-compiland*)
+               (member target-block *blocks*))))
+      (when (tagbody-node-p node) (tagbody-non-local-go-p node))
+      (when (block-node-p node) (block-non-local-return-p node))
+      (catch-node-p node)))
 
 (defknown block-creates-runtime-bindings-p (t) boolean)
 (defun block-creates-runtime-bindings-p (block)

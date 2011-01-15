@@ -598,6 +598,8 @@ before the emitted code: the code is 'stack-neutral'."
                 (single-valued-p (second (node-form form))))
                ((catch-node-p form)
                 nil)
+               ((jump-node-p form)
+                (single-valued-p (node-form form)))
                (t
                 (assert (not "SINGLE-VALUED-P unhandled NODE-P branch")))))
         ((var-ref-p form)
@@ -696,7 +698,7 @@ save them in registers."
 on the operand stack, if it's safe to do so. Otherwise stores the value
 in a register"
   (let ((unsafe (or *saved-operands*
-		    (some-nested-block #'block-opstack-unsafe-p
+		    (some-nested-block #'node-opstack-unsafe-p
 				       (find-enclosed-blocks form)))))
     (when (and unsafe (null *saved-operands*))
       (save-existing-operands))
@@ -1856,8 +1858,8 @@ The field type of the object is specified by OBJ-REF."
         (t
          nil)))
 
-(defknown process-args (t) t)
-(defun process-args (args)
+(defknown process-args (t t) t)
+(defun process-args (args stack)
   "Compiles forms specified as function call arguments.
 
 The results are either accumulated on the stack or in an array
@@ -1865,27 +1867,76 @@ in order to call the relevant `execute' form. The function call
 itself is *not* compiled by this function."
   (when args
     (let ((numargs (length args)))
-      (let ((must-clear-values nil))
+      (let ((must-clear-values nil)
+            (unsafe-args (some-nested-block #'node-opstack-unsafe-p
+                                            (mapcan #'find-enclosed-blocks
+                                                    args))))
         (declare (type boolean must-clear-values))
-        (cond ((<= numargs call-registers-limit)
+        (cond ((and unsafe-args
+                    (<= numargs call-registers-limit))
+               (let ((*register* *register*)
+                     operand-registers)
+                 (dolist (stack-item stack)
+                   (let ((register (allocate-register)))
+                     (push register operand-registers)
+                     (emit-move-from-stack register stack-item)))
+                 (setf operand-registers (reverse operand-registers))
+                 (dolist (arg args)
+                   (push (allocate-register) operand-registers)
+                   (compile-form arg (car operand-registers) nil)
+                   (unless must-clear-values
+                     (unless (single-valued-p arg)
+                       (setf must-clear-values t))))
+                 (dolist (register (nreverse operand-registers))
+                   (aload register))))
+              ((<= numargs call-registers-limit)
                (dolist (arg args)
                  (compile-form arg 'stack nil)
                  (unless must-clear-values
                    (unless (single-valued-p arg)
                      (setf must-clear-values t)))))
               (t
-               (emit-push-constant-int numargs)
-               (emit-anewarray +lisp-object+)
-               (let ((i 0))
-                 (dolist (arg args)
-                   (emit 'dup)
-                   (emit-push-constant-int i)
-                   (compile-form arg 'stack nil)
-                   (emit 'aastore) ; store value in array
-                   (unless must-clear-values
-                     (unless (single-valued-p arg)
-                       (setf must-clear-values t)))
-                   (incf i)))))
+               (let (;(*register* *register*) ;; ### FIXME: this doesn't work, but why not?
+                     (array-register (allocate-register))
+                     saved-stack)
+                 (when unsafe-args
+                   (dolist (stack-item stack)
+                     (let ((register (allocate-register)))
+                       (push register saved-stack)
+                       (emit-move-from-stack register stack-item))))
+                 (emit-push-constant-int numargs)
+                 (emit-anewarray +lisp-object+)
+                 ;; be operand stack safe by not accumulating
+                 ;; any arguments on the stack.
+                 ;;
+                 ;; The overhead of storing+loading the array register
+                 ;; at the beginning and ending is small: there are at
+                 ;; least nine parameters to be calculated.
+                 (astore array-register)
+                 (let ((i 0))
+                   (dolist (arg args)
+                     (cond
+                      ((not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg)))
+                       (aload array-register)
+                       (emit-push-constant-int i)
+                       (compile-form arg 'stack nil))
+                      (t
+                       (compile-form arg 'stack nil)
+                       (aload array-register)
+                       (emit 'swap)
+                       (emit-push-constant-int i)
+                       (emit 'swap)))
+                     (emit 'aastore) ; store value in array
+                     (unless must-clear-values
+                       (unless (single-valued-p arg)
+                         (setf must-clear-values t)))
+                     (incf i))
+                   (when unsafe-args
+                     (mapcar #'emit-push-register
+                             saved-stack
+                             (reverse stack)))
+                   (aload array-register)))))
         (when must-clear-values
           (emit-clear-values)))))
   t)
@@ -1953,26 +2004,28 @@ itself is *not* compiled by this function."
                  (aload 0)))
             (t
              (emit-load-externalized-object op)))
-      (process-args args)
+      (process-args args
+                    (if (or (<= *speed* *debug*) *require-stack-frame*)
+                        '(nil nil) '(nil)))
       (if (or (<= *speed* *debug*) *require-stack-frame*)
           (emit-call-thread-execute numargs)
           (emit-call-execute numargs))
       (fix-boxing representation (derive-compiler-type form))
       (emit-move-from-stack target representation))))
 
-(defun compile-call (args)
+(defun compile-call (args stack)
   "Compiles a function call.
 
 Depending on the `*speed*' and `*debug*' settings, a stack frame
 is registered (or not)."
   (let ((numargs (length args)))
     (cond ((> *speed* *debug*)
-           (process-args args)
+           (process-args args stack)
            (emit-call-execute numargs))
           (t
            (emit-push-current-thread)
            (emit 'swap) ; Stack: thread function
-           (process-args args)
+           (process-args args (list* (car stack) nil (cdr stack)))
            (emit-call-thread-execute numargs)))))
 
 (define-source-transform funcall (&whole form fun &rest args)
@@ -2039,7 +2092,7 @@ is registered (or not)."
   (when (> *debug* *speed*)
     (return-from p2-funcall (compile-function-call form target representation)))
   (compile-forms-and-maybe-emit-clear-values (cadr form) 'stack nil)
-  (compile-call (cddr form))
+  (compile-call (cddr form) '(nil))
   (fix-boxing representation nil)
   (emit-move-from-stack target))
 
@@ -2104,7 +2157,7 @@ Note: DEFUN implies a named lambda."
                (emit-invokestatic +lisp+ "makeCompiledClosure"
                                   (list +lisp-object+ +closure-binding-array+)
                                   +lisp-object+)))))
-    (process-args args)
+    (process-args args '(nil))
     (emit-call-execute (length args))
     (fix-boxing representation nil)
     (emit-move-from-stack target representation))
@@ -3003,8 +3056,8 @@ given a specific common representation.")
   )
 
 (defun restore-environment-and-make-handler (register label-START)
-  (let ((label-END (gensym))
-        (label-EXIT (gensym)))
+  (let ((label-END (gensym "U"))
+        (label-EXIT (gensym "E")))
     (emit 'goto label-EXIT)
     (label label-END)
     (restore-dynamic-environment register)
@@ -3021,7 +3074,7 @@ given a specific common representation.")
          (vars (second form))
          (bind-special-p nil)
          (variables (m-v-b-vars block))
-         (label-START (gensym)))
+         (label-START (gensym "F")))
     (dolist (variable variables)
       (let ((special-p (variable-special-p variable)))
         (cond (special-p
@@ -3424,7 +3477,7 @@ given a specific common representation.")
          (form (let-form block))
          (*visible-variables* *visible-variables*)
          (specialp nil)
-         (label-START (gensym)))
+         (label-START (gensym "F")))
     ;; Walk the variable list looking for special bindings and unused lexicals.
     (dolist (variable (let-vars block))
       (cond ((variable-special-p variable)
@@ -3471,10 +3524,10 @@ given a specific common representation.")
          (*register* *register*)
          (form (tagbody-form block))
          (body (cdr form))
-         (BEGIN-BLOCK (gensym))
-         (END-BLOCK (gensym))
-         (RETHROW (gensym))
-         (EXIT (gensym))
+         (BEGIN-BLOCK (gensym "F"))
+         (END-BLOCK (gensym "U"))
+         (RETHROW (gensym "T"))
+         (EXIT (gensym "E"))
          (must-clear-values nil)
          (specials-register (when (tagbody-non-local-go-p block)
                               (allocate-register))))
@@ -3511,8 +3564,8 @@ given a specific common representation.")
     (emit 'goto EXIT)
     (when (tagbody-non-local-go-p block)
       ; We need a handler to catch non-local GOs.
-      (let* ((HANDLER (gensym))
-             (EXTENT-EXIT-HANDLER (gensym))
+      (let* ((HANDLER (gensym "H"))
+             (EXTENT-EXIT-HANDLER (gensym "HE"))
              (*register* *register*)
              (go-register (allocate-register))
              (tag-register (allocate-register)))
@@ -3565,9 +3618,11 @@ given a specific common representation.")
 (defun p2-go (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore target representation))
-  (let* ((name (cadr form))
-         (tag (find-tag name))
-         (tag-block (when tag (tag-block tag))))
+  (let* ((node form)
+         (form (node-form form))
+         (name (cadr form))
+         (tag (jump-target-tag node))
+         (tag-block (when tag (jump-target-block node))))
     (unless tag
       (error "p2-go: tag not found: ~S" name))
     (when (and (eq (tag-compiland tag) *current-compiland*)
@@ -3671,8 +3726,8 @@ given a specific common representation.")
     (aver (block-node-p block)))
   (let* ((*blocks* (cons block *blocks*))
          (*register* *register*)
-         (BEGIN-BLOCK (gensym))
-         (END-BLOCK (gensym))
+         (BEGIN-BLOCK (gensym "F"))
+         (END-BLOCK (gensym "U"))
          (BLOCK-EXIT (block-exit block))
          (specials-register (when (block-non-local-return-p block)
                               (allocate-register))))
@@ -3695,8 +3750,8 @@ given a specific common representation.")
     (when (block-non-local-return-p block)
       ;; We need a handler to catch non-local RETURNs.
       (emit 'goto BLOCK-EXIT) ; Jump over handler, when inserting one
-      (let ((HANDLER (gensym))
-            (EXTENT-EXIT-HANDLER (gensym))
+      (let ((HANDLER (gensym "H"))
+            (EXTENT-EXIT-HANDLER (gensym "HE"))
             (THIS-BLOCK (gensym)))
         (label HANDLER)
         ;; The Return object is on the runtime stack. Stack depth is 1.
@@ -3731,9 +3786,11 @@ given a specific common representation.")
 (defun p2-return-from (form target representation)
   ;; FIXME What if we're called with a non-NIL representation?
   (declare (ignore target representation))
-  (let* ((name (second form))
+  (let* ((node form)
+         (form (node-form form))
+         (name (second form))
          (result-form (third form))
-         (block (find-block name)))
+         (block (jump-target-block node)))
     (when (null block)
       (error "No block named ~S is currently visible." name))
     (let ((compiland *current-compiland*))
@@ -3823,7 +3880,7 @@ given a specific common representation.")
          (*register* *register*)
          (environment-register
           (setf (progv-environment-register block) (allocate-register)))
-         (label-START (gensym)))
+         (label-START (gensym "F")))
     (with-operand-accumulation
         ((compile-operand symbols-form nil)
 	 (compile-operand values-form nil))
@@ -6506,9 +6563,9 @@ We need more thought here.
   (let* ((form (synchronized-form block))
          (*register* *register*)
          (object-register (allocate-register))
-         (BEGIN-PROTECTED-RANGE (gensym))
-         (END-PROTECTED-RANGE (gensym))
-         (EXIT (gensym)))
+         (BEGIN-PROTECTED-RANGE (gensym "F"))
+         (END-PROTECTED-RANGE (gensym "U"))
+         (EXIT (gensym "E")))
     (compile-form (cadr form) 'stack nil)
     (emit-invokevirtual +lisp-object+ "lockableInstance" nil
                         +java-object+) ; value to synchronize
@@ -6542,12 +6599,12 @@ We need more thought here.
       (return-from p2-catch-node))
     (let* ((*register* *register*)
            (tag-register (allocate-register))
-           (BEGIN-PROTECTED-RANGE (gensym))
-           (END-PROTECTED-RANGE (gensym))
-           (THROW-HANDLER (gensym))
+           (BEGIN-PROTECTED-RANGE (gensym "F"))
+           (END-PROTECTED-RANGE (gensym "U"))
+           (THROW-HANDLER (gensym "H"))
            (RETHROW (gensym))
            (DEFAULT-HANDLER (gensym))
-           (EXIT (gensym))
+           (EXIT (gensym "E"))
            (specials-register (allocate-register)))
       (compile-form (second form) tag-register nil) ; Tag.
       (emit-push-current-thread)
@@ -6637,10 +6694,10 @@ We need more thought here.
            (result-register (allocate-register))
            (values-register (allocate-register))
            (specials-register (allocate-register))
-           (BEGIN-PROTECTED-RANGE (gensym))
-           (END-PROTECTED-RANGE (gensym))
-           (HANDLER (gensym))
-           (EXIT (gensym)))
+           (BEGIN-PROTECTED-RANGE (gensym "F"))
+           (END-PROTECTED-RANGE (gensym "U"))
+           (HANDLER (gensym "H"))
+           (EXIT (gensym "E")))
       ;; Make sure there are no leftover multiple return values from previous calls.
       (emit-clear-values)
 
@@ -6729,6 +6786,15 @@ We need more thought here.
          (compile-var-ref form target representation))
         ((node-p form)
          (cond
+           ((jump-node-p form)
+            (let ((op (car (node-form form))))
+              (cond
+               ((eq op 'go)
+                (p2-go form target representation))
+               ((eq op 'return-from)
+                (p2-return-from form target representation))
+               (t
+                (assert (not "jump-node: can't happen"))))))
            ((block-node-p form)
             (p2-block-node form target representation))
            ((let/let*-node-p form)
@@ -6863,7 +6929,7 @@ We need more thought here.
 
          (*thread* nil)
          (*initialize-thread-var* nil)
-         (label-START (gensym)))
+         (label-START (gensym "F")))
 
     (class-add-method class-file method)
 

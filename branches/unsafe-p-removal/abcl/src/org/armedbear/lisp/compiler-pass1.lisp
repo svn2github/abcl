@@ -620,7 +620,8 @@ where each of the vars returned is a list with these elements:
 (defknown p1-return-from (t) t)
 (defun p1-return-from (form)
   (let* ((name (second form))
-         (block (find-block name)))
+         (block (find-block name))
+         non-local-p)
     (when (null block)
       (compiler-error "RETURN-FROM ~S: no block named ~S is currently visible."
                       name name))
@@ -634,19 +635,22 @@ where each of the vars returned is a list with these elements:
            (let ((protected (enclosed-by-protected-block-p block)))
              (dformat t "p1-return-from protected = ~S~%" protected)
              (if protected
-                 (setf (block-non-local-return-p block) t)
+                 (setf (block-non-local-return-p block) t
+                       non-local-p t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
                  (when (null (block-needs-environment-restoration block))
                    (setf (block-needs-environment-restoration block)
                          (enclosed-by-environment-setting-block-p block))))))
           (t
-           (setf (block-non-local-return-p block) t)))
+           (setf (block-non-local-return-p block) t
+                 non-local-p t)))
     (when (block-non-local-return-p block)
       (dformat t "non-local return from block ~S~%" (block-name block)))
     (let ((value-form (p1 (caddr form))))
       (push value-form (block-return-value-forms block))
-      (list 'RETURN-FROM name value-form))))
+      (make-jump-node (list 'RETURN-FROM name value-form)
+                      non-local-p block))))
 
 (defun p1-tagbody (form)
   (let* ((block (make-tagbody-node))
@@ -695,12 +699,14 @@ where each of the vars returned is a list with these elements:
     (unless tag
       (error "p1-go: tag not found: ~S" name))
     (setf (tag-used tag) t)
-    (let ((tag-block (tag-block tag)))
+    (let ((tag-block (tag-block tag))
+          non-local-p)
       (cond ((eq (tag-compiland tag) *current-compiland*)
              ;; Does the GO leave an enclosing UNWIND-PROTECT or CATCH?
              (if (enclosed-by-protected-block-p tag-block)
                  (setf (tagbody-non-local-go-p tag-block) t
-                       (tag-used-non-locally tag) t)
+                       (tag-used-non-locally tag) t
+                       non-local-p t)
                  ;; non-local GO's ensure environment restoration
                  ;; find out about this local GO
                  (when (null (tagbody-needs-environment-restoration tag-block))
@@ -708,8 +714,9 @@ where each of the vars returned is a list with these elements:
                          (enclosed-by-environment-setting-block-p tag-block)))))
             (t
              (setf (tagbody-non-local-go-p tag-block) t
-                   (tag-used-non-locally tag) t)))))
-  form)
+                   (tag-used-non-locally tag) t
+                   non-local-p t)))
+      (make-jump-node form non-local-p tag-block tag))))
 
 (defun validate-function-name (name)
   (unless (or (symbolp name) (setf-function-name-p name))
@@ -1143,6 +1150,123 @@ where each of the vars returned is a list with these elements:
                     (1- (length form))))
   (list 'TRULY-THE (%cadr form) (p1 (%caddr form))))
 
+(defvar *pass2-unsafe-p-special-treatment-functions*
+  '(
+
+     constantp endp evenp floatp integerp listp minusp
+     numberp oddp plusp rationalp realp
+     ;; predicates not marked as such?
+       simple-vector-p
+       stringp
+       symbolp
+       vectorp
+       zerop
+       atom
+       consp
+       fixnump
+       packagep
+       readtablep
+       characterp
+       bit-vector-p
+       SIMPLE-TYPEP
+
+     declare
+     multiple-value-call
+     multiple-value-list
+     multiple-value-prog1
+     nth
+     progn
+
+     EQL EQUAL
+     + - / *
+     < < > >= = /=
+     ASH
+     AREF
+     RPLACA RPLACD
+     %ldb
+     and
+     aset
+     car
+     cdr
+     char
+     char-code
+     java:jclass
+     java:jconstructor
+     java:jmethod
+     char=
+     coerce-to-function
+     cons
+     sys::backq-cons
+     delete
+     elt
+     eq
+     eql
+     find-class
+     funcall
+     function
+     gensym
+     get
+     getf
+     gethash
+     gethash1
+     if
+     sys::%length
+     list
+     sys::backq-list
+     list*
+     sys::backq-list*
+     load-time-value
+     logand
+     logior
+     lognot
+     logxor
+     max
+     memq
+     memql
+     min
+     mod
+     neq
+     not
+     nthcdr
+     null
+     or
+     puthash
+     quote
+     read-line
+     rplacd
+     schar
+     set
+     set-car
+     set-cdr
+       set-char
+       set-schar
+       set-std-slot-value
+       setq
+       std-slot-value
+       stream-element-type
+       structure-ref
+       structure-set
+       svref
+       svset
+       sxhash
+       symbol-name
+       symbol-package
+       symbol-value
+       truncate
+       values
+       vector-push-extend
+       write-8-bits
+       with-inline-code)
+"The functions named in the list bound to this variable
+need to be rewritten if UNSAFE-P returns non-NIL for their
+argument list.
+
+All other function calls are handled by generic function calling
+in pass2, which accounts for OPSTACK unsafety itself.")
+
+
+
+
 (defknown unsafe-p (t) t)
 (defun unsafe-p (args)
   "Determines whether the args can cause 'stack unsafe situations'.
@@ -1188,7 +1312,8 @@ the args causes a Java exception handler to be installed, which
       ((and (listp op) (eq (car op) 'lambda))
        ;;((lambda (...) ...) ...)
        (expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args))
-      (t (if (unsafe-p args)
+      (t (if (and (member op *pass2-unsafe-p-special-treatment-functions*)
+                  (unsafe-p args))
 	     (let ((arg1 (car args)))
 	       (cond ((and (consp arg1) (eq (car arg1) 'GO))
 		      arg1)
@@ -1197,7 +1322,8 @@ the args causes a Java exception handler to be installed, which
 			    (lets ()))
 			;; Preserve the order of evaluation of the arguments!
 			(dolist (arg args)
-			  (cond ((constantp arg)
+			  (cond ((and (constantp arg)
+                                      (not (node-p arg)))
 				 (push arg syms))
 				((and (consp arg) (eq (car arg) 'GO))
 				 (return-from rewrite-function-call
