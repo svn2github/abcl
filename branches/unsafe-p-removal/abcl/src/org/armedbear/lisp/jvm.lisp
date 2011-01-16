@@ -683,7 +683,6 @@ than just restore the lastSpecialBinding (= dynamic environment).
   (or (when (jump-node-p node)
         (let ((target-block (jump-target-block node)))
           (and (null (jump-non-local-p node))
-               (eq (node-compiland target-block) *current-compiland*)
                (member target-block *blocks*))))
       (when (tagbody-node-p node) (tagbody-non-local-go-p node))
       (when (block-node-p node) (block-non-local-return-p node))
