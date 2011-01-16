@@ -1153,41 +1153,9 @@ where each of the vars returned is a list with these elements:
 (defvar *pass2-unsafe-p-special-treatment-functions*
   '(
 
-     constantp endp evenp floatp integerp listp minusp
-     numberp oddp plusp rationalp realp
-     ;; predicates not marked as such?
-       simple-vector-p
-       stringp
-       symbolp
-       vectorp
-       zerop
-       atom
-       consp
-       fixnump
-       packagep
-       readtablep
-       characterp
-       bit-vector-p
-       SIMPLE-TYPEP
-
-     declare
-     multiple-value-call
-     multiple-value-list
-     multiple-value-prog1
-     nth
-     progn
-
-     EQL EQUAL
-     + - / *
-     < < > >= = /=
-     ASH
-     AREF
-     RPLACA RPLACD
      %ldb
      and
      aset
-     car
-     cdr
      char
      char-code
      java:jclass
@@ -1199,8 +1167,6 @@ where each of the vars returned is a list with these elements:
      sys::backq-cons
      delete
      elt
-     eq
-     eql
      find-class
      funcall
      function
@@ -1209,7 +1175,6 @@ where each of the vars returned is a list with these elements:
      getf
      gethash
      gethash1
-     if
      sys::%length
      list
      sys::backq-list
@@ -1225,7 +1190,6 @@ where each of the vars returned is a list with these elements:
      memql
      min
      mod
-     neq
      not
      nthcdr
      null
