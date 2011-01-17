@@ -345,12 +345,6 @@ supported (and used) by the compiler.")
                 (compiler-subtypep the-type (make-compiler-type type)))
         (return-from type-representation (caar types))))))
 
-(defun representation-size (representation)
-  (ecase representation
-    ((NIL :int :boolean :float :char) 1)
-    ((:long :double) 2)))
-
-
 (defknown emit-unbox-boolean () t)
 (defun emit-unbox-boolean ()
   (emit-instanceof +lisp-nil+)
@@ -684,7 +678,7 @@ and `emit-load-externalized-object-operand'."
                                   ;; could allocate registers ...
      ,@argument-accumulation-body
      (load-saved-operands)
-     ,@funcall-body))
+     ,@call-body))
 
 (defmacro accumulate-operand ((representation &key unsafe-p)
                               &body body)
@@ -713,7 +707,7 @@ back onto the stack in preparation of the execution of the opcode."
 save them in registers."
   (when (null *saved-operands*)
     (dolist (representation *operand-representations*)
-      (let ((register (allocate-register)))
+      (let ((register (allocate-register representation)))
         (push register *saved-operands*)
         (emit-move-from-stack register representation)))
 
@@ -725,7 +719,7 @@ a register and updates associated operand collection variables."
   (push representation *operand-representations*)
 
   (when *saved-operands*
-    (let ((register (allocate-register)))
+    (let ((register (allocate-register representation)))
       (push register *saved-operands*)
       (emit-move-from-stack register representation))))
 
@@ -743,7 +737,7 @@ in a register"
     (when cast
       (emit-checkcast cast))
     (when unsafe
-      (let ((register (allocate-register)))
+      (let ((register (allocate-register representation)))
         (push register *saved-operands*)
         (emit-move-from-stack register representation)))
 
@@ -762,7 +756,7 @@ stores the value in a register."
    (t
     (emit-push-variable variable)
     (when *saved-operands* ;; safe-mode
-      (let ((register (allocate-register)))
+      (let ((register (allocate-register (variable-representation variable))))
         (push register *saved-operands*)
         (emit-move-from-stack register (variable-representation variable)))))))
 
@@ -770,7 +764,7 @@ stores the value in a register."
   (push nil *operand-representations*)
   (emit-push-current-thread)
   (when *saved-operands*
-    (let ((register (allocate-register)))
+    (let ((register (allocate-register nil)))
       (push register *saved-operands*)
       (emit 'astore register))))
 
@@ -778,7 +772,7 @@ stores the value in a register."
   (push nil *operand-representations*)
   (emit-load-externalized-object object)
   (when *saved-operands* ;; safe-mode
-    (let ((register (allocate-register)))
+    (let ((register (allocate-register nil)))
       (push register *saved-operands*)
       (emit 'astore register))))
 
@@ -958,7 +952,7 @@ representation, based on the derived type of the LispObject."
          keys-p
          more-keys-p)
     (with-code-to-method (class method)
-      (allocate-register)
+      (allocate-register nil)
       (unless (eq super +lisp-compiled-primitive+)
         (multiple-value-bind
              (req opt key key-p rest
@@ -974,7 +968,7 @@ representation, based on the derived type of the LispObject."
                       (emit-push-constant-int (length ,params))
                       (emit-anewarray +lisp-closure-parameter+)
                       (astore (setf ,register *registers-allocated*))
-                      (allocate-register)
+                      (allocate-register nil)
                       (do* ((,count-sym 0 (1+ ,count-sym))
                             (,params ,params (cdr ,params))
                             (,param (car ,params) (car ,params)))
@@ -1941,12 +1935,12 @@ itself is *not* compiled by this function."
                (let ((*register* *register*)
                      operand-registers)
                  (dolist (stack-item stack)
-                   (let ((register (allocate-register)))
+                   (let ((register (allocate-register nil)))
                      (push register operand-registers)
                      (emit-move-from-stack register stack-item)))
                  (setf operand-registers (reverse operand-registers))
                  (dolist (arg args)
-                   (push (allocate-register) operand-registers)
+                   (push (allocate-register nil) operand-registers)
                    (compile-form arg (car operand-registers) nil)
                    (unless must-clear-values
                      (unless (single-valued-p arg)
@@ -1961,11 +1955,11 @@ itself is *not* compiled by this function."
                      (setf must-clear-values t)))))
               (t
                (let* ((*register* *register*) ;; ### FIXME: this doesn't work, but why not?
-                     (array-register (allocate-register))
+                     (array-register (allocate-register nil))
                      saved-stack)
                  (when unsafe-args
                    (dolist (stack-item stack)
-                     (let ((register (allocate-register)))
+                     (let ((register (allocate-register nil)))
                        (push register saved-stack)
                        (emit-move-from-stack register stack-item))))
                  (emit-push-constant-int numargs)
@@ -2163,7 +2157,7 @@ is registered (or not)."
 
 (defun duplicate-closure-array (compiland)
   (let* ((*register* *register*)
-         (register (allocate-register)))
+         (register (allocate-register nil)))
     (aload (compiland-closure-register compiland))        ;; src
     (emit-push-constant-int 0)                            ;; srcPos
     (emit-push-constant-int (length *closure-variables*))
@@ -2326,9 +2320,9 @@ given a specific common representation.")
                  (unless (and (or (node-constant-p arg2)
                                   (var-ref-p arg2))
                               (node-constant-p arg3))
-                   (allocate-register)))
+                   (allocate-register nil)))
                 (arg3-register
-                 (unless (node-constant-p arg3) (allocate-register))))
+                 (unless (node-constant-p arg3) (allocate-register nil))))
            (with-operand-accumulation
                ((compile-operand arg1 :int)
                 (compile-operand arg2 :int)
@@ -3007,8 +3001,8 @@ given a specific common representation.")
 (defun compile-multiple-value-prog1 (form target representation)
   (let ((first-subform (cadr form))
         (subforms (cddr form))
-        (result-register (allocate-register))
-        (values-register (allocate-register)))
+        (result-register (allocate-register nil))
+        (values-register (allocate-register nil)))
     ;; Make sure there are no leftover values from previous calls.
     (emit-clear-values)
     (compile-form first-subform result-register nil)
@@ -3039,7 +3033,7 @@ given a specific common representation.")
      (emit-invokevirtual +lisp-object+ "execute" nil +lisp-object+))
     (3
      (let* ((*register* *register*)
-            (function-register (allocate-register)))
+            (function-register (allocate-register nil)))
        (compile-form (second form) function-register nil)
        (compile-form (third form) 'stack nil)
        (aload function-register)
@@ -3050,8 +3044,8 @@ given a specific common representation.")
     (t
      ;; The general case.
      (let* ((*register* *register*)
-            (function-register (allocate-register))
-            (values-register (allocate-register)))
+            (function-register (allocate-register nil))
+            (values-register (allocate-register nil)))
        (compile-form (second form) 'stack nil)
        (emit-invokestatic +lisp+ "coerceToFunction"
                           (lisp-object-arg-types 1) +lisp-object+)
@@ -3194,12 +3188,13 @@ given a specific common representation.")
                (setf bind-special-p t))
               (t
                (unless (variable-closure-index variable)
-                 (setf (variable-register variable) (allocate-register)))))))
+                 (setf (variable-register variable)
+                       (allocate-register nil)))))))
     ;; If we're going to bind any special variables...
     (when bind-special-p
       (dformat t "p2-m-v-b-node lastSpecialBinding~%")
       ;; Save current dynamic environment.
-      (setf (m-v-b-environment-register block) (allocate-register))
+      (setf (m-v-b-environment-register block) (allocate-register nil))
       (save-dynamic-environment (m-v-b-environment-register block))
       (label label-START))
     ;; Make sure there are no leftover values from previous calls.
@@ -3211,8 +3206,8 @@ given a specific common representation.")
            (compile-binding (car variables)))
           (t
            (let* ((*register* *register*)
-                  (result-register (allocate-register))
-                  (values-register (allocate-register))
+                  (result-register (allocate-register nil))
+                  (values-register (allocate-register nil))
                   (LABEL1 (gensym))
                   (LABEL2 (gensym)))
              ;; Store primary value from values form in result register.
@@ -3367,9 +3362,7 @@ given a specific common representation.")
 
 (defun allocate-variable-register (variable)
   (setf (variable-register variable)
-        (if (= 2 (representation-size (variable-representation variable)))
-            (allocate-register-pair)
-            (allocate-register))))
+        (allocate-register (variable-representation variable))))
 
 (defun emit-move-to-variable (variable)
   (let ((representation (variable-representation variable)))
@@ -3479,9 +3472,9 @@ given a specific common representation.")
                  (allocate-variable-register variable))
                (when (variable-special-p variable)
                  (setf (variable-binding-register variable)
-                       (allocate-register)))
+                       (allocate-register nil)))
                (cond ((variable-special-p variable)
-                      (let ((temp-register (allocate-register)))
+                      (let ((temp-register (allocate-register nil)))
                         ;; FIXME: this permanently allocates a register
                         ;; which has only a single local use
                         (push (cons temp-register variable)
@@ -3543,7 +3536,8 @@ given a specific common representation.")
                              (not (variable-special-p variable))
                              (eq (variable-declared-type variable) 'BOOLEAN))
                         (setf (variable-representation variable) :boolean)
-                        (setf (variable-register variable) (allocate-register))
+                        (setf (variable-register variable)
+                              (allocate-register nil))
                         (emit 'iconst_0)
                         (emit 'istore (variable-register variable))
                         (setf boundp t))
@@ -3573,11 +3567,13 @@ given a specific common representation.")
         (unless (or boundp (variable-special-p variable))
           (unless (or (variable-closure-index variable)
                       (variable-register variable))
-            (setf (variable-register variable) (allocate-register))))
+            (setf (variable-register variable)
+                  (allocate-register nil))))
         (push variable *visible-variables*)
         (unless boundp
           (when (variable-special-p variable)
-            (setf (variable-binding-register variable) (allocate-register)))
+            (setf (variable-binding-register variable)
+                  (allocate-register nil)))
           (compile-binding variable))
         (maybe-generate-type-check variable)))
     (when must-clear-values
@@ -3600,7 +3596,7 @@ given a specific common representation.")
     ;; If there are any special bindings...
     (when specialp
       ;; We need to save current dynamic environment.
-      (setf (let-environment-register block) (allocate-register))
+      (setf (let-environment-register block) (allocate-register nil))
       (save-dynamic-environment (let-environment-register block))
       (label label-START))
     (propagate-vars block)
@@ -3643,7 +3639,7 @@ given a specific common representation.")
          (EXIT (gensym "E"))
          (must-clear-values nil)
          (specials-register (when (tagbody-non-local-go-p block)
-                              (allocate-register))))
+                              (allocate-register nil))))
     ;; Scan for tags.
     (dolist (tag (tagbody-tags block))
       (push tag *visible-tags*))
@@ -3680,8 +3676,8 @@ given a specific common representation.")
       (let* ((HANDLER (gensym "H"))
              (EXTENT-EXIT-HANDLER (gensym "HE"))
              (*register* *register*)
-             (go-register (allocate-register))
-             (tag-register (allocate-register)))
+             (go-register (allocate-register nil))
+             (tag-register (allocate-register nil)))
         (label HANDLER)
         ;; The Go object is on the runtime stack. Stack depth is 1.
         (emit 'dup)
@@ -3843,7 +3839,7 @@ given a specific common representation.")
          (END-BLOCK (gensym "U"))
          (BLOCK-EXIT (block-exit block))
          (specials-register (when (block-non-local-return-p block)
-                              (allocate-register))))
+                              (allocate-register nil))))
     (setf (block-target block) target)
     (when (block-id-variable block)
       ;; we have a block variable; that should be a closure variable
@@ -3992,7 +3988,7 @@ given a specific common representation.")
          (values-form (caddr form))
          (*register* *register*)
          (environment-register
-          (setf (progv-environment-register block) (allocate-register)))
+          (setf (progv-environment-register block) (allocate-register nil)))
          (label-START (gensym "F")))
     (with-operand-accumulation
         ((compile-operand symbols-form nil)
@@ -4170,7 +4166,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
       (let ((variable (local-function-variable local-function)))
         (aver (null (variable-register variable)))
         (unless (variable-closure-index variable)
-          (setf (variable-register variable) (allocate-register)))))
+          (setf (variable-register variable) (allocate-register nil)))))
     (dolist (local-function local-functions)
       (p2-labels-process-compiland local-function))
     (dolist (special (labels-free-specials block))
@@ -4828,7 +4824,7 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (arg2 (second args))
          (arg3 (third args))
          (*register* *register*)
-         (value-register (when target (allocate-register))))
+         (value-register (when target (allocate-register nil))))
     (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
                                                arg2 'stack nil
                                                arg3 'stack nil)
@@ -5844,7 +5840,7 @@ We need more thought here.
                 (fixnum-type-p type2)
                 (compiler-subtypep type3 'CHARACTER))
            (let* ((*register* *register*)
-                  (value-register (when target (allocate-register)))
+                  (value-register (when target (allocate-register nil)))
                   (class (if (eq op 'SCHAR)
                              +lisp-simple-string+
                              +lisp-abstract-string+)))
@@ -5884,7 +5880,7 @@ We need more thought here.
                 (arg2 (%caddr form))
                 (arg3 (fourth form))
                 (*register* *register*)
-                (value-register (when target (allocate-register))))
+                (value-register (when target (allocate-register nil))))
            (compile-form arg1 'stack nil) ;; vector
            (compile-form arg2 'stack :int) ;; index
            (compile-form arg3 'stack nil) ;; new value
@@ -5977,7 +5973,7 @@ We need more thought here.
                 (arg3 (third args))
                 (type3 (derive-compiler-type arg3))
                 (*register* *register*)
-                (value-register (unless (null target) (allocate-register))))
+                (value-register (unless (null target) (allocate-register nil))))
            ;; array
            (compile-form arg1 'stack nil)
            ;; index
@@ -6065,7 +6061,7 @@ We need more thought here.
    (cond ((and (fixnump arg2)
                (<= 0 arg2 3))
           (let* ((*register* *register*)
-                 (value-register (when target (allocate-register))))
+                 (value-register (when target (allocate-register nil))))
             (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
                                                        arg3 'stack nil)
             (when value-register
@@ -6080,7 +6076,7 @@ We need more thought here.
               (emit-move-from-stack target representation))))
          ((fixnump arg2)
           (let* ((*register* *register*)
-                 (value-register (when target (allocate-register))))
+                 (value-register (when target (allocate-register nil))))
             (compile-form arg1 'stack nil)
             (emit-push-constant-int arg2)
             (compile-form arg3 'stack nil)
@@ -6678,7 +6674,7 @@ We need more thought here.
 (defun p2-threads-synchronized-on (block target)
   (let* ((form (synchronized-form block))
          (*register* *register*)
-         (object-register (allocate-register))
+         (object-register (allocate-register nil))
          (BEGIN-PROTECTED-RANGE (gensym "F"))
          (END-PROTECTED-RANGE (gensym "U"))
          (EXIT (gensym "E")))
@@ -6714,14 +6710,14 @@ We need more thought here.
         (emit-move-from-stack target))
       (return-from p2-catch-node))
     (let* ((*register* *register*)
-           (tag-register (allocate-register))
+           (tag-register (allocate-register nil))
            (BEGIN-PROTECTED-RANGE (gensym "F"))
            (END-PROTECTED-RANGE (gensym "U"))
            (THROW-HANDLER (gensym "H"))
            (RETHROW (gensym))
            (DEFAULT-HANDLER (gensym))
            (EXIT (gensym "E"))
-           (specials-register (allocate-register)))
+           (specials-register (allocate-register nil)))
       (compile-form (second form) tag-register nil) ; Tag.
       (emit-push-current-thread)
       (aload tag-register)
@@ -6806,10 +6802,10 @@ We need more thought here.
            (unwinding-form (caddr form))
            (cleanup-forms (cdddr form))
            (*register* *register*)
-           (exception-register (allocate-register))
-           (result-register (allocate-register))
-           (values-register (allocate-register))
-           (specials-register (allocate-register))
+           (exception-register (allocate-register nil))
+           (result-register (allocate-register nil))
+           (values-register (allocate-register nil))
+           (specials-register (allocate-register nil))
            (BEGIN-PROTECTED-RANGE (gensym "F"))
            (END-PROTECTED-RANGE (gensym "U"))
            (HANDLER (gensym "H"))
@@ -7079,7 +7075,7 @@ We need more thought here.
         (push var *visible-variables*))
 
       (when *using-arg-array*
-        (setf (compiland-argument-register compiland) (allocate-register)))
+        (setf (compiland-argument-register compiland) (allocate-register nil)))
 
       ;; Assign indices or registers, depending on where the args are
       ;; located: the arg-array or the call-stack
@@ -7089,14 +7085,14 @@ We need more thought here.
           (aver (null (variable-index variable)))
           (if *using-arg-array*
               (setf (variable-index variable) index)
-              (setf (variable-register variable) (allocate-register)))
+              (setf (variable-register variable) (allocate-register nil)))
           (incf index)))
 
       ;; Reserve the next available slot for the thread register.
-      (setf *thread* (allocate-register))
+      (setf *thread* (allocate-register nil))
 
       (when *closure-variables*
-        (setf (compiland-closure-register compiland) (allocate-register))
+        (setf (compiland-closure-register compiland) (allocate-register nil))
         (dformat t "p2-compiland 2 closure register = ~S~%"
                  (compiland-closure-register compiland)))
 
@@ -7167,7 +7163,7 @@ We need more thought here.
                       (null (variable-index variable)) ;; not in the array anymore
                       (< (+ (variable-reads variable)
                             (variable-writes variable)) 2))
-            (let ((register (allocate-register)))
+            (let ((register (allocate-register nil)))
               (aload (compiland-argument-register compiland))
               (emit-push-constant-int (variable-index variable))
               (emit 'aaload)
@@ -7186,12 +7182,12 @@ We need more thought here.
       (when (some #'variable-special-p (compiland-arg-vars compiland))
         ;; Save the dynamic environment
         (setf (compiland-environment-register compiland)
-              (allocate-register))
+              (allocate-register nil))
         (save-dynamic-environment (compiland-environment-register compiland))
         (label label-START)
         (dolist (variable (compiland-arg-vars compiland))
           (when (variable-special-p variable)
-            (setf (variable-binding-register variable) (allocate-register))
+            (setf (variable-binding-register variable) (allocate-register nil))
             (emit-push-current-thread)
             (emit-push-variable-name variable)
             (cond ((variable-register variable)

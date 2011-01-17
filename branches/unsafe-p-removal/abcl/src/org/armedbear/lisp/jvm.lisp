@@ -345,25 +345,20 @@ of the compilands being processed (p1: so far; p2: in total).")
     (when (eq name (variable-name variable))
       (return variable))))
 
-(defknown allocate-register () (integer 0 65535))
-(defun allocate-register ()
-  (let* ((register *register*)
-         (next-register (1+ register)))
-    (declare (type (unsigned-byte 16) register next-register))
-    (setf *register* next-register)
-    (when (< *registers-allocated* next-register)
-      (setf *registers-allocated* next-register))
+(defknown representation-size (t) (integer 0 65535))
+(defun representation-size (representation)
+  (ecase representation
+    ((NIL :int :boolean :float :char) 1)
+    ((:long :double) 2)))
+
+(defknown allocate-register (t) (integer 0 65535))
+(defun allocate-register (representation)
+  (let ((register *register*))
+    (incf *register* (representation-size representation))
+    (setf *registers-allocated*
+          (max *registers-allocated* *register*))
     register))
 
-(defknown allocate-register-pair () (integer 0 65535))
-(defun allocate-register-pair ()
-  (let* ((register *register*)
-         (next-register (+ register 2)))
-    (declare (type (unsigned-byte 16) register next-register))
-    (setf *register* next-register)
-    (when (< *registers-allocated* next-register)
-      (setf *registers-allocated* next-register))
-    register))
 
 (defstruct local-function
   name
