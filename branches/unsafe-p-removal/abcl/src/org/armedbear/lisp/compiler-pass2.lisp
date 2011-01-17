@@ -667,16 +667,39 @@ before the emitted code: the code is 'stack-neutral'."
 
 
 (declaim (special *saved-operands* *operand-representations*))
-(defmacro with-operand-accumulation ((&body argument-buildup-body)
-				     &body funcall-body)
+(defmacro with-operand-accumulation ((&body argument-accumulation-body)
+                                     &body call-body)
+  "Macro used to operand-stack-safely collect arguments in the
+`argument-accumulation-body' to be available on the stack upon entry of the
+`call-body'. The argument-accumulation-body code may not assume arguments
+are actually on the stack while accumulating.
+
+This macro closes over a code-generating block. Operands can be collected
+using the `accumulate-operand', `compile-operand', `emit-variable-operand'
+and `emit-load-externalized-object-operand'."
   `(let (*saved-operands*
-	 *operand-representations*
-	 (*register* *register*)
+         *operand-representations*
+         (*register* *register*)
          ) ;; hmm can we do this?? either body
                                   ;; could allocate registers ...
-     ,@argument-buildup-body
+     ,@argument-accumulation-body
      (load-saved-operands)
      ,@funcall-body))
+
+(defmacro accumulate-operand ((representation &key unsafe-p)
+                              &body body)
+  "Macro used to collect a single operand.
+
+This macro closes over a code-generating block. The generated code should
+leave a single operand on the stack, with representation `representation'.
+The value `unsafe-p', when provided, is an expression evaluated at run time
+to indicate if the body is opstack unsafe."
+  `(progn
+     ,@(when unsafe-p
+         `((when ,unsafe-p
+             (save-existing-operands))))
+     ,@body
+     (save-operand ,representation)))
 
 (defun load-saved-operands ()
   "Load any operands which have been saved into registers
@@ -688,31 +711,42 @@ back onto the stack in preparation of the execution of the opcode."
 (defun save-existing-operands ()
   "If any operands have been compiled to the stack,
 save them in registers."
-  (dolist (representation *operand-representations*)
+  (when (null *saved-operands*)
+    (dolist (representation *operand-representations*)
+      (let ((register (allocate-register)))
+        (push register *saved-operands*)
+        (emit-move-from-stack register representation)))
+
+    (setf *saved-operands* (nreverse *saved-operands*))))
+
+(defun save-operand (representation)
+  "Saves an operand from the stack (with `representation') to
+a register and updates associated operand collection variables."
+  (push representation *operand-representations*)
+
+  (when *saved-operands*
     (let ((register (allocate-register)))
       (push register *saved-operands*)
-      (emit-move-from-stack register representation)))
-
-  (setf *saved-operands* (nreverse *saved-operands*)))
+      (emit-move-from-stack register representation))))
 
 (defun compile-operand (form representation &optional cast)
-  "Compiles `form` into `representation`, storing the resulting value
+  "Compiles `form' into `representation', storing the resulting value
 on the operand stack, if it's safe to do so. Otherwise stores the value
 in a register"
   (let ((unsafe (or *saved-operands*
-		    (some-nested-block #'node-opstack-unsafe-p
-				       (find-enclosed-blocks form)))))
+                    (some-nested-block #'node-opstack-unsafe-p
+                                       (find-enclosed-blocks form)))))
     (when (and unsafe (null *saved-operands*))
       (save-existing-operands))
-    
+
     (compile-form form 'stack representation)
     (when cast
       (emit-checkcast cast))
     (when unsafe
       (let ((register (allocate-register)))
-	(push register *saved-operands*)
-	(emit-move-from-stack register representation)))
-    
+        (push register *saved-operands*)
+        (emit-move-from-stack register representation)))
+
   (push representation *operand-representations*)))
 
 (defun emit-variable-operand (variable)
@@ -721,7 +755,7 @@ stores the value in a register."
   (push (variable-representation variable) *operand-representations*)
   (cond
    ((and *saved-operands*
-	 (variable-register variable))
+         (variable-register variable))
     ;; we're in 'safe mode' and the  variable is in a register,
     ;; instead of binding a new register, just load the existing one
     (push (variable-register variable) *saved-operands*))
@@ -729,26 +763,24 @@ stores the value in a register."
     (emit-push-variable variable)
     (when *saved-operands* ;; safe-mode
       (let ((register (allocate-register)))
-	(push register *saved-operands*)
-	(assert (null (variable-representation variable)))
-	(emit 'astore register))))))
+        (push register *saved-operands*)
+        (emit-move-from-stack register (variable-representation variable)))))))
 
 (defun emit-thread-operand ()
   (push nil *operand-representations*)
   (emit-push-current-thread)
   (when *saved-operands*
     (let ((register (allocate-register)))
-	(push register *saved-operands*)
-	(emit 'astore register))))
-  
+      (push register *saved-operands*)
+      (emit 'astore register))))
 
 (defun emit-load-externalized-object-operand (object)
   (push nil *operand-representations*)
   (emit-load-externalized-object object)
   (when *saved-operands* ;; safe-mode
     (let ((register (allocate-register)))
-	(push register *saved-operands*)
-	(emit 'astore register))))
+      (push register *saved-operands*)
+      (emit 'astore register))))
 
 (defknown emit-unbox-fixnum () t)
 (defun emit-unbox-fixnum ()
@@ -1928,7 +1960,7 @@ itself is *not* compiled by this function."
                    (unless (single-valued-p arg)
                      (setf must-clear-values t)))))
               (t
-               (let (;(*register* *register*) ;; ### FIXME: this doesn't work, but why not?
+               (let* ((*register* *register*) ;; ### FIXME: this doesn't work, but why not?
                      (array-register (allocate-register))
                      saved-stack)
                  (when unsafe-args
