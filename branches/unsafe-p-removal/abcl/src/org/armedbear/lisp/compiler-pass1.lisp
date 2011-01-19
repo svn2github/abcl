@@ -1152,26 +1152,10 @@ where each of the vars returned is a list with these elements:
 
 (defvar *pass2-unsafe-p-special-treatment-functions*
   '(
-
-     char-code
-     java:jclass
-     java:jconstructor
-     java:jmethod
-     char=
      coerce-to-function
      cons
      sys::backq-cons
-     delete
-     elt
      find-class
-     funcall
-     function
-     gensym
-     get
-     getf
-     gethash
-     gethash1
-     sys::%length
      list
      sys::backq-list
      list*
@@ -1182,24 +1166,10 @@ where each of the vars returned is a list with these elements:
      lognot
      logxor
      max
-     memq
-     memql
      min
      mod
-     not
-     null
-     or
-     puthash
-     read-line
        stream-element-type
-       sxhash
-       symbol-name
-       symbol-package
-       symbol-value
        truncate
-       values
-       vector-push-extend
-       write-8-bits
 )
 "The functions named in the list bound to this variable
 need to be rewritten if UNSAFE-P returns non-NIL for their

@@ -1781,8 +1781,10 @@ The field type of the object is specified by OBJ-REF."
          (let* ((args (cdr form))
                 (arg1 (first args))
                 (arg2 (second args)))
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokestatic +lisp+ "memq"
                               (lisp-object-arg-types 2) :boolean)
            (emit-move-from-stack target representation)))
@@ -1797,8 +1799,10 @@ The field type of the object is specified by OBJ-REF."
                 (arg1 (first args))
                 (arg2 (second args))
                 (type1 (derive-compiler-type arg1)))
-           (compile-form arg1 'stack nil)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (cond ((eq type1 'SYMBOL) ; FIXME
                   (emit-invokestatic +lisp+ "memq"
                                      (lisp-object-arg-types 2) :boolean))
@@ -1826,13 +1830,12 @@ The field type of the object is specified by OBJ-REF."
          (arg3 (third args)))
     (case (length args)
       ((2 3)
-       (compile-form arg1 'stack nil)
-       (compile-form arg2 'stack nil)
-       (cond ((null arg3)
-              (maybe-emit-clear-values arg1 arg2))
-             (t
-              (compile-form arg3 'stack nil)
-              (maybe-emit-clear-values arg1 arg2 arg3)))
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)
+            (when arg3
+              (compile-operand arg3 nil))
+            (maybe-emit-clear-values arg1 arg2 arg3)))
        (emit-invokestatic +lisp+ "get"
                           (lisp-object-arg-types (if arg3 3 2))
                           +lisp-object+)
@@ -1852,9 +1855,11 @@ The field type of the object is specified by OBJ-REF."
        (let ((arg1 (first args))
              (arg2 (second args))
              (arg3 (third args)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                    arg2 'stack nil
-                                                    arg3 'stack nil)
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)
+            (compile-operand arg3 nil)
+            (maybe-emit-clear-values arg1 arg2 arg3)))
          (emit-invokestatic +lisp+ "getf"
                             (lisp-object-arg-types 3) +lisp-object+)
          (fix-boxing representation nil)
@@ -1869,10 +1874,10 @@ The field type of the object is specified by OBJ-REF."
               (eq (derive-type (%caddr form)) 'HASH-TABLE))
          (let ((key-form (%cadr form))
                (ht-form (%caddr form)))
-           (compile-form ht-form 'stack nil)
-           (emit-checkcast +lisp-hash-table+)
-           (compile-form key-form 'stack nil)
-           (maybe-emit-clear-values ht-form key-form)
+           (with-operand-accumulation
+               ((compile-operand ht-form nil +lisp-hash-table+)
+                (compile-operand key-form nil)
+                (maybe-emit-clear-values ht-form key-form)))
            (emit-invokevirtual +lisp-hash-table+ "gethash1"
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil)
@@ -1887,11 +1892,11 @@ The field type of the object is specified by OBJ-REF."
          (let ((key-form (%cadr form))
                (ht-form (%caddr form))
                (value-form (fourth form)))
-           (compile-form ht-form 'stack nil)
-           (emit-checkcast +lisp-hash-table+)
-           (compile-form key-form 'stack nil)
-           (compile-form value-form 'stack nil)
-           (maybe-emit-clear-values ht-form key-form value-form)
+           (with-operand-accumulation
+               ((compile-operand ht-form nil +lisp-hash-table+)
+                (compile-operand key-form nil)
+                (compile-operand value-form nil)
+                (maybe-emit-clear-values ht-form key-form value-form)))
            (cond (target
                   (emit-invokevirtual +lisp-hash-table+ "puthash"
                                       (lisp-object-arg-types 2) +lisp-object+)
@@ -4810,8 +4815,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (arg2 (second args)))
     (case arg-count
       (2
-       (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                  arg2 'stack nil)
+       (with-operand-accumulation
+           ((compile-operand arg1 nil)
+            (compile-operand arg2 nil)))
+       (maybe-emit-clear-values arg1 arg2)
        (emit 'swap)
        (cond (target
               (emit-invokevirtual +lisp-object+ "VECTOR_PUSH_EXTEND"
@@ -4887,9 +4894,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (type2 (derive-compiler-type arg2)))
     (cond ((and (compiler-subtypep type1 '(UNSIGNED-BYTE 8))
                 (eq type2 'STREAM))
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
-           (emit-checkcast +lisp-stream+)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil +lisp-stream+)))
            (maybe-emit-clear-values arg1 arg2)
            (emit 'swap)
            (emit-invokevirtual +lisp-stream+ "_writeByte" '(:int) nil)
@@ -4897,8 +4904,9 @@ either to stream or the pathname of the class file if `stream' is NIL."
              (emit-push-nil)
              (emit-move-from-stack target)))
           ((fixnum-type-p type1)
-           (compile-form arg1 'stack :int)
-           (compile-form arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil)))
            (maybe-emit-clear-values arg1 arg2)
            (emit-invokestatic +lisp+ "writeByte"
                               (list :int +lisp-object+) nil)
@@ -5478,9 +5486,9 @@ We need more thought here.
              (type2 (derive-type arg2))
              (test (if (memq type1 '(SYMBOL NULL)) 'eq 'eql)))
         (cond ((subtypep type2 'VECTOR)
-               (compile-form arg1 'stack nil)
-               (compile-form arg2 'stack nil)
-               (emit-checkcast +lisp-abstract-vector+)
+               (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil +lisp-abstract-vector+)))
                (maybe-emit-clear-values arg1 arg2)
                (emit 'swap)
                (emit-invokevirtual +lisp-abstract-vector+
@@ -5950,8 +5958,10 @@ We need more thought here.
   (cond ((and (check-arg-count form 2)
               (fixnum-type-p (derive-compiler-type (third form)))
               (neq representation :char)) ; FIXME
-         (compile-form (second form) 'stack nil)
-         (compile-form (third form) 'stack :int)
+         (with-operand-accumulation
+              ((compile-operand (second form) nil)
+               (compile-operand (third form) :int)
+               (maybe-emit-clear-values (second form) (third form))))
          (emit-invokevirtual +lisp-object+ "elt" '(:int) +lisp-object+)
          (fix-boxing representation nil) ; FIXME use derived result type
          (emit-move-from-stack target representation))
@@ -6288,8 +6298,10 @@ We need more thought here.
                 (emit-push-nil)
                 (emit 'dup))
                (t
-                (compile-form arg1 'stack nil)
-                (compile-form arg2 'stack nil))))
+                (with-operand-accumulation
+                   ((compile-operand arg1 nil)
+                    (compile-operand arg2 nil)
+                    (maybe-emit-clear-values arg1 arg2))))))
        (emit-invokevirtual +lisp-thread+
                            "setValues"
                            (lisp-object-arg-types len)
@@ -6297,9 +6309,12 @@ We need more thought here.
        (fix-boxing representation nil)
        (emit-move-from-stack target))
       ((3 4)
-       (emit-push-current-thread)
-       (dolist (arg args)
-         (compile-form arg 'stack nil))
+       (with-operand-accumulation
+           ((emit-thread-operand)
+            (dolist (arg args)
+              (compile-operand arg nil))))
+       (when (notevery #'single-valued-p args)
+         (emit-clear-values))
        (emit-invokevirtual +lisp-thread+
                            "setValues"
                            (lisp-object-arg-types len)
@@ -6696,14 +6711,17 @@ We need more thought here.
         (emit-move-from-stack target representation)
         (return-from p2-char=))
       (cond ((characterp arg1)
-             (emit-push-constant-int (char-code arg1))
-             (compile-forms-and-maybe-emit-clear-values arg2 'stack :char))
+               ;; prevent need for with-operand-accumulation: reverse args
+             (compile-forms-and-maybe-emit-clear-values arg2 'stack :char)
+             (emit-push-constant-int (char-code arg1)))
             ((characterp arg2)
              (compile-forms-and-maybe-emit-clear-values arg1 'stack :char)
              (emit-push-constant-int (char-code arg2)))
             (t
-             (compile-forms-and-maybe-emit-clear-values arg1 'stack :char
-                                                        arg2 'stack :char)))
+             (with-operand-accumulation
+                 ((compile-operand arg1 :char)
+                  (compile-operand arg2 :char)
+                  (maybe-emit-clear-values arg1 arg2)))))
       (let ((LABEL1 (gensym))
             (LABEL2 (gensym)))
         (emit 'if_icmpeq LABEL1)
