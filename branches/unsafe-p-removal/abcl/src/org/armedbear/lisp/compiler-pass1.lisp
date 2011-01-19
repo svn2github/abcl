@@ -1153,7 +1153,6 @@ where each of the vars returned is a list with these elements:
 (defvar *pass2-unsafe-p-special-treatment-functions*
   '(
 
-     char
      char-code
      java:jclass
      java:jconstructor
@@ -1191,23 +1190,8 @@ where each of the vars returned is a list with these elements:
      null
      or
      puthash
-     quote
      read-line
-     rplacd
-     schar
-     set
-     set-car
-     set-cdr
-       set-char
-       set-schar
-       set-std-slot-value
-       setq
-       std-slot-value
        stream-element-type
-       structure-ref
-       structure-set
-       svref
-       svset
        sxhash
        symbol-name
        symbol-package
