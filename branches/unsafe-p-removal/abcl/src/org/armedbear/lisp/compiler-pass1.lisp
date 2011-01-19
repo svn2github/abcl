@@ -1153,9 +1153,6 @@ where each of the vars returned is a list with these elements:
 (defvar *pass2-unsafe-p-special-treatment-functions*
   '(
 
-     %ldb
-     and
-     aset
      char
      char-code
      java:jclass
@@ -1191,7 +1188,6 @@ where each of the vars returned is a list with these elements:
      min
      mod
      not
-     nthcdr
      null
      or
      puthash
@@ -1220,7 +1216,7 @@ where each of the vars returned is a list with these elements:
        values
        vector-push-extend
        write-8-bits
-       with-inline-code)
+)
 "The functions named in the list bound to this variable
 need to be rewritten if UNSAFE-P returns non-NIL for their
 argument list.

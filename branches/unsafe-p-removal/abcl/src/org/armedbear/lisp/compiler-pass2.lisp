@@ -4662,9 +4662,11 @@ either to stream or the pathname of the class file if `stream' is NIL."
                   (emit-move-from-stack target representation))))
           ((and (fixnum-type-p size-type)
                 (fixnum-type-p position-type))
-           (compile-forms-and-maybe-emit-clear-values size-arg 'stack :int
-                                                      position-arg 'stack :int
-                                                      arg3 'stack nil)
+           (with-operand-accumulation
+                ((compile-operand size-arg :int)
+                 (compile-operand position-arg :int)
+                 (compile-operand arg3 nil)
+                 (maybe-emit-clear-values size-arg position-arg arg3)))
            (emit 'dup_x2) ;; use not supported by emit-dup: 3 values involved
            (emit 'pop)
            (emit-invokevirtual +lisp-object+ "LDB" '(:int :int) +lisp-object+)
@@ -5974,26 +5976,34 @@ We need more thought here.
                 (type3 (derive-compiler-type arg3))
                 (*register* *register*)
                 (value-register (unless (null target) (allocate-register nil))))
+           (with-operand-accumulation
+               (
            ;; array
-           (compile-form arg1 'stack nil)
+                (compile-operand arg1 nil)
            ;; index
-           (compile-form arg2 'stack :int)
+                (compile-operand arg2 :int)
            ;; value
-           (cond ((fixnum-type-p type3)
-                  (compile-form arg3 'stack :int)
-                  (when value-register
-                    (emit 'dup)
-                    (emit-move-from-stack value-register :int)))
-                 (t
-                  (compile-form arg3 'stack nil)
-                  (when value-register
-                    (emit 'dup)
-                    (emit-move-from-stack value-register nil))))
+                (accumulate-operand
+                         ((when (fixnum-type-p type3) :int)
+                          :unsafe-p (some-nested-block
+                                     #'node-opstack-unsafe-p
+                                     (find-enclosed-blocks arg3)))
+                   (cond ((fixnum-type-p type3)
+                          (compile-form arg3 'stack :int)
+                          (when value-register
+                            (emit 'dup)
+                            (emit-move-from-stack value-register :int)))
+                         (t
+                          (compile-form arg3 'stack nil)
+                          (when value-register
+                            (emit 'dup)
+                            (emit-move-from-stack value-register nil)))))))
            (maybe-emit-clear-values arg1 arg2 arg3)
            (cond ((fixnum-type-p type3)
                   (emit-invokevirtual +lisp-object+ "aset" '(:int :int) nil))
                  (t
-                  (emit-invokevirtual +lisp-object+ "aset" (list :int +lisp-object+) nil)))
+                  (emit-invokevirtual +lisp-object+ "aset"
+                                      (list :int +lisp-object+) nil)))
            (when value-register
              (cond ((fixnum-type-p type3)
                     (emit 'iload value-register)
@@ -6147,8 +6157,10 @@ We need more thought here.
          (arg1 (%car args))
          (arg2 (%cadr args)))
     (cond ((fixnum-type-p (derive-compiler-type arg1))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit 'swap)
            (emit-invokevirtual +lisp-object+ "nthcdr" '(:int) +lisp-object+)
            (fix-boxing representation nil)
