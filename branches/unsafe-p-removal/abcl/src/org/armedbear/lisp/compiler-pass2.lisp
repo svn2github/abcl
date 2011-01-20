@@ -4437,12 +4437,24 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                            arg2 target representation))
                ((eql (fixnum-constant-value type2) -1)
-                (compile-forms-and-maybe-emit-clear-values arg1 target representation
-                                                           arg2 nil nil))
+                (let ((target-register
+                       (if (or (not (eq target 'stack))
+                               (not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg2))))
+                           target
+                         (allocate-register representation))))
+                  (compile-form arg1 target-register representation)
+                  (compile-form arg2 nil nil)
+                  (when (and (eq target 'stack)
+                             (not (eq target-register 'stack)))
+                    (emit-push-register target-register))
+                  (maybe-emit-clear-values arg1 arg2)))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
                 ;; Both arguments are fixnums.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'iand)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
@@ -4451,15 +4463,19 @@ either to stream or the pathname of the class file if `stream' is NIL."
                     (and (fixnum-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive fixnum.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'iand)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
                 ;; Both arguments are longs.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'land)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
@@ -4468,29 +4484,37 @@ either to stream or the pathname of the class file if `stream' is NIL."
                     (and (java-long-type-p type2)
                          (compiler-subtypep type2 'unsigned-byte)))
                 ;; One of the arguments is a positive long.
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'land)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;; arg1 is a fixnum, but arg2 is not
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object+ "LOGAND" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGAND"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -4521,14 +4545,14 @@ either to stream or the pathname of the class file if `stream' is NIL."
                type2 (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
          (cond ((and (fixnum-constant-value type1) (fixnum-constant-value type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 nil nil
-                                                           arg2 nil nil)
                 (compile-constant (logior (fixnum-constant-value type1)
                                           (fixnum-constant-value type2))
                                   target representation))
                ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'ior)
                 (convert-representation :int representation)
                 (emit-move-from-stack target representation))
@@ -4536,16 +4560,32 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                            arg2 target representation))
                ((and (eql (fixnum-constant-value type2) 0) (< *safety* 3))
-                (compile-forms-and-maybe-emit-clear-values arg1 target representation
-                                                           arg2 nil nil))
+                (let ((target-register
+                       (if (or (not (eq target 'stack))
+                               (not (some-nested-block #'node-opstack-unsafe-p
+                                               (find-enclosed-blocks arg2))))
+                           target
+                         (allocate-register representation))))
+                  (compile-form arg1 target-register representation)
+                  (compile-form arg2 nil nil)
+                  (when (and (eq target 'stack)
+                             (not (eq target-register 'stack)))
+                    (emit-push-register target-register))
+                  (maybe-emit-clear-values arg1 arg2)))
                ((or (eq representation :long)
                     (and (java-long-type-p type1) (java-long-type-p type2)))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'lor)
                 (convert-representation :long representation)
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type2)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
                                                            arg2 'stack :int)
                 (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
@@ -4553,16 +4593,20 @@ either to stream or the pathname of the class file if `stream' is NIL."
                 (emit-move-from-stack target representation))
                ((fixnum-type-p type1)
                 ;; arg1 is of fixnum type, but arg2 is not
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 ;; swap args
                 (emit 'swap)
                 (emit-invokevirtual +lisp-object+ "LOGIOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type)
                 (emit-move-from-stack target representation))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGIOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)
@@ -4595,28 +4639,33 @@ either to stream or the pathname of the class file if `stream' is NIL."
          (setf type1       (derive-compiler-type arg1)
                type2       (derive-compiler-type arg2)
                result-type (derive-compiler-type form))
-         (cond ((eq representation :int)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
-                (emit 'ixor))
-               ((and (fixnum-type-p type1) (fixnum-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                           arg2 'stack :int)
+         (cond ((or (eq representation :int)
+                    (and (fixnum-type-p type1) (fixnum-type-p type2)))
+                (with-operand-accumulation
+                    ((compile-operand arg1 :int)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'ixor)
                 (convert-representation :int representation))
                ((and (java-long-type-p type1) (java-long-type-p type2))
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack :long
-                                                           arg2 'stack :long)
+                (with-operand-accumulation
+                    ((compile-operand arg1 :long)
+                     (compile-operand arg2 :long)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit 'lxor)
                 (convert-representation :long representation))
                ((fixnum-type-p type2)
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack :int)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 :int)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGXOR" '(:int) +lisp-object+)
                 (fix-boxing representation result-type))
                (t
-                (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                           arg2 'stack nil)
+                (with-operand-accumulation
+                    ((compile-operand arg1 nil)
+                     (compile-operand arg2 nil)
+                     (maybe-emit-clear-values arg1 arg2)))
                 (emit-invokevirtual +lisp-object+ "LOGXOR"
                                     (lisp-object-arg-types 1) +lisp-object+)
                 (fix-boxing representation result-type)))

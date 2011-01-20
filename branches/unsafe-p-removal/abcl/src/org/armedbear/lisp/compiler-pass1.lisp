@@ -1150,52 +1150,6 @@ where each of the vars returned is a list with these elements:
                     (1- (length form))))
   (list 'TRULY-THE (%cadr form) (p1 (%caddr form))))
 
-(defvar *pass2-unsafe-p-special-treatment-functions*
-  '(
-     logand
-     logior
-     lognot
-     logxor
-)
-"The functions named in the list bound to this variable
-need to be rewritten if UNSAFE-P returns non-NIL for their
-argument list.
-
-All other function calls are handled by generic function calling
-in pass2, which accounts for OPSTACK unsafety itself.")
-
-
-
-
-(defknown unsafe-p (t) t)
-(defun unsafe-p (args)
-  "Determines whether the args can cause 'stack unsafe situations'.
-Returns T if this is the case.
-
-When a 'stack unsafe situation' is encountered, the stack cannot
-be used for temporary storage of intermediary results. This happens
-because one of the forms in ARGS causes a local transfer of control
-- local GO instruction - which assumes an empty stack, or if one of
-the args causes a Java exception handler to be installed, which
-- when triggered - clears out the stack.
-"
-  (cond ((node-p args)
-         (unsafe-p (node-form args)))
-        ((atom args)
-         nil)
-        (t
-         (case (%car args)
-           (QUOTE
-            nil)
-;;           (LAMBDA
-;;            nil)
-           ((RETURN-FROM GO CATCH THROW UNWIND-PROTECT BLOCK)
-            t)
-           (t
-            (dolist (arg args)
-              (when (unsafe-p arg)
-                (return t))))))))
-
 (defknown p1-throw (t) t)
 (defun p1-throw (form)
   (list* 'THROW (mapcar #'p1 (cdr form))))
@@ -1207,34 +1161,12 @@ the args causes a Java exception handler to be installed, which
       ((and (eq op 'funcall) (listp (car args)) (eq (caar args) 'lambda))
        ;;(funcall (lambda (...) ...) ...)
        (let ((op (car args)) (args (cdr args)))
-	 (expand-function-call-inline form (cadr op) (copy-tree (cddr op))
-				      args)))
+         (expand-function-call-inline form (cadr op) (copy-tree (cddr op))
+                                      args)))
       ((and (listp op) (eq (car op) 'lambda))
        ;;((lambda (...) ...) ...)
        (expand-function-call-inline form (cadr op) (copy-tree (cddr op)) args))
-      (t (if (and (member op *pass2-unsafe-p-special-treatment-functions*)
-                  (unsafe-p args))
-	     (let ((arg1 (car args)))
-	       (cond ((and (consp arg1) (eq (car arg1) 'GO))
-		      arg1)
-		     (t
-		      (let ((syms ())
-			    (lets ()))
-			;; Preserve the order of evaluation of the arguments!
-			(dolist (arg args)
-			  (cond ((and (constantp arg)
-                                      (not (node-p arg)))
-				 (push arg syms))
-				((and (consp arg) (eq (car arg) 'GO))
-				 (return-from rewrite-function-call
-				   (list 'LET* (nreverse lets) arg)))
-				(t
-				 (let ((sym (gensym)))
-				   (push sym syms)
-				   (push (list sym arg) lets)))))
-			(list 'LET* (nreverse lets)
-			      (list* (car form) (nreverse syms)))))))
-	     form)))))
+      (t form))))
 
 (defknown p1-function-call (t) t)
 (defun p1-function-call (form)
