@@ -1152,24 +1152,10 @@ where each of the vars returned is a list with these elements:
 
 (defvar *pass2-unsafe-p-special-treatment-functions*
   '(
-     coerce-to-function
-     cons
-     sys::backq-cons
-     find-class
-     list
-     sys::backq-list
-     list*
-     sys::backq-list*
-     load-time-value
      logand
      logior
      lognot
      logxor
-     max
-     min
-     mod
-       stream-element-type
-       truncate
 )
 "The functions named in the list bound to this variable
 need to be rewritten if UNSAFE-P returns non-NIL for their

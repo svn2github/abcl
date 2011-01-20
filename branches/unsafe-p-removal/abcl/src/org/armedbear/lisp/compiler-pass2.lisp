@@ -760,13 +760,16 @@ stores the value in a register."
         (push register *saved-operands*)
         (emit-move-from-stack register (variable-representation variable)))))))
 
+(defun emit-register-operand (register representation)
+  (push representation *operand-representations*)
+  (cond (*saved-operands*
+         (push register *saved-operands*))
+        (t
+         (emit-push-register register representation))))
+
 (defun emit-thread-operand ()
-  (push nil *operand-representations*)
-  (emit-push-current-thread)
-  (when *saved-operands*
-    (let ((register (allocate-register nil)))
-      (push register *saved-operands*)
-      (emit 'astore register))))
+  (ensure-thread-var-initialized)
+  (emit-register-operand *thread* nil))
 
 (defun emit-load-externalized-object-operand (object)
   (push nil *operand-representations*)
@@ -3955,15 +3958,26 @@ given a specific common representation.")
 
 (define-inlined-function p2-cons (form target representation)
   ((check-arg-count form 2))
-  (emit-new +lisp-cons+)
-  (emit 'dup)
   (let* ((args (%cdr form))
          (arg1 (%car args))
-         (arg2 (%cadr args)))
-    (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                               arg2 'stack nil))
-  (emit-invokespecial-init +lisp-cons+ (lisp-object-arg-types 2))
-  (emit-move-from-stack target))
+         (arg2 (%cadr args))
+         (cons-register (when (some-nested-block #'node-opstack-unsafe-p
+                                                 (find-enclosed-blocks args))
+                          (allocate-register nil))))
+    (emit-new +lisp-cons+)
+    (if cons-register
+        (astore cons-register)
+      (emit 'dup))
+    (with-operand-accumulation
+        ((when cons-register
+           (emit-register-operand cons-register nil))
+         (compile-operand arg1 nil)
+         (compile-operand arg2 nil)
+         (maybe-emit-clear-values arg1 arg2)))
+    (emit-invokespecial-init +lisp-cons+ (lisp-object-arg-types 2))
+    (when cons-register
+      (emit-push-register cons-register nil))
+    (emit-move-from-stack target)))
 
 (defun compile-progn (form target representation)
   (compile-progn-body (cdr form) target)
@@ -4711,19 +4725,25 @@ either to stream or the pathname of the class file if `stream' is NIL."
     (cond ((and (eq representation :int)
                 (fixnum-type-p type1)
                 (fixnum-type-p type2))
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack :int
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 :int)
+                (compile-operand arg2 :int)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokestatic +lisp+ "mod" '(:int :int) :int)
            (emit-move-from-stack target representation))
           ((fixnum-type-p type2)
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack :int)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 :int)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokevirtual +lisp-object+ "MOD" '(:int) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
            (emit-move-from-stack target representation))
           (t
-           (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                      arg2 'stack nil)
+           (with-operand-accumulation
+               ((compile-operand arg1 nil)
+                (compile-operand arg2 nil)
+                (maybe-emit-clear-values arg1 arg2)))
            (emit-invokevirtual +lisp-object+ "MOD"
                                (lisp-object-arg-types 1) +lisp-object+)
            (fix-boxing representation nil) ; FIXME use derived result type
@@ -4798,8 +4818,10 @@ either to stream or the pathname of the class file if `stream' is NIL."
        (emit-move-from-stack target representation))
       (2
        (let ((arg2 (second args)))
-         (compile-forms-and-maybe-emit-clear-values arg1 'stack nil
-                                                    arg2 'stack :boolean)
+         (with-operand-accumulation
+             ((compile-operand arg1 nil)
+              (compile-operand arg2 :boolean)
+              (maybe-emit-clear-values arg1 arg2)))
          (emit-invokestatic +lisp-class+ "findClass"
                             (list +lisp-object+ :boolean) +lisp-object+)
          (fix-boxing representation nil)
@@ -5528,7 +5550,9 @@ We need more thought here.
          (cons-heads (if list-star-p
                          (butlast args 1)
                          args)))
-    (cond ((>= 4 length 1)
+    (cond ((and (not (some-nested-block #'node-opstack-unsafe-p
+                                        (find-enclosed-blocks args)))
+                (>= 4 length 1))
            (dolist (cons-head cons-heads)
              (emit-new +lisp-cons+)
              (emit 'dup)
@@ -5628,8 +5652,10 @@ We need more thought here.
     (3 (let* ((op (%car form))
               (args (%cdr form))
               (arg1 (%car args))
-              (arg2 (%cadr args)))
+              (arg2 (%cadr args))
+              (*register* *register*))
          (when (null target)
+           ;; compile for effect
            (compile-forms-and-maybe-emit-clear-values arg1 nil nil
                                                       arg2 nil nil)
            (return-from p2-min/max))
@@ -5639,38 +5665,51 @@ We need more thought here.
          (let ((type1 (derive-compiler-type arg1))
                (type2 (derive-compiler-type arg2)))
            (cond ((and (java-long-type-p type1) (java-long-type-p type2))
-                  (let ((common-rep (if (and (fixnum-type-p type1)
-                                             (fixnum-type-p type2))
-                                        :int :long))
-                        (LABEL1 (gensym)))
-                    (compile-form arg1 'stack common-rep)
-                    (emit-dup common-rep)
+                  (let* ((common-rep (if (and (fixnum-type-p type1)
+                                              (fixnum-type-p type2))
+                                         :int :long))
+                        (LABEL1 (gensym))
+                        (LABEL2 (gensym))
+                        (arg1-register (allocate-register common-rep))
+                        (arg2-register (allocate-register common-rep)))
+                    (compile-form arg1 arg1-register common-rep)
                     (compile-form arg2 'stack common-rep)
-                    (emit-dup common-rep :past common-rep)
+                    (emit-dup common-rep)
+                    (emit-move-from-stack arg2-register common-rep)
+                    (emit-push-register arg1-register common-rep)
+                    ;; note: we've now reversed the arguments on the stack!
                     (emit-numeric-comparison (if (eq op 'max) '<= '>=)
                                              common-rep LABEL1)
-                    (emit-swap common-rep common-rep)
+                    (emit-push-register arg1-register common-rep)
+                    (emit 'goto LABEL2)
                     (label LABEL1)
-                    (emit-move-from-stack nil common-rep)
+                    (emit-push-register arg2-register common-rep)
+                    (label LABEL2)
                     (convert-representation common-rep representation)
                     (emit-move-from-stack target representation)))
                  (t
-                  (compile-form arg1 'stack nil)
-                  (emit-dup nil)
-                  (compile-form arg2 'stack nil)
-                  (emit-dup nil :past nil)
-                  (emit-invokevirtual +lisp-object+
-                                      (if (eq op 'max)
-                                          "isLessThanOrEqualTo"
+                  (let* ((arg1-register (allocate-register nil))
+                         (arg2-register (allocate-register nil)))
+                    (compile-form arg1 arg1-register nil)
+                    (compile-form arg2 'stack nil)
+                    (emit-dup nil)
+                    (astore arg2-register)
+                    (emit-push-register arg1-register nil)
+                    (emit-invokevirtual +lisp-object+
+                                        (if (eq op 'max)
+                                            "isLessThanOrEqualTo"
                                           "isGreaterThanOrEqualTo")
-                                      (lisp-object-arg-types 1) :boolean)
-                  (let ((LABEL1 (gensym)))
-                    (emit 'ifeq LABEL1)
-                    (emit 'swap)
-                    (label LABEL1)
-                    (emit 'pop))
-                  (fix-boxing representation nil)
-                  (emit-move-from-stack target representation))))))
+                                        (lisp-object-arg-types 1) :boolean)
+                    (let ((LABEL1 (gensym))
+                          (LABEL2 (gensym)))
+                      (emit 'ifeq LABEL1)
+                      (emit-push-register arg1-register nil)
+                      (emit 'goto LABEL2)
+                      (label LABEL1)
+                      (emit-push-register arg2-register nil)
+                      (label LABEL2))
+                    (fix-boxing representation nil)
+                    (emit-move-from-stack target representation)))))))
     (t
      (p2-min/max `(,(car form) (,(car form) ,(second form) ,(third form))
                     ,@(nthcdr 3 form)) target representation))))
@@ -5948,9 +5987,12 @@ We need more thought here.
                       'truncate (length args))
        (compile-function-call form target representation)
        (return-from p2-truncate)))
-    (compile-form arg1 'stack nil)
-    (compile-form arg2 'stack nil)
-    (emit-invokevirtual +lisp-object+ "truncate" (lisp-object-arg-types 1) +lisp-object+)
+    (with-operand-accumulation
+        ((compile-operand arg1 nil)
+         (compile-operand arg2 nil)))
+    (maybe-emit-clear-values arg1 arg2)
+    (emit-invokevirtual +lisp-object+ "truncate"
+                        (lisp-object-arg-types 1) +lisp-object+)
     (fix-boxing representation nil) ; FIXME use derived result type
     (emit-move-from-stack target representation)))
 
@@ -6286,20 +6328,22 @@ We need more thought here.
        (let ((arg (%car args)))
          (compile-forms-and-maybe-emit-clear-values arg target representation)))
       (2
-       (emit-push-current-thread)
        (let ((arg1 (%car args))
              (arg2 (%cadr args)))
          (cond ((and (eq arg1 t)
                      (eq arg2 t))
+                (emit-push-current-thread)
                 (emit-push-t)
                 (emit 'dup))
                ((and (eq arg1 nil)
                      (eq arg2 nil))
+                (emit-push-current-thread)
                 (emit-push-nil)
                 (emit 'dup))
                (t
                 (with-operand-accumulation
-                   ((compile-operand arg1 nil)
+                   ((emit-thread-operand)
+                    (compile-operand arg1 nil)
                     (compile-operand arg2 nil)
                     (maybe-emit-clear-values arg1 arg2))))))
        (emit-invokevirtual +lisp-thread+
