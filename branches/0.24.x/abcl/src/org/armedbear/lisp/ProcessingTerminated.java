@@ -1,7 +1,7 @@
 /*
- * Main.java
+ * ProcessingTerminated.java
  *
- * Copyright (C) 2002-2006 Peter Graves
+ * Copyright (C) 2011 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -30,27 +30,29 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
+
 package org.armedbear.lisp;
 
-public final class Main {
+/** This error is thrown when the EXT:EXIT or EXT:QUIT function
+ * is being invoked.  In the stand-alone case, it terminates the
+ * entire JVM, if caught in Interpreter.run().
+ *
+ * In the embedding case, it's up to the embedder what to do with it.
+ */
+public class ProcessingTerminated extends Error
+{
+    private int status;
 
-    public static final long startTimeMillis = System.currentTimeMillis();
+    public ProcessingTerminated()
+    {
+    }
 
-    public static void main(final String[] args) {
-        // Run the interpreter in a secondary thread so we can control the stack
-        // size.
-        Runnable r = new Runnable() {
+    public ProcessingTerminated(int status)
+    {
+        this.status = status;
+    }
 
-            public void run() {
-               try {
-                    Interpreter interpreter = Interpreter.createDefaultInstance(args);
-                    if (interpreter != null)
-                            interpreter.run();
-                } catch (ProcessingTerminated e) {
-                    System.exit(e.getStatus());
-                }
-            }
-        };
-        new Thread(null, r, "interpreter", 4194304L).start();
+    public int getStatus() {
+        return status;
     }
 }

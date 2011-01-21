@@ -1,7 +1,7 @@
 /*
- * Main.java
+ * IntegrityError.java
  *
- * Copyright (C) 2002-2006 Peter Graves
+ * Copyright (C) 2011 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -30,27 +30,17 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
+
 package org.armedbear.lisp;
 
-public final class Main {
-
-    public static final long startTimeMillis = System.currentTimeMillis();
-
-    public static void main(final String[] args) {
-        // Run the interpreter in a secondary thread so we can control the stack
-        // size.
-        Runnable r = new Runnable() {
-
-            public void run() {
-               try {
-                    Interpreter interpreter = Interpreter.createDefaultInstance(args);
-                    if (interpreter != null)
-                            interpreter.run();
-                } catch (ProcessingTerminated e) {
-                    System.exit(e.getStatus());
-                }
-            }
-        };
-        new Thread(null, r, "interpreter", 4194304L).start();
+/** This error is invoked in situations where the code can't continue
+ * because some precondition isn't met, although it's not an assertion
+ * error per se.
+ */
+public class IntegrityError extends Error
+{
+    public IntegrityError()
+    {
     }
+
 }
