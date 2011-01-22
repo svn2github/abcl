@@ -1,0 +1,16 @@
+# $Id$
+
+# version.src contents show up in JAR Manifest in the Implementation-Source attribute
+#version.src=[abcl svn]
+
+# abcl.build.incremental attempts to perform incremental compilation
+#abcl.build.incremental=true
+
+# abcl.compile.lisp.skip skips the compilation of Lisp sources in Netbeans (for debugging)
+#abcl.compile.lisp.skip=true
+
+# java.options sets the Java options in the abcl wrapper scripts
+#java.options=-Xmx1g
+
+# Additional site specific startup code to be merged in 'system.lisp'
+#abcl.startup.file=${basedir}/startup.lisp
