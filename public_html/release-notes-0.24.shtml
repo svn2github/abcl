@@ -41,12 +41,6 @@
   </dd>
   <dt>Updated ASDF2</dt>
   <dd>ASDF2 has been updated to its latest version 2.012</dd>
-  <dt>Experimental support for the long form of DEFINE-METHOD-COMBINATION</dt>
-  <dd>Support for the long form of DEFINE-METHOD-COMBINATION has been added,
-    however, this support is derived from Sacla and XCL, which probably means
-    that the code hasn't been excercised all that much and does contain
-    bugs.  You're strongly urged to help debug and define test-cases in order
-    to fix any issues in the code.</dd>
   <dt>Extended class file writer: now with support for writing interfaces
   </dt>
   <dd>The new class file writer from the last release was specifically
