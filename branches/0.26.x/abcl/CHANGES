@@ -15,6 +15,8 @@ Fixes
 
  * Multiple failures in PPRINT.* ANSI test suite failures
 
+ * String interop with Java for strings with fill pointer
+
 Version 0.26.0
 ==============
 svn://common-lisp.net/project/armedbear/svn/tags/0.26.0/abcl
