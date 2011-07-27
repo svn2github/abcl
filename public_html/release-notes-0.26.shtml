@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v0.26</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version 0.26</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 0.26</h2>
+
+
+<p><a href="release-notes-0.25.shtml">Release notes for older releases</a>.</p>
+
+<dl>
+  <dt>Support for weak references and hash tables
+  </dt>
+  <dd>In order to provide support for TRIVIAL-GARBAGE, we've implemented
+    support for weak lisp references and weak hash tables.
+  </dd>
+  <dt>Support for custom slot definition
+  </dt>
+  <dd>AMOP defines an interface to allow custom slot definitions. Support
+    for this interface has been added.
+  </dd>
+  <dt>Support for creating and loading ASDF systems into/from JARs
+  </dt>
+  <dd>The ASDF-JAR:PACKAGE function supports packaging of ASDF systems into
+    JARs while a simple REQUIRE will load it from there - once the directory
+    holding the jar has been added to ASDFs search path.
+  </dd>
+  <dt>Maven integration for ASDF
+  </dt>
+  <dd>ABCL implements a custom ASDF extension which allows loading Java
+    libraries from Maven repositories for better integration with the Java
+    world.
+  </dd>
+  <dd>Reduced number of ANSI test failures
+  </dd>
+  <dt>On my machine, ABCL now fails only 16 ANSI tests in interpreted mode,
+    while failing as few as 19 in compiled mode. That's a reduction of 10
+    since 0.25.
+  </dt>
+</dl>
+
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
+</div>
+</body>
+</html>
