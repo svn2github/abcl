@@ -12,7 +12,7 @@ dt { font-weight: bold }
 dd dt { font-weight: bold; font-style: italic }
 
 table.downloads {
-  color: black; 
+  color: black;
   font-weight: bold;
   font-size: larger;
 }
@@ -61,24 +61,24 @@ td ul { margin:0 }
     <tr>
       <td style="font-weight: bold">Binary</td>
       <td>
-        <a href="releases/0.25.0/abcl-bin-0.25.0.tar.gz">abcl-bin-0.25.0.tar.gz</a>
-        <a href="releases/0.25.0/abcl-bin-0.25.0.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/0.26.1/abcl-bin-0.26.1.tar.gz">abcl-bin-0.26.1.tar.gz</a>
+        <a href="releases/0.26.1/abcl-bin-0.26.1.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/0.25.0/abcl-bin-0.25.0.zip">abcl-bin-0.25.0.zip</a>
-        <a href="releases/0.25.0/abcl-bin-0.25.0.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/0.26.1/abcl-bin-0.26.1.zip">abcl-bin-0.26.1.zip</a>
+        <a href="releases/0.26.1/abcl-bin-0.26.1.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
 
     <tr>
       <td style="font-weight: bold">Source</td>
       <td>
-        <a href="releases/0.25.0/abcl-src-0.25.0.tar.gz">abcl-src-0.25.0.tar.gz</a>
-        <a href="releases/0.25.0/abcl-src-0.25.0.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/0.26.1/abcl-src-0.26.1.tar.gz">abcl-src-0.26.1.tar.gz</a>
+        <a href="releases/0.26.1/abcl-src-0.26.1.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/0.25.0/abcl-src-0.25.0.zip">abcl-src-0.25.0.zip</a>
-        <a href="releases/0.25.0/abcl-src-0.25.0.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/0.26.1/abcl-src-0.26.1.zip">abcl-src-0.26.1.zip</a>
+        <a href="releases/0.26.1/abcl-src-0.26.1.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
       
