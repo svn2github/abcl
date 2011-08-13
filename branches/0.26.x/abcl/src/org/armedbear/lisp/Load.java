@@ -144,7 +144,7 @@ public final class Load
 
         if (truename == null || truename.equals(NIL)) {
             if (ifDoesNotExist) {
-                return error(new FileError("File not found: " + pathname.princToString(), pathname));
+                return error(new FileError("File not found: " + pathname.toString(), pathname));
             } else {
                 Debug.warn("Failed to load " + pathname.getNamestring());
                 return NIL;
