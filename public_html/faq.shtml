@@ -39,7 +39,10 @@
 
   <li><a href="#running">Running</a>
   <ol>
-    <li><a href="#maxpermgen-errors">Java is running out of memory an error reporting something about "java.lang.OutOfMemoryError: PermGen space".  What can I do?</a></li>
+    <li><a href="#maxpermgen-errors">Java is running out of memory
+    with an error reporting something about
+    "java.lang.OutOfMemoryError: PermGen space".  What can I
+    do?</a></li>
   </ol>
   </li> 
 </ol>
@@ -149,10 +152,10 @@ The project welcomes initiatives to improve performance.</p>
 <div class="h3" title="qa" id="qa">
 <h3>What is the quality of the implementation? How can you tell?</h3>
 
-<p>The project recognises there are several dimensions to quality:</p>
+<p>The project recognizes there are several dimensions to quality:</p>
 <ol>
 <li> The level of compliance to the standard </li>
-<li> The level of 'useability': whether (or not) the application is able
+<li> The level of 'usability': whether (or not) the application is able
   to run existing Lisp code</li>
 </ol>
 
@@ -231,11 +234,13 @@ the <code>abcl.build.incremental</code> property.
 <h2>Running</h2>
 
 <div class="h3" title="Out of Memory errors" id="maxpermgen-errors">
-<h3>Java is running out of memory an error reporting something about "java.lang.OutOfMemoryError: PermGen space".  What can I do?</h3>
+<h3>Java is running out of memory with an error reporting something
+about "java.lang.OutOfMemoryError: PermGen space".  What can I
+do?</h3>
 
 <p>
   You need to increase the memory which the Java allocates for
-  permanent generation ("PermGen)" objects by using the appropiate
+  permanent generation ("PermGen)" objects by using the appropriate
   switch on command line which invokes the JVM hosting ABCL.  When the
   implementation compiles or loads Lisp code, it creates a separate
   JVM class for each top-level form.  With large workloads, this can
@@ -244,22 +249,22 @@ the <code>abcl.build.incremental</code> property.
 </p>
 
 <p>
-  The exact manner of configuring this option which unfortunately
-  varies by implementation.  For the Oracle HotSpot 64bit JVM,
-  something like <code>"-d64 -Xmx4g -XX:MaxPermSize=1g
-  -XX:+CMSClassUnloadingEnabled"</code> will not only increse the
+  The exact manner of configuring this option unfortunately varies by
+  Java implementation.  For the Oracle HotSpot 64bit JVM, something
+  like <code>"-d64 -Xmx4g -XX:MaxPermSize=1g
+  -XX:+CMSClassUnloadingEnabled"</code> will not only increase the
   PermGen space, but will ensure you always invoke the 64bit JVM,
-  increase the maximum memory space available to the JVM to 4Gib, and
-  allow the JVM to garbage collect class definitions which its deems
+  increase the maximum memory space available to the Java to 4GiB, and
+  allow the garbage collection of class definitions which are deemed
   to be unused.
 </p>
 
 <p>
   If you are compiling ABCL from source, a handy way to have the build
   process incorporate such runtime flags in the JVM invocation would
-  be to copy the <code>'abcl.properties.in'</code> file to <code>'abcl.properties'</code>, and
-  then ensure that the <code>'java.options'</code> variable is set to the desired
-  options.
+  be to copy the <code>'abcl.properties.in'</code> file to
+  <code>'abcl.properties'</code>, and then ensure that the
+  <code>'java.options'</code> variable is set to the desired options.
 </p>
 </div>
 
