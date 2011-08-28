@@ -5,6 +5,7 @@
 <head>
   <title>FAQ: ABCL - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="faq-style.css" />
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 </head>
 

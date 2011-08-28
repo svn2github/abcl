@@ -1,0 +1,20 @@
+/* Use CSS2 to automatically number the FAQ questions and answer */
+ol#toc {
+    counter-reset: question;
+}
+ol#toc  li {
+    list-style: none;
+}
+ol#toc > li  li:before {
+    content: counter(question) ". "; 
+    counter-increment: question;
+}
+
+div#general {
+    counter-reset: answer;
+}
+div#general h3:before {
+    content: counter(answer) ". "; 
+    counter-increment: answer
+}
+
