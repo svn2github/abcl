@@ -36,6 +36,11 @@
   </ol>
   </li> 
 
+  <li><a href="#running">Running</a>
+  <ol>
+    <li><a href="#maxpermgen-errors">Java is running out of memory an error reporting something about "java.lang.OutOfMemoryError: PermGen space".  What can I do?</a></li>
+  </ol>
+  </li> 
 </ol>
 
 
@@ -55,7 +60,6 @@ functionality defined by <a
 href="http://www.lisp.org/mop/index.html">AMOP</a> is present.  Any
 contributions in this area would be greatly appreciated, of course.
 </p>
-
 </div>
 
 
@@ -85,24 +89,24 @@ without having to worry about the licensing. You do have to
 distribute the source code of ABCL (including modifications) 
 if you distribute ABCL, but otherwise the license of ABCL is not viral.
 </p>
-
 </div>
 
 <div class="h3" title="bug-reporting" id="bug-reporting">
 <h3>How/Where should I report bugs?</h3>
 
 <p>
-
 The current state of issues can be found in the <a
 href="http://trac.common-lisp.net/armedbear/report/1">ABCL issue
-tracker</a>.  Unfortunately, due to spamming problems, administration
-of bugs has been closed for anybody but common-lisp.net members.</p>
+tracker</a>.  Individuals with an <a
+href="http://en.wikipedia.org/wiki/Openid">OpenID</a> such as a Google
+ID may enter information directly in the bug tracker after
+authenticating by your provider. </p>
 
 <p>
 
-To report a bug, please mail a description of the problem, the version
-of ABCL you are using, and if possible a set of steps to reproduce the
-problem to the <a
+Alternatively, to report a bug, please mail a description of the
+problem, the version of ABCL you are using, and if possible a set of
+steps to reproduce the problem to the <a
 href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">armedbear-devel
 mailing list</a>.  We try to respond within a day at most to messages.
 A convenient way to browse the mailing list archives can be found by
@@ -138,7 +142,6 @@ to its boxing strategy can only use 29 bit integers (on 32bit platforms).</p>
 <p>Given ABCL's age - a young project by Lisp standards - there is also
 plenty of room for improvement in the area of execution speed and optimization.
 The project welcomes initiatives to improve performance.</p>
-
 </div>
 
 
@@ -164,16 +167,15 @@ this is already the case.
   Additionally, compilation of <a href="http://ap5.com/">AP5</a> is used to
   improve this measure too.</p>
 
-<p>ABCL 0.26.1 fails roughly 20 out of 21702 tests in the ANSI test
+<p>ABCL 0.26.2 fails roughly 20 out of 21702 tests in the ANSI test
 suite in interpreted and compiled modes, a constant number over the
-past releases.  Most failures relate to pretty printing.</p>
+past releases.</p>
 
 <p>As a measure of 'improvement achieved', the development team refers
   to the number of failing tests in the Maxima test suite too.
   ABCL 0.23.0 is able to run the test suite without failures, coming from
   'only' ca 75 failing tests at the time of 0.15.0, and even 1400 failures
   around October 2008.</p>
-
 </div>
 
 <div class="h3" title="repository" id="repository">
@@ -187,8 +189,6 @@ svn://common-lisp.net/project/armedbear/svn/trunk/abcl.</p>
 This repository is also exported read-only via HTTP at 
 <a href="http://svn.common-lisp.net/armedbear/trunk/abcl">http://svn.common-lisp.net/armedbear/trunk/abcl</a>
 </p>
-
-
 </div>
 
 <div class="h3" title="documentation" id="documentation">
@@ -204,8 +204,8 @@ This repository is also exported read-only via HTTP at
   <li>Specific <a
 href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">examples</a></li>
 </ol>
-
 </div>
+
 </div>
 
 <div class="h2" title="Building" id="building">
@@ -222,9 +222,48 @@ this property is to copy the 'abcl.properties.in' file to
 'abcl.properties', then uncomment the line referencing the setting of
 the <code>abcl.build.incremental</code> property.
 </p>
+</div>
 
 </div>
+
+<div class="h2" title="Running" id="running">
+<h2>Running</h2>
+
+<div class="h3" title="Out of Memory errors" id="maxpermgen-errors">
+<h3>Java is running out of memory an error reporting something about "java.lang.OutOfMemoryError: PermGen space".  What can I do?</h3>
+
+<p>
+  You need to increase the memory which the Java allocates for
+  permanent generation ("PermGen)" objects by using the appropiate
+  switch on command line which invokes the JVM hosting ABCL.  When the
+  implementation compiles or loads Lisp code, it creates a separate
+  JVM class for each top-level form.  With large workloads, this can
+  overrun the part of memory which Java reserves for storing the class
+  definition which results in the error you are seeing.
+</p>
+
+<p>
+  The exact manner of configuring this option which unfortunately
+  varies by implementation.  For the Oracle HotSpot 64bit JVM,
+  something like <code>"-d64 -Xmx4g -XX:MaxPermSize=1g
+  -XX:+CMSClassUnloadingEnabled"</code> will not only increse the
+  PermGen space, but will ensure you always invoke the 64bit JVM,
+  increase the maximum memory space available to the JVM to 4Gib, and
+  allow the JVM to garbage collect class definitions which its deems
+  to be unused.
+</p>
+
+<p>
+  If you are compiling ABCL from source, a handy way to have the build
+  process incorporate such runtime flags in the JVM invocation would
+  be to copy the <code>'abcl.properties.in'</code> file to <code>'abcl.properties'</code>, and
+  then ensure that the <code>'java.options'</code> variable is set to the desired
+  options.
+</p>
 </div>
+
+</div>
+
 </div>
 
 <div style="float:left;width:100%">
