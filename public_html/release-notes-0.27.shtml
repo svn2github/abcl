@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v0.27</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version 0.27</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 0.27</h2>
+
+
+<p><a href="release-notes-0.26.shtml">Release notes for older releases</a>.</p>
+
+<dl>
+  <dt>ABCL-ASDF contrib to load from JARs
+  </dt>
+  <dd>The ABCL-ASDF contrib allows the specification of JAR-FILE or
+    JAR-DIRECTORY components that can be resolved via a PATHNAME for Maven3
+    integration.
+  </dd>
+  <dt>Fixes to support CL-UNICODE, NAMED-READTABLES and PARENSCRIPT
+  </dt>
+  <dd>Based on reports for problems using ABCL with CL-INTERPOL
+    (CL-UNICODE fix), NAMED-READTABLES and PARENSCRIPT.
+  </dd>
+  <dt>Further reduction of ANSI test suite failure count
+  </dt>
+  <dd>Coming from 20 failures out of 21702 at 0.26.2, there are now
+    16 failures out of 21702 at 0.27.0.
+  </dd>
+  <dt>Java method LispObject.writeToString() for printing Java-side ABCL
+    objects, renamed to printObject().
+  </dt>
+  <dd>LispObject.printObject() provides the implementation, but users will
+    want to call the new method LispObject.princToString() when human-readable
+    output is desired.
+  </dd>
+</dl>
+
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
+</div>
+</body>
+</html>
