@@ -50,6 +50,11 @@
     want to call the new method LispObject.princToString() when human-readable
     output is desired.
   </dd>
+  <dt>Able to build SBCL
+  </dt>
+  <dd>
+    ABCL's compiler is once again able to serve as a cross compiler boot host for the SBCL Lisp core.
+  </dd>
 </dl>
 </div>
 
