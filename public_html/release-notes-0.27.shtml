@@ -23,16 +23,20 @@
 <p><a href="release-notes-0.26.shtml">Release notes for older releases</a>.</p>
 
 <dl>
-  <dt>ABCL-ASDF contrib to load from JARs
+  <dt>Specify JVM artifacts by the ABCL-ASDF contrib
   </dt>
-  <dd>The ABCL-ASDF contrib allows the specification of JAR-FILE or
-    JAR-DIRECTORY components that can be resolved via a PATHNAME for Maven3
-    integration.
+  <dd>The ABCL-ASDF contrib extends the ASDF system definitions with
+  the ability to reference JVM specific artifacts.  The JAR-FILE and
+  JAR-DIRECTORY components that can be resolved via PATHNAME.  The MVN
+  component can be used to specify versioned artifacts that will be
+  resolved and downloaded by the Maven3 distributed infrastructure.
   </dd>
+
   <dt>Fixes to support CL-UNICODE, NAMED-READTABLES and PARENSCRIPT
   </dt>
-  <dd>Based on reports for problems using ABCL with CL-INTERPOL
-    (CL-UNICODE fix), NAMED-READTABLES and PARENSCRIPT.
+  <dd>Wider compatibility with Quicklisp enacapsulated systems Based
+  on reports for problems using ABCL with CL-INTERPOL (CL-UNICODE
+  fix), NAMED-READTABLES and PARENSCRIPT.
   </dd>
   <dt>Further reduction of ANSI test suite failure count
   </dt>
@@ -47,7 +51,7 @@
     output is desired.
   </dd>
 </dl>
-
+</div>
 
 
 
