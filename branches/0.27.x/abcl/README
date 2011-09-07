@@ -1,3 +1,8 @@
+ABCL README
+===========
+
+This file corresponds to the abcl-0.27.1 release.
+
 GENERAL INFORMATION
 ===================
 
@@ -47,7 +52,7 @@ following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 0.25.0
+    Armed Bear Common Lisp 0.27.1
     Java 1.6.0_21 Sun Microsystems Inc.
     Java HotSpot(TM) Client VM
     Low-level initialization completed in 0.3 seconds.
@@ -64,7 +69,7 @@ preferred (and most tested way) is to being to use the Ant build tool:
 
 * Use the Ant build tool for Java environments.
 
-* Use the Netbeans 6.x IDE to open ABCL as a project.
+* Use the Netbeans IDE to open ABCL as a project.
 
 * Bootstrap ABCL using a Common Lisp implementation. Supported
   implementations for this process: SBCL, CMUCL, OpenMCL, Allegro
@@ -105,7 +110,7 @@ Using NetBeans
 --------------
 
 Obtain and install the [Netbeans IDE][2]. One should be able to open
-the ABCL directory as a project in the Netbeans 6.x application,
+the ABCL directory as a project in the Netbeans 7.x application,
 whereupon the usual build, run, and debug targets as invoked in the
 GUI are available.
 
@@ -172,17 +177,15 @@ effect as loading the ASDF definition.
 BUGS
 ====
 
-A lot of (renewed) energy has been spent to make ABCL a compliant
-and practically useable Common Lisp implementation.  Because of this,
-ABCL 0.25.0 now fails only 28 out of 21702 tests in the ANSI CL test
-suite.  In addition, Maxima's test suite runs without failures now
-and ABCL's CLOS complete, with the exception of the long form of
-DEFINE-METHOD-COMBINATION - which is an ongoing effort.
+A lot of (renewed) energy has been spent to make ABCL a compliant and
+practically useable Common Lisp implementation.  Because of this, ABCL
+0.27.1 now fails only 20 out of 21702 tests in the ANSI CL test suite.
+Maxima's test suite runs without failures.  ABCL's CLOS is complete
+albeit buggy.  Notably, the MOP is incomplete and the long form of
+DEFINE-METHOD-COMBINATION does not work well.
 
-The MOP implementation is incomplete.
-
-Patches to address any of the issues mentioned above will
-be gladly accepted.
+Patches to address any outstanding issues above will be gladly
+accepted.
 
 Please report problems to the development mailing list:
 
@@ -192,4 +195,5 @@ Have fun!
 
 On behalf of all ABCL development team and contributors,
 Erik Huelsmann
-January 20, 2011
+Mark Evenson
+September 11, 2011
