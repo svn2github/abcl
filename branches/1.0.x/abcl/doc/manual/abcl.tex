@@ -853,10 +853,15 @@ CL-USER> (require 'asdf)
 
 This contrib to ABCL enables an additional syntax for ASDF system
 definition which dynamically loads JVM artifacts such as jar archives
-via a Maven encapsulation.
+via a Maven encapsulation.  The Maven Aether can also be directly
+manipulated by the function associated with the RESOLVE-DEPENDENCIES symbol.
 
-The following ASDF components are added:  JAR-FILE, JAR-DIRECTORY, CLASS-FILE-DIRECTORY
-and MVN.
+%ABCL specific contributions to ASDF system definition mainly concerned
+%with finding JVM artifacts such as jar archives to be dynamically loaded.
+
+
+The following ASDF components are added: \textsc{JAR-FILE}, \textsc[JAR-DIRECTORY},
+\textsc{CLASS-FILE-DIRECTORY} and \textsc{MVN}.
 
 \section{asdf-jar}
 
@@ -865,10 +870,7 @@ archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
-\section{abcl-asdf}
 
-ABCL specific contributions to ASDF system definition mainly concerned
-with finding JVM artifacts such as jar archives to be dynamically loaded.
 
 \subsection{ABCL-ASDF Examples}
 
