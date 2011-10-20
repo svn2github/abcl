@@ -17,19 +17,19 @@ Lisp standard.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.0, release on October 22, 2011.
+This manual corresponds to abcl-1.0.0, released on October 22, 2011.
 
 \chapter{Running}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-``abcl.jar'' or possibly``abcl-1.0.0.jar'' if you are using a
-versioned package from your system vendor.  This byte archive can be
-executed under the control of a suitable JVM by using the ``-jar''
-option to parse the manifest, and select the named class
+``abcl.jar'' or possibly``abcl-1.0.0.jar'' if one is using a versioned
+package from your system vendor.  This byte archive can be executed
+under the control of a suitable JVM by using the ``-jar'' option to
+parse the manifest, and select the named class
 (\code{org.armedbear.lisp.Main}) for execution:
 
 \begin{listing-shell}
-  cmd\$ java -jar abcl.jar
+  cmd$ java -jar abcl.jar
 \end{listing-shell}
 
 N.b. for the proceeding command to work, the ``java'' executable needs
@@ -41,7 +41,7 @@ or a DOS command script under Windows so that ABCL may be executed
 simply as:
 
 \begin{listing-shell}
-  cmd\$ abcl
+  cmd$ abcl
 \end{listing-shell}
 
 \section{Options}
@@ -96,30 +96,38 @@ to the following issues:
   \item The TIME form does not return a proper VALUES to its caller.
 \end{itemize}
 
-ABCL aims to be be a fully conforming ANSI Common Lisp
-implementation.  Any other behavior should be reported as a bug.
+ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
+Any other behavior should be reported as a bug.
 
 \section{Contemporary Common Lisp}
 In addition to ANSI conformance, \textsc{ABCL} strives to implement features
 expected of a contemporary Common Lisp.
+
+\subsection{Deficiencies}
+The following known problems detract from \textsc{ABCL} being a proper
+contemporary Comon Lisp.
 \begin{itemize}
-  \item Incomplete (A)MOP 
+  \item Incomplete (A)MOP \footnote{Another Metaobject Protocol} 
     % N.B. 
     % TODO go through AMOP with symbols, starting by looking for
     % matching function signature.
     % XXX is this really blocking ANSI conformance?  Answer: we have
     % to start with such a ``census'' to determine what we have.
-  \item Incomplete Streams:  need suitable abstraction between ANSI
-    and Gray streams.
+  \item Incomplete streams work, in that \textsc{ABCL} needs suitable
+    abstraction between ANSI and Gray streams.
     
 \end{itemize}
 
-\chapter{Interaction with host JVM}
+\chapter{Interaction with Hosting JVM}
 
 % describe calling Java from Lisp, and calling Lisp from Java,
 % probably in two separate sections.  Presumably, we can partition our
 % audience into those who are more comfortable with Java, and those
 % that are more comforable with Lisp
+
+The Armedbear Common Lisp implementation is hosted on a Java Virtual
+Machine.  This chapter describes the mechanisms by which the
+implementation interacts with that hosting mechanism.
 
 \section{Lisp to Java}
 
@@ -176,10 +184,11 @@ When the method is called with three parameters and the last parameter is an
 integer, the first method by that name and matching number of parameters is
 returned.
 
-Once you have a reference to the method, you can call it using \code{JAVA:JCALL},
-which takes the method as the first argument. The second argument is the
-object instance to call the method on, or \code{NIL} in case of a static method.
-Any remaining parameters are used as the remaining arguments for the call.
+Once one has a reference to the method, one may invoke it using
+\code{JAVA:JCALL}, which takes the method as the first argument. The
+second argument is the object instance to call the method on, or
+\code{NIL} in case of a static method.  Any remaining parameters are
+used as the remaining arguments for the call.
 
 \subsubsection{Calling Java object methods: dynamic dispatch}
 
@@ -573,7 +582,7 @@ evaluation of short scripts does the Right Thing.
 
 \subsubsection{Compilation}
 
-AbclScriptEngine implements the javax.script.Compilable
+AbclScriptEngine implements the \code{javax.script.Compilable}
 interface. Currently it only supports compilation using temporary
 files. Compiled code, returned as an instance of
 javax.script.CompiledScript, is read, compiled and executed by default
@@ -668,7 +677,7 @@ used by ABCL, allowing the dynamic loading of JVM objects:
 CL-USER> (add-to-classpath "/path/to/some.jar")
 \end{listing-lisp}
 
-NB \code{add-to-classpath} only affects the classloader used by ABCL
+N.b \code{add-to-classpath} only affects the classloader used by ABCL
 (the value of the special variable \code{JAVA:*CLASSLOADER*}. It has
 no effect on Java code outside ABCL.
 
@@ -679,7 +688,10 @@ no effect on Java code outside ABCL.
 
 \section{THREADS}
 
-Multithreading
+The extensions for handling multithreaded execution are collected in
+the \code{THREADS} package.  Most of the abstractions in Doug Lea's
+excellent \code{java.util.concurrent} packages may be manipulated
+directly via the JSS contrib to great effect.
 
 \subsection{API}
 
@@ -729,19 +741,25 @@ enable to use of URIs to address dynamically loaded resources for the
 JVM.  A URL-PATHNAME has a corresponding URL whose cannoical
 representation is defined to be the NAMESTRING of the Pathname.
 
-PATHNAME : URL-PATHNAME : JAR-PATHNAME
+\begin{verbatim}
+  JAR-PATHNAME isa URL-PATHNAME isa PATHNAME
+\end{verbatim}
 
-Both URL-PATHNAME and JAR-PATHNAME may be used anu where will a
-PATHNAME is accepted witht the following caveats
+Both URL-PATHNAME and JAR-PATHNAME may be used anywhere a PATHNAME is
+accepted with the following caveats:
 
-A stream obtained via OPEN on a URL-PATHNAME cannot be the target of
-write operations.
+\begin{itemize}
 
-No canonicalization is performed on the underlying URI (i.e. the
+\item A stream obtained via OPEN on a URL-PATHNAME cannot be the
+  target of write operations.
+
+\item No canonicalization is performed on the underlying URI (i.e. the
 implementation does not attempt to compute the current name of the
 representing resource unless it is requested to be resolved.)  Upon
 resolution, any cannoicalization procedures followed in resolving the
 resource (e.g. following redirects) are discarded.  
+
+\end{itemize}
 
 The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
 code from the network.  For example, for Quicklisp.
@@ -863,13 +881,6 @@ manipulated by the function associated with the RESOLVE-DEPENDENCIES symbol.
 The following ASDF components are added: \textsc{JAR-FILE}, \textsc{JAR-DIRECTORY},
 \textsc{CLASS-FILE-DIRECTORY} and \textsc{MVN}.
 
-\section{asdf-jar}
-
-ASDF-JAR provides a system for packaging ASDF systems into jar
-archives for ABCL.  Given a running ABCL image with loadable ASDF
-systems the code in this package will recursively package all the
-required source and fasls in a jar archive.
-
 
 
 \subsection{ABCL-ASDF Examples}
@@ -919,6 +930,14 @@ function:
 
 Notice that all recursive dependencies have been located and installed
 locally from the network as well.
+
+
+\section{asdf-jar}
+
+ASDF-JAR provides a system for packaging ASDF systems into jar
+archives for ABCL.  Given a running ABCL image with loadable ASDF
+systems the code in this package will recursively package all the
+required source and fasls in a jar archive.
 
 \section{jss}
 
