@@ -17,7 +17,7 @@ Lisp standard.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-0.28.0, as yet unreleased.
+This manual corresponds to abcl-1.0.0, release on October 22, 2011.
 
 \chapter{Running}
 
@@ -29,7 +29,7 @@ option to parse the manifest, and select the named class
 (\code{org.armedbear.lisp.Main}) for execution:
 
 \begin{listing-shell}
-  cmd$ java -jar abcl.jar
+  cmd\$ java -jar abcl.jar
 \end{listing-shell}
 
 N.b. for the proceeding command to work, the ``java'' executable needs
@@ -41,7 +41,7 @@ or a DOS command script under Windows so that ABCL may be executed
 simply as:
 
 \begin{listing-shell}
-  cmd$ abcl
+  cmd\$ abcl
 \end{listing-shell}
 
 \section{Options}
@@ -211,7 +211,7 @@ the above code fails with
 
 \begin{listing-java}
 java.lang.IllegalAccessException: Class ... can
-not access a member of class java.util.zip.ZipFile$2 with modifiers
+not access a member of class java.util.zip.ZipFile\$2 with modifiers
 "public"
        at sun.reflect.Reflection.ensureMemberAccess(Reflection.java:65)
        at java.lang.reflect.Method.invoke(Method.java:583)
@@ -834,7 +834,7 @@ code is greater than 0x00ff.
 \subsection{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the #\" reader macro.
+reader in the definition of the \#\" reader macro.
 
 \section{ASDF}
 
@@ -885,7 +885,7 @@ with finding JVM artifacts such as jar archives to be dynamically loaded.
 
 We define an API as consisting of the following ASDF classes:
 
-\textsc[JAR-DIRECTORY}, \textsc{JAR-FILE}, and
+\textsc{JAR-DIRECTORY}, \textsc{JAR-FILE}, and
 \textsc{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
 valid pathname representation
 
