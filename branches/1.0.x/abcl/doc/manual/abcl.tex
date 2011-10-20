@@ -5,7 +5,7 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 20, 2011}
+\date{October 21, 2011}
 \author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
@@ -22,7 +22,7 @@ This manual corresponds to abcl-1.0.0, release on October 22, 2011.
 \chapter{Running}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-``abcl.jar'' or possibly``abcl-0.28.0.jar'' if you are using a
+``abcl.jar'' or possibly``abcl-1.0.0.jar'' if you are using a
 versioned package from your system vendor.  This byte archive can be
 executed under the control of a suitable JVM by using the ``-jar''
 option to parse the manifest, and select the named class
@@ -908,9 +908,15 @@ artifacts to be downloaded
     "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
 \end{listing-lisp}
 
-Notice that all recursive dependencies have been located and installed
-as well.
+To actually load the dependency, use the JAVA:ADD-TO-CLASSPATH generic
+function:
 
+\begin{listing-lisp}
+    CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
+\end{listing-lisp}
+
+Notice that all recursive dependencies have been located and installed
+locally from the network as well.
 
 \section{jss}
 
