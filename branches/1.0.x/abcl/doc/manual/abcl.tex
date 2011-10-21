@@ -776,7 +776,7 @@ in working with the hosting JVM.
 
 \section{Pathname}
 
-We implment an extension to the Pathname that allows for the
+We implement an extension to the Pathname that allows for the
 description and retrieval of resources named in a URI scheme that the
 JVM ``understands''.  Support is built-in to the ``http'' and
 ``https'' implementations but additional protocol handlers may be
@@ -818,6 +818,11 @@ code from the network.  For example, for Quicklisp.
 will load and execute the Quicklisp setup code.
 
 \ref{XACH2011}
+
+\subsubsection{Implementation}
+
+\textsc{DEVICE} either a string denoting a drive letter under DOS or a cons
+specifying a \textsc{URL-PATHNAME}.
          
 \section{Extensible Sequences}
 
@@ -907,9 +912,9 @@ reader in the definition of the \#\" reader macro.
 
 \section{ASDF}
 
-asdf-2.017 is packaged as core component of ABCL, but not intialized
-by default, as it relies on the CLOS subsystem which can take a bit of
-time to initialize.  It may be initialized by the ANSI
+asdf-2.017.22 is packaged as core component of ABCL, but not
+intialized by default, as it relies on the CLOS subsystem which can
+take a bit of time to initialize.  It may be initialized by the ANSI
 \textsc{REQUIRE} mechanism as follows:
 
 \begin{listing-lisp}
