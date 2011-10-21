@@ -19,6 +19,15 @@ implementation for users of the system.
 \subsection{Version}
 This manual corresponds to abcl-1.0.0, released on October 22, 2011.
 
+\subsection{License}
+
+The implementation is licensed under the terms of the GPL v2 of June
+1991 with the ``classpath-exception'' that makes its deployment in
+commercial settings quite reasonable.  The license is viral in the
+sense that if you change the implementation, and redistribute those
+changes, you are required to provide the source to those changes back
+to be merged with the public trunk.
+
 \chapter{Running}
 
 \textsc{ABCL} is packaged as a single jar file usually named either
@@ -26,7 +35,7 @@ This manual corresponds to abcl-1.0.0, released on October 22, 2011.
 package from your system vendor.  This byte archive can be executed
 under the control of a suitable JVM by using the ``-jar'' option to
 parse the manifest, and select the named class
-(\code{org.armedbear.lisp.Main}) for execution:
+(\code{org.armedbear.lisp.Main}) for execution, viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
@@ -72,7 +81,7 @@ The occurance of '--' copies the remaining arguments, unprocessed, into
 the variable EXTENSIONS:*COMMAND-LINE-ARGUMENT-LIST*.
 \end{verbatim}
 
-All of the command line arguments which follow the occurrence of ``--''
+All of the command line arguments which follow the occurrence of ``----''
 are passed into a list bound to the EXT:*COMMAND-LINE-ARGUMENT-LIST*
 variable.
 
@@ -90,17 +99,18 @@ JVM implementation that \textsc{ABCL} finds itself hosted upon.
 \chapter{Conformance}
 
 \section{ANSI Common Lisp}
-\textsc{ABCL} is currently a non-conforming ANSI Common Lisp implementation due
-to the following issues:
+\textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
+implementation due to the following known issues:
 
 \begin{itemize}
   \item The generic function signatures of the DOCUMENTATION symbol do
     not match the CLHS.
-  \item The TIME form does not return a proper VALUES to its caller.
+  \item The TIME form does not return a proper VALUES environment to
+    its caller.
 \end{itemize}
 
-Somewhat confusingly, this statement of non-conformance 
-in the accompanying user documentation fullfills the requirements that
+Somewhat confusingly, this statement of non-conformance in the
+accompanying user documentation fullfills the requirements that
 \textsc{ABCL} is a conforming ANSI Common Lisp implementation
 according to the CLHS \footnote{Common Lisp Hyperspec language
   reference document.}.  Clarifications to this point are solicited.
@@ -860,10 +870,14 @@ classloader as an optional third argument.
 
 We implement a special hexadecimal escape sequence for specifying
 characters to the Lisp reader, namely we allow a sequences of the form
-\# \textbackslash Uxxxx to be processed by the reader as character whose code is
-specified by the hexadecimal digits ``xxxx''.  The hexadecimal sequence
-must be exactly four digits long, padded by leading zeros for values
-less than 0x1000.
+\# \textbackslash Uxxxx to be processed by the reader as character
+whose code is specified by the hexadecimal digits ``xxxx''.  The
+hexadecimal sequence must be exactly four digits long \footnote{This
+  represents a compromise with contemporary in 2011 32bit hosting
+  architecures for which we wish to make text processing efficient.
+  Should the User require more control over UNICODE processing we
+  recommend Edi Weisz' excellent work with FLEXI-STREAMS which we
+  fully support}, padded by leading zeros for values less than 0x1000.
 
 Note that this sequence is never output by the implementation.  Instead,
 the corresponding Unicode character is output for characters whose
