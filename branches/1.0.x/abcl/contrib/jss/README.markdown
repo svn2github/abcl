@@ -1,7 +1,7 @@
 JSS
 ===
 
-Created by Alan Ruttenburg
+Created by Alan Ruttenberg
 
 
 JSS stands for either "Java Simple Syntax" or "Java Syntax Sucks",
