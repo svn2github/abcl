@@ -12,7 +12,7 @@
 
 \chapter{Introduction}
 
-Armed Bear is a mostly conforming implementation of the ANSI Common
+Armed Bear is a (mostly) conforming implementation of the ANSI Common
 Lisp standard.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
@@ -35,10 +35,11 @@ parse the manifest, and select the named class
 N.b. for the proceeding command to work, the ``java'' executable needs
 to be in your path.
 
-To make it easier to facilitate the use of ABCL in tool chains (such as
-SLIME) the invocation is wrapped in a Bourne shell script under UNIX
-or a DOS command script under Windows so that ABCL may be executed
-simply as:
+To make it easier to facilitate the use of ABCL in tool chains (such
+as SLIME \footnote{SLIME is the Superior Lisp Mode for Interaction
+  under Emacs}) the invocation is wrapped in a Bourne shell script
+under UNIX or a DOS command script under Windows so that ABCL may be
+executed simply as:
 
 \begin{listing-shell}
   cmd$ abcl
@@ -82,7 +83,9 @@ attempts to load a file named ``.abclrc'' located in the user's home
 directory and then interpret its contents.  
 
 The user's home directory is determined by the value of the JVM system
-property ``user.home''.
+property ``user.home''.  This value may--or may not--correspond to the
+value of the HOME system environment variable at the discretion of the
+JVM implementation that \textsc{ABCL} finds itself hosted upon.
 
 \chapter{Conformance}
 
@@ -96,36 +99,53 @@ to the following issues:
   \item The TIME form does not return a proper VALUES to its caller.
 \end{itemize}
 
+Somewhat confusingly, this statement of non-conformance 
+in the accompanying user documentation fullfills the requirements that
+\textsc{ABCL} is a conforming ANSI Common Lisp implementation
+according to the CLHS \footnote{Common Lisp Hyperspec language
+  reference document.}.  Clarifications to this point are solicited.
+
 ABCL aims to be be a fully conforming ANSI Common Lisp implementation.
 Any other behavior should be reported as a bug.
 
 \section{Contemporary Common Lisp}
 In addition to ANSI conformance, \textsc{ABCL} strives to implement features
-expected of a contemporary Common Lisp.
+expected of a contemporary Common Lisp \footnote{i.e. a Lisp of the
+  post 2005 Renaissance}
 
 \subsection{Deficiencies}
 The following known problems detract from \textsc{ABCL} being a proper
 contemporary Comon Lisp.
 \begin{itemize}
-  \item Incomplete (A)MOP \footnote{Another Metaobject Protocol} 
-    % N.B. 
+  \item An incomplete implementation of a properly named metaobject
+    protocol (viz. (A)MOP \footnote{Another Metaobject Protocol} )
+
+    % N.b. 
     % TODO go through AMOP with symbols, starting by looking for
     % matching function signature.
     % XXX is this really blocking ANSI conformance?  Answer: we have
     % to start with such a ``census'' to determine what we have.
-  \item Incomplete streams work, in that \textsc{ABCL} needs suitable
-    abstraction between ANSI and Gray streams.
+
+  \item Incomplete streams abstraction, in that \textsc{ABCL} needs suitable
+    abstraction between ANSI and Gray streams.  The streams could be
+    optimized to the JVM NIO abstractions at great profit for binary
+    byte-level manipulations.
     
+  \item Incomplete documentation (missing docstrings from exported
+      symbols.
+
 \end{itemize}
 
 \chapter{Interaction with Hosting JVM}
 
+%  Plan of Attack
+%
 % describe calling Java from Lisp, and calling Lisp from Java,
 % probably in two separate sections.  Presumably, we can partition our
 % audience into those who are more comfortable with Java, and those
 % that are more comforable with Lisp
 
-The Armedbear Common Lisp implementation is hosted on a Java Virtual
+The Armed Bear Common Lisp implementation is hosted on a Java Virtual
 Machine.  This chapter describes the mechanisms by which the
 implementation interacts with that hosting mechanism.
 
@@ -151,15 +171,15 @@ by their name ending with \code{-RAW}.
 
 \subsection{Low-level Java API}
 
-There's a higher level Java API defined in the
-\ref{topic:Higher level Java API: JSS}(JSS package) which is available
-in the \code{contrib/} directory. This package is described later in this
-document.  This section covers the lower level API directly available
-after evaluating \code{(require 'JAVA)}.
+We define a higher level Java API in the \ref{topic:Higher level Java
+  API: JSS}(JSS package) which is available in the \code{contrib/} \ref{topic:contrib}
+directory. This package is described later in this document.  This
+section covers the lower level API directly available after evaluating
+\code{(require 'JAVA)}.
 
-\subsubsection{Calling Java object methods}
+\subsubsection{Calling Java Object Methods}
 
-There are two ways to call a Java object method in the basic API:
+There are two ways to call a Java object method in the low-level (basic) API:
 
 \begin{itemize}
 \item Call a specific method reference (which was previously acquired)
@@ -199,7 +219,7 @@ is a string naming the method to be called. The second argument is the instance
 on which the method should be called and any further arguments are used to
 select the best matching method and dispatch the call.
 
-\subsubsection{Dynamic dispatch: caveats}
+\subsubsection{Dynamic dispatch: Caveats}
 
 Dynamic dispatch is performed by using the Java reflection
 API \footnote{The Java reflection API is found in the
@@ -963,17 +983,18 @@ An implementation of ASDF-INSTALL.  Superseded by Quicklisp (qv.)
 \chapter{History}
 
 ABCL was originally the extension language for the J editor, which was
-started in 1998 by Peter Graves.  Sometime in 2003, it seems that a
-lot of code that had previously not been released publically was
-suddenly committed that enabled ABCL to be plausibly termed an ANSI
-Common Lisp implementation.
+started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
+code that had previously not been released publically was suddenly
+committed that enabled ABCL to be plausibly termed an emergent ANSI
+Common Lisp implementation canidate.
 
 In 2006, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
-In 201x, with the publication of this Manual explicitly stating the
-conformance of Armed Bear Common Lisp to ANSI, we release abcl-1.0.
+On October 22, 2011, with the publication of this Manual explicitly
+stating the conformance of Armed Bear Common Lisp to ANSI, we released
+abcl-1.0.0.
 
 
 
@@ -986,10 +1007,12 @@ conformance of Armed Bear Common Lisp to ANSI, we release abcl-1.0.
 [Xach2011]:  Quicklisp:  A system for quickly constructing Common Lisp
 libraries.  \url{http://www.quicklisp.org/}
 
+[RHODES2007]:  Christopher Rhodes
+
 
 \end{document}
 
 % TODO
 %   1.  Create mechanism for swigging DocString and Lisp docs into
-%       sections.
+%       sections ('grovel.lisp')
 
