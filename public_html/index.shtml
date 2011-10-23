@@ -54,34 +54,35 @@ td ul { margin:0 }
 </p>
 </td></tr>
 
-<tr><td colspan="2" class="summary-header">Downloads</td></tr>
+<tr><td colspan="2" class="summary-header"><a href="releases/">Downloads</a></td></tr>
 
 <tr><td colspan="2"  align="center">
   <table class="downloads">
     <tr>
       <td style="font-weight: bold">Binary</td>
       <td>
-        <a href="releases/0.27.0/abcl-bin-0.27.0.tar.gz">abcl-bin-0.27.0.tar.gz</a>
-        <a href="releases/0.27.0/abcl-bin-0.27.0.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/1.0.0/abcl-bin-1.0.0.tar.gz">abcl-bin-1.0.0.tar.gz</a>
+        <a href="releases/1.0.0/abcl-bin-1.0.0.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/0.27.0/abcl-bin-0.27.0.zip">abcl-bin-0.27.0.zip</a>
-        <a href="releases/0.27.0/abcl-bin-0.27.0.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/1.0.0/abcl-bin-1.0.0.zip">abcl-bin-1.0.0.zip</a>
+        <a href="releases/1.0.0/abcl-bin-1.0.0.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
 
     <tr>
       <td style="font-weight: bold">Source</td>
       <td>
-        <a href="releases/0.27.0/abcl-src-0.27.0.tar.gz">abcl-src-0.27.0.tar.gz</a>
-        <a href="releases/0.27.0/abcl-src-0.27.0.tar.gz.asc" class="asc">(pgp)</a>
+        <a href="releases/1.0.0/abcl-src-1.0.0.tar.gz">abcl-src-1.0.0.tar.gz</a>
+        <a href="releases/1.0.0/abcl-src-1.0.0.tar.gz.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="releases/0.27.0/abcl-src-0.27.0.zip">abcl-src-0.27.0.zip</a>
-        <a href="releases/0.27.0/abcl-src-0.27.0.zip.asc" class="asc">(pgp)</a>
+        <a href="releases/1.0.0/abcl-src-1.0.0.zip">abcl-src-1.0.0.zip</a>
+        <a href="releases/1.0.0/abcl-src-1.0.0.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
-      
+    <tr>
+      <td><a href="releases/1.0.0/abcl-contrib-1.0.0.jar">abcl-contrib-1.0.0.jar</a></td>
   </table>
 </td> </tr>
 
