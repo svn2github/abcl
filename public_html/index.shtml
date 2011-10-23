@@ -68,6 +68,7 @@ td ul { margin:0 }
         <a href="releases/1.0.0/abcl-bin-1.0.0.zip">abcl-bin-1.0.0.zip</a>
         <a href="releases/1.0.0/abcl-bin-1.0.0.zip.asc" class="asc">(pgp)</a>
       </td>
+      <td><a href="releases/1.0.0/abcl-contrib-1.0.0.jar">abcl-contrib-1.0.0.jar</a></td>
     </tr>
 
     <tr>
@@ -81,8 +82,6 @@ td ul { margin:0 }
         <a href="releases/1.0.0/abcl-src-1.0.0.zip.asc" class="asc">(pgp)</a>
       </td>
     </tr>
-    <tr>
-      <td><a href="releases/1.0.0/abcl-contrib-1.0.0.jar">abcl-contrib-1.0.0.jar</a></td>
   </table>
 </td> </tr>
 
