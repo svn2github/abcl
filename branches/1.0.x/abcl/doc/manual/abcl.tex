@@ -5,8 +5,8 @@
 
 \begin{document}
 \title{A Manual for Armed Bear Common Lisp}
-\date{October 21, 2011}
-\author{Mark~Evenson, Erik~Huelsmann, Alessio~Stalla, Ville~Voutilainen}
+\date{January 5, 2012}
+\author{Mark~Evenson, Erik~H\"{u}lsmann, Alessio~Stalla, Ville~Voutilainen}
 
 \maketitle
 
@@ -14,12 +14,14 @@
 
 \chapter{Introduction}
 
-Armed Bear is a (mostly) conforming implementation of the ANSI Common
-Lisp standard.  This manual documents the Armed Bear Common Lisp
+Armed Bear is a conforming implementation of the ANSI Common Lisp
+standard (see \ref{chapter:conformance} on page
+\pageref{chapter:conformance} which states the details of the
+conformance level.  This manual documents the Armed Bear Common Lisp
 implementation for users of the system.
 
 \subsection{Version}
-This manual corresponds to abcl-1.0.0, released on October 22, 2011.
+This manual corresponds to abcl-1.0.1.
 
 \subsection{License}
 
@@ -52,21 +54,22 @@ Peter Graves
 \textsc{ABCL} is packaged as a single jar file usually named either
 ``abcl.jar'' or possibly``abcl-1.0.0.jar'' if one is using a versioned
 package from your system vendor.  This byte archive can be executed
-under the control of a suitable JVM by using the ``-jar'' option to
-parse the manifest, and select the named class
-(\code{org.armedbear.lisp.Main}) for execution, viz:
+under the control of a suitable JVM \footnote {Java Virtual Machine}
+by using the ``-jar'' option to parse the manifest, and select the
+class named therein ``\code{org.armedbear.lisp.Main}'' for execution,
+viz:
 
 \begin{listing-shell}
   cmd$ java -jar abcl.jar
 \end{listing-shell}
 
-N.b. for the proceeding command to work, the ``java'' executable needs
+\emph{N.b.} for the proceeding command to work, the ``java'' executable needs
 to be in your path.
 
 To make it easier to facilitate the use of ABCL in tool chains (such
 as SLIME \footnote{SLIME is the Superior Lisp Mode for Interaction
   under Emacs}) the invocation is wrapped in a Bourne shell script
-under UNIX or a DOS command script under Windows so that ABCL may be
+under \textsc{UNIX} or a \textsc{DOS} command script under Windows so that ABCL may be
 executed simply as:
 
 \begin{listing-shell}
@@ -106,7 +109,7 @@ variable.
 
 \section{Initialization}
 
-If the ABCL process is started without the ``--noinit'' flag, it
+If the \textsc{ABCL} process is started without the ``--noinit'' flag, it
 attempts to load a file named ``.abclrc'' located in the user's home
 directory and then interpret its contents.  
 
@@ -116,6 +119,7 @@ value of the HOME system environment variable at the discretion of the
 JVM implementation that \textsc{ABCL} finds itself hosted upon.
 
 \chapter{Conformance}
+\label{chapter:conformance}
 
 \section{ANSI Common Lisp}
 \textsc{ABCL} is currently a (non)-conforming ANSI Common Lisp
@@ -129,7 +133,7 @@ implementation due to the following known issues:
 \end{itemize}
 
 Somewhat confusingly, this statement of non-conformance in the
-accompanying user documentation fullfills the requirements that
+accompanying user documentation fulfills the requirements that
 \textsc{ABCL} is a conforming ANSI Common Lisp implementation
 according to the CLHS \footnote{Common Lisp Hyperspec language
   reference document.}.  Clarifications to this point are solicited.
@@ -144,10 +148,18 @@ expected of a contemporary Common Lisp \footnote{i.e. a Lisp of the
 
 \subsection{Deficiencies}
 The following known problems detract from \textsc{ABCL} being a proper
-contemporary Comon Lisp.
+contemporary Common Lisp.
 \begin{itemize}
+
+  \item An incomplete implementation of interactive debugging
+    mechanisms namely a no-op version of
+    \code{STEP} \footnote{Somewhat surprisingly allowed by
+      \textsc{ANSI}}, the inability to inspect local variables in a
+    given call frame, and the inability to resume a halted computation
+    at an arbitrarily selected call frame.
+
   \item An incomplete implementation of a properly named metaobject
-    protocol (viz. (A)MOP \footnote{Another Metaobject Protocol} )
+    protocol (viz. (A)MOP \footnote{The Art of the  Metaobject Protocol} )
 
     % N.b. 
     % TODO go through AMOP with symbols, starting by looking for
@@ -161,7 +173,7 @@ contemporary Comon Lisp.
     byte-level manipulations.
     
   \item Incomplete documentation (missing docstrings from exported
-      symbols.
+    symbols and the draft status of the User Manual).
 
 \end{itemize}
 
@@ -200,11 +212,12 @@ by their name ending with \code{-RAW}.
 
 \subsection{Low-level Java API}
 
-We define a higher level Java API in the \ref{topic:Higher level Java
-  API: JSS}(JSS package) which is available in the \code{contrib/} \ref{topic:contrib}
-directory. This package is described later in this document.  This
-section covers the lower level API directly available after evaluating
-\code{(require 'JAVA)}.
+We define a higher level Java API in the topic:Higher level Java JSS
+package developed by Alan Ruttenberg which is available in the
+\code{contrib/} directory, see the  . This package is
+described later in this document, see \ref{section:jss} on page
+\pageref{section:jss}.  This section covers the lower level API
+directly available after evaluating \code{(require 'JAVA)}.
 
 \subsubsection{Calling Java Object Methods}
 
@@ -747,11 +760,9 @@ used by ABCL, allowing the dynamic loading of JVM objects:
 CL-USER> (add-to-classpath "/path/to/some.jar")
 \end{listing-lisp}
 
-N.b \code{add-to-classpath} only affects the classloader used by ABCL
+N.b \code{ADD-TO-CLASSPATH} only affects the classloader used by ABCL
 (the value of the special variable \code{JAVA:*CLASSLOADER*}. It has
 no effect on Java code outside ABCL.
-
-\subsection{API}
 
 % include autogen docs for the JAVA package.
 \include{java}
@@ -762,8 +773,6 @@ The extensions for handling multithreaded execution are collected in
 the \code{THREADS} package.  Most of the abstractions in Doug Lea's
 excellent \code{java.util.concurrent} packages may be manipulated
 directly via the JSS contrib to great effect.
-
-\subsection{API}
 
 % include autogen docs for the THREADS package.
 \include{threads}
@@ -776,10 +785,8 @@ user.  They include functions for manipulating network sockets,
 running external programs, registering object finalizers, constructing
 reference weakly held by the garbage collector and others.
 
-See \ref{Extensible Sequences} for a generic function interface to
-the native JVM contract for \code{java.util.List}.
-
-\subsection{API}
+See \ref{Rhodes2007} for a generic function interface to the native
+JVM contract for \code{java.util.List}.
 
 % include autogen docs for the EXTENSIONS package.
 \include{extensions}
@@ -804,15 +811,23 @@ description and retrieval of resources named in a URI scheme that the
 JVM ``understands''.  Support is built-in to the ``http'' and
 ``https'' implementations but additional protocol handlers may be
 installed at runtime by having JVM symbols present in the
-sun.net.protocol.dynmamic pacakge. See [JAVA2006] for more details.
+sun.net.protocol.dynmamic pacakge. See Java2007 \cite{Java2007} for more
+details.
 
 ABCL has created specializations of the ANSI Pathname object to
 enable to use of URIs to address dynamically loaded resources for the
-JVM.  A URL-PATHNAME has a corresponding URL whose cannoical
+JVM.  A URL-PATHNAME has a corresponding URL whose canonical
 representation is defined to be the NAMESTRING of the Pathname.
 
+%
 \begin{verbatim}
-  JAR-PATHNAME isa URL-PATHNAME isa PATHNAME
+
+# RDF description of type hierarchy 
+% TODO Render via some LaTeX mode for graphviz?
+
+  <jar-pathname> a <url-pathname>.
+  <url-pathname> a <pathname>.
+  <logical-pathname> a <pathname> .
 \end{verbatim}
 
 Both URL-PATHNAME and JAR-PATHNAME may be used anywhere a PATHNAME is
@@ -832,7 +847,7 @@ resource (e.g. following redirects) are discarded.
 \end{itemize}
 
 The implementation of URL-PATHNAME allows the ABCL user to laod dynamically
-code from the network.  For example, for Quicklisp.
+code from the network.  For example, for Quicklisp (\cite{Xach2011}):
 
 \begin{listing-lisp}
   CL-USER> (load "http://beta.quicklisp.org/quicklisp.lisp")
@@ -840,16 +855,16 @@ code from the network.  For example, for Quicklisp.
 
 will load and execute the Quicklisp setup code.
 
-\ref{XACH2011}
+See \ref{_:XACH2011} on page \pageref{_:XACH2011}.
 
 \subsubsection{Implementation}
 
-\textsc{DEVICE} either a string denoting a drive letter under DOS or a cons
-specifying a \textsc{URL-PATHNAME}.
+\code{DEVICE} either a string denoting a drive letter under DOS or a cons
+specifying a \code{URL-PATHNAME}.
          
 \section{Extensible Sequences}
 
-See \ref{RHODES2007} RHODES2007 for the design.
+See Rhodes2007 \cite{RHODES2007} for the design.
 
 The SEQUENCE package fully implements Christopher Rhodes' proposal for
 extensible sequences.  These user extensible sequences are used
@@ -931,14 +946,18 @@ code is greater than 0x00ff.
 \subsection{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the \#\" reader macro.
+reader in the definition of the \#\" reader macro.  See
+\ref{section:jss} on page \pageref{section:jss} for more information.
 
 \section{ASDF}
 
 asdf-2.017.22 is packaged as core component of ABCL, but not
-intialized by default, as it relies on the CLOS subsystem which can
-take a bit of time to initialize.  It may be initialized by the ANSI
-\textsc{REQUIRE} mechanism as follows:
+initialized by default, as it relies on the CLOS subsystem which can
+take a bit of time to start \footnote{While this time is ``merely'' on
+  the order of seconds for contemporary 2011 machines, for
+  applications that need to initialize quickly, for example a web
+  server, this time might be unnecessarily long}.  ASDF may be loaded
+by the \textsc{ANSI} \code{REQUIRE} mechanism as follows:
 
 \begin{listing-lisp}
 CL-USER> (require 'asdf)
@@ -946,23 +965,39 @@ CL-USER> (require 'asdf)
 
 \chapter{Contrib}
 
+The ABCL contrib is packaged as a separate jar archive usually named
+\code{abcl-contrib.jar} or possibly something like
+\code{abcl-contrib-1.0.0.jar}.  The contrib jar is not loaded by the
+implementation by default, and must be first intialized by the
+\code{REQUIRE} mechanism before using any specific contrib:
+
+\begin{listing-lisp}
+CL-USER> (require 'abcl-contrib)
+\end{listing-lisp}
+
 \section{abcl-asdf}
 
-This contrib to ABCL enables an additional syntax for ASDF system
-definition which dynamically loads JVM artifacts such as jar archives
-via a Maven encapsulation.  The Maven Aether can also be directly
-manipulated by the function associated with the RESOLVE-DEPENDENCIES symbol.
+This contrib enables an additional syntax for \textsc{ASDF} system
+definition which dynamically loads \textsc{JVM} artifacts such as jar
+archives via encapsulation of the Maven build tool.  The Maven Aether
+component can also be directly manipulated by the function associated
+with the \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} symbol.
 
-%ABCL specific contributions to ASDF system definition mainly concerned
-%with finding JVM artifacts such as jar archives to be dynamically loaded.
-
-
-The following ASDF components are added: \textsc{JAR-FILE}, \textsc{JAR-DIRECTORY},
-\textsc{CLASS-FILE-DIRECTORY} and \textsc{MVN}.
+%ABCL specific contributions to ASDF system definition mainly
+%concerned with finding JVM artifacts such as jar archives to be
+%dynamically loaded.
 
 
+The following \textsc{ASDF} components are added: \code{JAR-FILE},
+\code{JAR-DIRECTORY}, \code{CLASS-FILE-DIRECTORY} and \code{MVN}.
 
-\subsection{ABCL-ASDF Examples}
+
+\subsection{Referencing Maven Artifacts via ASDF}
+
+Maven artifacts may be referenced within \textsc{ASDF} system
+definitions, as the following example references the
+\code{log4j-1.4.9.jar} JVM artifact which provides a widely-used
+abstraction for handling logging systems:
 
 \begin{listing-lisp}
     ;;;; -*- Mode: LISP -*-
@@ -973,75 +1008,85 @@ The following ASDF components are added: \textsc{JAR-FILE}, \textsc{JAR-DIRECTOR
                     :version "1.4.9")))
 \end{listing-lisp}
 
-\subsection{abcl-asdf API}
+\subsection{API}
 
-We define an API as consisting of the following ASDF classes:
+We define an API for \textsc{ABCL-ASDF} as consisting of the following
+ASDF classes:
 
-\textsc{JAR-DIRECTORY}, \textsc{JAR-FILE}, and
-\textsc{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
-valid pathname representation
+\code{JAR-DIRECTORY}, \code{JAR-FILE}, and
+\code{CLASS-FILE-DIRECTORY} for JVM artifacts that have a currently
+valid pathname representation.
 
-And the MVN and IRI classes descend from ASDF-COMPONENT, but do not
+Both the MVN and IRI classes descend from ASDF-COMPONENT, but do not
 directly have a filesystem location.
 
-For use outside of ASDF, we currently define one method,
-\textsc{RESOLVE-DEPENDENCIES} which locates, downloads, caches, and then loads
-into the currently executing JVM process all recursive dependencies
-annotated in the Maven pom.xml graph.
+For use outside of ASDF system definitions, we currently define one
+method, \code{ABCL-ASDF:RESOLVE-DEPENDENCIES} which locates,
+downloads, caches, and then loads into the currently executing JVM
+process all recursive dependencies annotated in the Maven pom.xml
+graph.
 
-\subsection{ABCL-ASDF Example 2}
+\subsection{Directly Instructing Maven to Download JVM Artifacts}
 
-Bypassing ASDF, one can directly issue requests for the Maven
+Bypassing \textsc{ASDF}, one can directly issue requests for the Maven
 artifacts to be downloaded
 
 \begin{listing-lisp}
-    CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
-    WARNING: Using LATEST for unspecified version.
-    "/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
+CL-USER> (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user")
+WARNING: Using LATEST for unspecified version.
+"/Users/evenson/.m2/repository/com/google/gwt/gwt-user/2.4.0-rc1/gwt-user-2.4.0-rc1.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/evenson/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA-sources.jar"
 \end{listing-lisp}
 
-To actually load the dependency, use the JAVA:ADD-TO-CLASSPATH generic
+To actually load the dependency, use the \code{JAVA:ADD-TO-CLASSPATH} generic
 function:
 
 \begin{listing-lisp}
-    CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
+CL-USER> (java:add-to-classpath (abcl-asdf:resolve-dependencies "com.google.gwt" "gwt-user"))
 \end{listing-lisp}
 
 Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
-
 \section{asdf-jar}
 
-ASDF-JAR provides a system for packaging ASDF systems into jar
-archives for ABCL.  Given a running ABCL image with loadable ASDF
+The asdf-jar contrib provides a system for packaging ASDF systems into
+jar archives for ABCL.  Given a running ABCL image with loadable ASDF
 systems the code in this package will recursively package all the
 required source and fasls in a jar archive.
 
 \section{jss}
+\label{section:jss}
 
-To one used to a syntax that can construct macros, the Java syntax
-sucks, so we introduce the \#" macro.
+To one used to a syntax that can construct macros the Java syntax
+may be said to suck, so we introduce the \code{SHARPSIGN-DOUBLE-QUOTE} \#" macro.
 
 \subsection{JSS usage}
 
 Example:
 
 \begin{listing-lisp}
-  CL-USER> (require 'jss)
+CL-USER> (require 'jss)
 
-  CL-USER) (#"getProperties" 'java.lang.System)
+CL-USER) (#"getProperties" 'java.lang.System)
 
-  CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
+CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp}
 
 \section{asdf-install}
 
-An implementation of ASDF-INSTALL.  Superseded by Quicklisp (qv.)
+The asdf-install contrib provides an implementation of ASDF-INSTALL.
+Superseded by Quicklisp (see Xach2011 \cite{Xach2011}).
+
+The \code{require} of the \code{asdf-install} symbol has the side
+effect of pushing the directory ``~/.asdf-install-dir/systems/'' into
+the value of the \textsc{ASDF} central registry in
+\code{asdf:*central-registry*}, providing a convenient mechanism for
+stashing \textsc{ABCL} specific system definitions for convenient
+access.
 
 \chapter{History}
 
-ABCL was originally the extension language for the J editor, which was
+\textsc{ABCL} was originally the extension language for the J editor, which was
 started in 1998 by Peter Graves.  Sometime in 2003, a whole lot of
 code that had previously not been released publically was suddenly
 committed that enabled ABCL to be plausibly termed an emergent ANSI
@@ -1049,29 +1094,41 @@ Common Lisp implementation canidate.
 
 From 2006 to 2008, Peter manned the development lists, incorporating
 patches as made sense.  After a suitable search, Peter nominated Erik
-Huelsmann to take over the project.
+H\"{u}lsmann to take over the project.
 
 In 2008, the implementation was transferred to the current
 maintainers, who have strived to improve its usability as a
 contemporary Common Lisp implementation.
 
 On October 22, 2011, with the publication of this Manual explicitly
-stating the conformance of Armed Bear Common Lisp to ANSI, we released
+stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we released
 abcl-1.0.0.
 
 
 
+\begin{thebibliography}{9}
 
-\section{References}
+\label{_:1}
+\bibitem{Java2000}
+  ``A New Era for Java Protocol Handlers.''
+  \url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
 
-[Java2000]:  A New Era for Java Protocol Handlers.
-\url{http://java.sun.com/developer/onlineTraining/protocolhandlers/}
+\label{_:XACH2011}
+\bibitem{Xach2011}
+  Zach Beene
+  ``Quicklisp:  A system for quickly constructing Common Lisp''
+  \url{http://www.quicklisp.org/}
 
-[Xach2011]:  Quicklisp:  A system for quickly constructing Common Lisp
-libraries.  \url{http://www.quicklisp.org/}
+\bibitem{Rhodes2007}
+Christopher Rhodes
+``User-extensible Sequences in Common Lisp''
+ILC '07 Proceedings of the 2007 International Lisp Conference
+% An early draft.  XXX where is the real one?
+\url{http://jcsu.jesus.cam.ac.uk/~csr21/spec.pdf}
 
-[RHODES2007]:  Christopher Rhodes
+\end{thebibliography}
 
+\printindex
 
 \end{document}
 
