@@ -1,15 +1,3 @@
-Changes
--------
-
-  * [r13695] Reimplementation of global symbol macros to avoid using
-    the symbol's value slot.
-
-  * [r13696] DEFMACRO now supports documentation strings as per the
-    ANSI specification.
-
-  * [r13700] ABCL loads under the Weblogic 10.3 application server.
-
-
 Version 1.0.1
 ==============
 svn.uri=:"http//common-lisp.net/project/armedbear/svn/tags/1.0.1/abcl/"
