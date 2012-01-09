@@ -47,7 +47,7 @@ following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.0.0
+    Armed Bear Common Lisp 1.0.1
     Java 1.6.0_21 Sun Microsystems Inc.
     Java HotSpot(TM) Client VM
     Low-level initialization completed in 0.3 seconds.
@@ -183,7 +183,7 @@ Because of this,
 
 ### Tests 
 
-ABCL 1.0.0 now fails only 18 out of 21708 total tests in the ANSI CL
+ABCL 1.0.1 now fails only 18 out of 21708 total tests in the ANSI CL
 test suite (derived from the tests orginally written for GCL).
 
 Maxima's test suite runs without failures.
@@ -207,5 +207,5 @@ Mark Evenson
 Alessio Stalla
 Ville Voutilaninen
 
-October 22, 2011
+Janurary 2012
 
