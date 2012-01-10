@@ -83,6 +83,8 @@ div.rn dl dt {
   background:        #369;
   color:             #fff;
   padding-left:       2ex;
+  padding-top:        0.2em;
+  padding-bottom:     0.2em;
 }
 
 div.rn dl dd {
