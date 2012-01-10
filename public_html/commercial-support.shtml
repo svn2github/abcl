@@ -68,7 +68,7 @@ dd dt { font-weight: bold; font-style: italic }
  <div class="check" style="width:100%">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
-<div style="float:right;font-size:10px;font-family:monospace">$Id: index.shtml 12203 2009-10-17 19:43:18Z ehuelsmann $</div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
 </body>
 </html>
