@@ -30,7 +30,7 @@
 
   <dt>User Manual</dt>
   <dd>The <a
-  href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20111108a.pdf">User
+  href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20120110a.pdf">User
   manual</a>a now contains more polished formating from docstring
   groveling, an index of symbols, and additional enhancements.
   </dd>
@@ -46,12 +46,13 @@
 <p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.0.1/abcl/CHANGES">CHANGES</a>.</p>
   
 
-<p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
+<p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
 
 </div>
 
 <div style="float:left;width:100%">
  <hr />
+ <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
  <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
 
  <div class="check">
