@@ -35,6 +35,8 @@
   <dd>Including a few fixes on how certain objects are printed, a MACROLET bug, and support for JSR-223 with Java 1.5. Consult the CHANGES file distributed with ABCL for more details.</dd>
 </dl>
 
+</div>
+
 
 
 

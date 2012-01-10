@@ -6,7 +6,7 @@
   <title><!--#include virtual="project-name" --></title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style>
+<style type="text/css">
 dt { font-size: 105%; font-family: sans-serif; font-weight: bold }
 dd { }
 </style>

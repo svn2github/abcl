@@ -6,7 +6,7 @@
   <title><!--#include virtual="project-name" --></title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style>
+<style type="text/css">
 dt { font-size: 105%; font-family: sans-serif; font-weight: bold }
 dd { }
 </style>
@@ -59,8 +59,7 @@ dd { }
 <dl style="margin-left:3cm;width:20cm">
   <dt>Fixed special bindings un-binding in compiled code for
    MULTIPLE-VALUE-BIND, LET, LET*, PROGV and function bodies</dt>
-  </dt>
-  <dd>Special bindings now will get unbound even in case of (non-Lisp)
+   <dd>Special bindings now will get unbound even in case of (non-Lisp)
       exceptions.
   </dd>
   <dt>Reduced ANSI failures in interpreted mode</dt>
