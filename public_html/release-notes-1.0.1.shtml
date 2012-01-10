@@ -24,33 +24,31 @@
 </p>
 
 <dl>
-  <dd>ASDF</dd>
+  <dt>ASDF</dt>
 
-  <dt>The ASDF included with the implementation has been updated to 2.019.</dt>
+  <dd>The ASDF included with the implementation has been updated to 2.019.</dd>
 
-  <dd>User Manaul</dd>
-  <dt>The <a
+  <dt>User Manual</dt>
+  <dd>The <a
   href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20111108a.pdf">User
   manual</a>a now contains more polished formating from docstring
   groveling, an index of symbols, and additional enhancements.
-  </dt>
+  </dd>
   
 
-  <dd>ABCL-CONTRIB<a href="http://trac.common-lisp.net/armedbear/ticket/181">[#181]</a></dd>
+  <dt>ABCL-CONTRIB<a href="http://trac.common-lisp.net/armedbear/ticket/181">[#181]</a></dt>
 
-  <dt>The implementation now correctly loads ASDF definitions
+  <dd>The implementation now correctly loads ASDF definitions
     from jar archives.  This had prevented the ABCL-CONTRIB loading
-    mechanism from working.</dt>
+    mechanism from working.</dd>
 </dl>
 
-<p>The distribution contains a more detailed <a href=http://svn.common-lisp.net/armedbear/tags/1.0.1/abcl/CHANGES>CHANGES</a></p>
+<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.0.1/abcl/CHANGES">CHANGES</a>.</p>
   
 
 <p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
 
 </div>
-
-
 
 <div style="float:left;width:100%">
  <hr />

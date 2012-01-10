@@ -19,9 +19,6 @@
 
 <h2>Most notable changes in ABCL 1.0.0</h2>
 
-<p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
-"release-notes.shtml">Release notes for older releases</a>.</p>
-
 <dl>
   <dt>ANSI Conformance</dt>
   <dd>
@@ -47,6 +44,10 @@
 
   <dt>ASDF-2.017.22</dt>
   <dd>The ASDF shipped with the distribution has been updated to asdf-2.017.22</dd>
+</dl>
+
+<p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
+
 
 </div>
 
