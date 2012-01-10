@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v1.0.1</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version v1.0.1</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Most notable changes in ABCL 1.0.1</h2>
+
+<p>
+  abcl-1.0.1 is a maintenance release.
+</p>
+
+<dl>
+  <dd>ASDF</dd>
+
+  <dt>The ASDF included with the implementation has been updated to 2.019.</dt>
+
+  <dd>User Manaul</dd>
+  <dt>The <a
+  href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20111108a.pdf">User
+  manual</a>a now contains more polished formating from docstring
+  groveling, an index of symbols, and additional enhancements.
+  </dt>
+  
+
+  <dd>ABCL-CONTRIB<a href="http://trac.common-lisp.net/armedbear/ticket/181">[#181]</a></dd>
+
+  <dt>The implementation now correctly loads ASDF definitions
+    from jar archives.  This had prevented the ABCL-CONTRIB loading
+    mechanism from working.</dt>
+</dl>
+
+<p>The distribution contains a more detailed <a href=http://svn.common-lisp.net/armedbear/tags/1.0.1/abcl/CHANGES>CHANGES</a></p>
+  
+
+<p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
+
+</div>
+
+
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-0.27.shtml 13564 2011-09-03 18:26:55Z mevenson $</div>
+</div>
+</body>
+</html>
