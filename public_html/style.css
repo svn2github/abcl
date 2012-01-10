@@ -85,3 +85,8 @@ div.rn dl dt {
   padding-left:       2ex;
 }
 
+div.rn dl dd {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+    
