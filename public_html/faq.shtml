@@ -39,10 +39,16 @@
 
   <li><a href="#running">Running</a>
   <ol>
-    <li><a href="#maxpermgen-errors">Java is running out of memory
-    with an error reporting something about
-    "java.lang.OutOfMemoryError: PermGen space".  What can I
-    do?</a></li>
+    <li>
+      <a href="#maxpermgen-errors">Java is running out of memory
+      with an error reporting something about
+      "java.lang.OutOfMemoryError: PermGen space".  What can I
+      do?</a>
+    </li>
+    <li>
+      <a href="#~/.abclrc">What's the name of the startup configuration file?</a>
+    </li>
+
   </ol>
   </li> 
 </ol>
@@ -119,9 +125,8 @@ loom interface to the NNTP group gmane.lisp.armedbear.devel</a>.
 </p>
 
 <p>
-Developers can also usually be found on the <a
-href="http://webchat.freenode.net/?randomnick=1&channels=abcl&prompt=1&uio=d4">#abcl
-irc channel</a>.
+Developers can also usually be found on the 
+<a href="http://webchat.freenode.net/?randomnick=1&channels=abcl&prompt=1&uio=d4">#abcl irc channel</a>.
 </p>
 
 <div class="h3" title="speed" id="speed">
@@ -171,7 +176,7 @@ this is already the case.
   Additionally, compilation of <a href="http://ap5.com/">AP5</a> is used to
   improve this measure too.</p>
 
-<p>ABCL 0.26.2 fails roughly 20 out of 21702 tests in the ANSI test
+<p>ABCL 1.0.1 fails roughly 20 out of 21702 tests in the ANSI test
 suite in interpreted and compiled modes, a constant number over the
 past releases.</p>
 
@@ -202,6 +207,7 @@ This repository is also exported read-only via HTTP at
   kind of documentation you're looking for.</p>
 
 <ol>
+  <li>Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20120110a.pdf">Armed Bear Common Lisp User Manual</a></li>
   <li>Our <a href="http://trac.common-lisp.net/armedbear/wiki">wiki</a></li>
   <li>The <a href="http://trac.common-lisp.net/armedbear/browser">source
     code (JavaDoc and general comments)</a></li>
@@ -266,6 +272,14 @@ do?</h3>
   <code>'abcl.properties'</code>, and then ensure that the
   <code>'java.options'</code> variable is set to the desired options.
 </p>
+
+<div class="h3" title="What is the name of the startup run control script?" id="~/.abclrc">
+<h3>Is there a file that customizes the startup of the ABCL process?</h3>
+
+<p>
+  The file <code>~/.abclrc</code> is loaded by the implementation if the <code>--noinit</code> flag is not specified.
+</p>
+</div>
 </div>
 
 </div>
