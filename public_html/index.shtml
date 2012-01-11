@@ -85,7 +85,7 @@ td ul { margin:0 }
         <a href="releases/1.0.1/abcl-src-1.0.1.zip.asc" class="asc">(pgp)</a>
       </td>
       <td>
-        <a href="http://svn.common-lisp.net/project/armedbear/tags/1.0.0/abcl/contrib/">
+        <a href="http://svn.common-lisp.net/armedbear/tags/1.0.1/abcl/contrib/">
         abcl-contrib source
         </a>
       </td>
