@@ -30,29 +30,12 @@ td ul { margin:0 }
 </style>
 </head>
 
-<body>
- <div class="header">
-   <h1>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</h1>
- </div>
 
 <!--#include virtual="left-menu" -->
 
 <div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
 <table style="margin-top:1cm" cellpadding="0" cellspacing="15" >
 
-<tr><td colspan="2" class="summary-header">Project description</td></tr>
-
-<tr><td colspan="2">
-  <p style="margin-left: 5%; margin-right: 5%; margin-top: 0; margin-bottom: 0">
-    <b>ABCL</b> is a full implementation of the <b>Common Lisp</b>
-    language featuring both <b>an interpreter and a compiler</b>,
-    running in the <b>JVM</b>. Originally started to be a scripting
-    language for the J editor, it now supports <b>JSR-233 (Java
-    scripting API)</b>: it can be a scripting engine in any Java
-    application.  Additionally, it can be used to implement (parts of)
-    the application using <b>Java to Lisp integration</b> APIs.
-</p>
-</td></tr>
 
 <tr><td colspan="2" class="summary-header"><a href="releases/">Downloads</a></td></tr>
 
@@ -93,6 +76,20 @@ td ul { margin:0 }
   </table>
 </td> </tr>
 
+<tr><td colspan="2" class="summary-header">ABCL &mdash; Common Lisp on the JVM</td></tr>
+
+<tr><td colspan="2">
+  <p style="margin-left: 5%; margin-right: 5%; margin-top: 0; margin-bottom: 0">
+    <b>Armed Bear Common Lisp</b> (ABCL) is a full implementation of the <b>Common Lisp</b>
+    language featuring both <b>an interpreter and a compiler</b>,
+    running in the <b>JVM</b>. Originally started to be a scripting
+    language for the J editor, it now supports <b>JSR-233 (Java
+    scripting API)</b>: it can be a scripting engine in any Java
+    application.  Additionally, it can be used to implement (parts of)
+    the application using <b>Java to Lisp integration</b> APIs.
+</p>
+</td></tr>
+
 <tr>
 <td  class="summary-header">Users
   <span>(development <em>with</em> ABCL)</span></td>
@@ -128,24 +125,6 @@ href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old ma
 </tr>
 
 <tr>
-<td class="summary-header" colspan="2">Licensing </td>
-</tr>
-<tr>
-<td colspan="2" >
-
-<p style="margin-left: 5%; margin-right: 5%; margin-top: 0; margin-bottom: 0 ">
-ABCL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
-GNU General Public License</a> with <a
-href="http://www.gnu.org/software/classpath/license.html"
-title="Classpath exception and clarification">Classpath exception</a>,
-meaning that you can use ABCL in your application without the
-requirement to open the sources to your application.
-</p>
-
-</td>
-</tr>
-
-<tr>
 <td class="summary-header">System requirements <span>(Users)</span></td>
 <td class="summary-header">System requirements <span>(Developers)</span></td>
 </tr>
@@ -169,6 +148,25 @@ requirement to open the sources to your application.
     href="http://www.apache.org/dist/ant/binaries/apache-ant-1.7.1-bin.zip">1.7.1</a> or higher, <em>or</em> </li>
     <li> A Lisp to run the lisp-based build system </li>
   </ul>
+</td>
+</tr>
+
+
+<tr>
+<td class="summary-header" colspan="2">Licensing </td>
+</tr>
+<tr>
+<td colspan="2" >
+
+<p style="margin-left: 5%; margin-right: 5%; margin-top: 0; margin-bottom: 0 ">
+ABCL is covered by the <a href="http://www.gnu.org/copyleft/gpl.html">
+GNU General Public License</a> with <a
+href="http://www.gnu.org/software/classpath/license.html"
+title="Classpath exception and clarification">Classpath exception</a>,
+meaning that you can use ABCL in your application without the
+requirement to open the sources to your application.
+</p>
+
 </td>
 </tr>
 
