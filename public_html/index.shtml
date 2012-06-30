@@ -30,7 +30,7 @@ td ul { margin:0 }
 </style>
 </head>
 
-
+<body>
 <!--#include virtual="left-menu" -->
 
 <div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
