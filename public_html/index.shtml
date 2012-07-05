@@ -83,7 +83,7 @@ td ul { margin:0 }
     <b>Armed Bear Common Lisp</b> (ABCL) is a full implementation of the <b>Common Lisp</b>
     language featuring both <b>an interpreter and a compiler</b>,
     running in the <b>JVM</b>. Originally started to be a scripting
-    language for the J editor, it now supports <b>JSR-233 (Java
+    language for the J editor, it now supports <b>JSR-223 (Java
     scripting API)</b>: it can be a scripting engine in any Java
     application.  Additionally, it can be used to implement (parts of)
     the application using <b>Java to Lisp integration</b> APIs.
