@@ -65,9 +65,10 @@ Armed Bear Common Lisp is a conforming implementation of the
 is included in the <a href="#user-manual">User Manual</a>.</p>
 
 <p>
-With abcl-1.1.0-dev (aka "ABCL trunk"), now contains a complete
+The development version of ABCL, <a href="#repository">abcl-1.1.0-dev (aka "ABCL trunk")</a>, contains a complete
 implementation of the <a
-href="http://www.lisp.org/mop/index.html">AMOP</a>.
+href="http://www.lisp.org/mop/index.html">AMOP</a> that is being
+extensively tested for release with <a href="http://trac.common-lisp.net/armedbear/milestone/1.1.0">abcl-1.1.0</a>.
 </p>
 </div>
 
