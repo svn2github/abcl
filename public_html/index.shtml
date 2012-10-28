@@ -6,28 +6,6 @@
   <title>Armed Bear Common Lisp (ABCL) - Common Lisp on the JVM</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<style type="text/css">
-td { font-size: 90%; padding: 0 5px 0 5px }
-dt { font-weight: bold }
-dd dt { font-weight: bold; font-style: italic }
-
-table.downloads {
-  color: black;
-  font-weight: bold;
-  font-size: larger;
-}
-table.downloads a {
-  font-weight: normal;
-  font-size:smaller;
-}
-
-table.downloads a.asc {
-  font-size: smaller;
-}
-
-td ul { margin:0 }
-
-</style>
 </head>
 
 <body>
@@ -35,7 +13,6 @@ td ul { margin:0 }
 
 <div style="margin-left:auto;margin-right:auto;width:20cm;font-family:sans-serif">
 <table style="margin-top:1cm" cellpadding="0" cellspacing="15" >
-
 
 <tr><td colspan="2" class="summary-header"><a href="releases/">Downloads</a></td></tr>
 

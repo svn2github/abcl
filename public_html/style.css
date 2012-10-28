@@ -91,4 +91,35 @@ div.rn dl dd {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+
+td { font-size: 90%; padding: 0 5px 0 5px }
+dt { font-weight: bold }
+dd dt { font-weight: bold; font-style: italic }
+
+table.downloads {
+  color: black;
+  font-weight: bold;
+  font-size: larger;
+}
+
+table.downloads a {
+  font-weight: normal;
+  font-size:smaller;
+}
+
+table.downloads a.asc {
+  font-size: smaller;
+}
+
+td ul { 
+  margin:0;
+}
     
+td.summary-header { 
+    padding: .3em;
+    border-radius: .3em;
+}
+
+td.summary-header a:link, td.summary-header a:visited {
+    color: white;
+}
