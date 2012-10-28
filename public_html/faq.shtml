@@ -17,7 +17,7 @@
 <!--#include virtual="left-menu" -->
 
 <div style="margin-left:auto;margin-right:auto;width:20cm">
-<h1>Index</h1>
+<h1>Frequently Asked Questions about Armed Bear Common Lisp</h1>
 <ol id="toc">
   <li class="topic"><a href="#general">General Questions about ABCL</a>
     <ol>

@@ -7,6 +7,7 @@ ol#toc, div#general {
 }
 ol#toc {
     border-style: solid;
+    padding: 1cm;
 }
 ol#toc li.topic, div#general h2.topic {
     list-style: none;
