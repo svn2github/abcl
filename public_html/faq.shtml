@@ -19,65 +19,63 @@
 <div style="margin-left:auto;margin-right:auto;width:20cm">
 <h1>Index</h1>
 <ol id="toc">
-  <li><a href="#general">General</a>
-  <ol>
-    <li><a href="#what">What is ABCL?</a></li>
-    <li><a href="#license">What license is used for ABCL?</a></li>
-    <li><a href="#bug-reporting">How/Where should I report bugs?</a></li>
-    <li><a href="#speed">Is ABCL faster or slower than implementation XYZ?</a></li>
-    <li><a href="#qa">What is the quality of the implementation? How can you tell?</a></li>
-    <li><a href="#repository">Where is ABCL's source code repository?</a></li>
-    <li><a href="#documentation">Where is ABCL's documentation?</a></li>
-  </ol>
-  </li> <!-- general -->
-
-  <li><a href="#building">Building</a>
-  <ol>
-    <li><a href="#avoiding-recompilation">The Ant build process seems to recompile from scratch each time.  How do I avoid this?</a></li>
-  </ol>
+  <li class="topic"><a href="#general">General Questions about ABCL</a>
+    <ol>
+      <li class="question"><a href="#what">What is ABCL?</a></li>
+      <li class="question"><a href="#license">What license is used for ABCL?</a></li>
+      <li class="question"><a href="#bug-reporting">How/Where should I report bugs?</a></li>
+      <li class="question"><a href="#speed">Is ABCL faster or slower than implementation XYZ?</a></li>
+      <li class="question"><a href="#qa">What is the quality of the implementation? How can you tell?</a></li>
+      <li class="question"><a href="#repository">Where is ABCL's source code repository?</a></li>
+      <li class="question"><a href="#documentation">Where is ABCL's documentation?</a></li>
+    </ol>
   </li> 
 
-  <li><a href="#running">Running</a>
+  <li class="topic"><a href="#building">Questions about Building ABCL</a>
+    <ol>
+      <li class="question"><a href="#avoiding-recompilation">The Ant build process seems to recompile from scratch each time.  How do I avoid this?</a></li>
+    </ol>
+  </li> 
+
+  <li class="topic"><a href="#running">Questions about Running ABCL</a>
   <ol>
-    <li>
+    <li class="question">
       <a href="#maxpermgen-errors">Java is running out of memory
       with an error reporting something about
       "java.lang.OutOfMemoryError: PermGen space".  What can I
       do?</a>
     </li>
-    <li>
-      <a href="#~/.abclrc">What's the name of the startup configuration file?</a>
+    <li class="question">
+      <a href="#dotabclrc">What's the name of the startup configuration file?</a>
     </li>
-
   </ol>
   </li> 
 </ol>
 
-
 <div class="h2" title="general" id="general">
-<h2>General</h2>
+<h2 class="topic">General</h2>
 
 <div class="h3" title="what" id="what">
-<h3>What is ABCL?</h3>
-<p>ABCL is an implementation of the full Common Lisp specification, with
-the exception of the implementation of the long form of
-DEFINE-METHOD-COMBINATION.</p>
+<h3 class="question">What is ABCL?</h3>
+<p>ABCL stands for Armed Bear Common Lisp.  ABCL is an implementation
+of Common Lisp hosted on the <a href="http://en.wikipedia.org/wiki/Java_virtual_machine">Java Virtual Machine</a>.  With the release of <a
+href="http://common-lisp.net/project/armedbear/#downloads">abcl-1.0</a>,
+Armed Bear Common Lisp is a conforming implementation of the
+<a href="ftp://ftp1.ansi.org/cust_serv/td_10-25-10/ANSI%2BINCITS%2B226-1994%2B(R2004).pdf">ANSI Common Lisp specification</a>.  The required statement of conformance
+is included in the <a href="#user-manual">User Manual</a>.</p>
 
 <p>
-Unfortunately, the CLOS implementation is not fully completely through
-a MOP (MetaObject Protocol). Perhaps roughly a third of the
-functionality defined by <a
-href="http://www.lisp.org/mop/index.html">AMOP</a> is present.  Any
-contributions in this area would be greatly appreciated, of course.
+With abcl-1.1.0-dev (aka "ABCL trunk"), now contains a complete
+implementation of the <a
+href="http://www.lisp.org/mop/index.html">AMOP</a>.
 </p>
 </div>
 
 
 <div class="h3" title="license" id="license">
-<h3>What license is used for ABCL?</h3>
+<h3 class="question">What license is used for ABCL?</h3>
 
-<p>ABCL is distributed under the <a href="http://www.gnu.org/copyleft/gpl.html"
->GNU General Public License</a> with <a
+<p>ABCL is distributed under the <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a> with <a
 href="http://www.gnu.org/software/classpath/license.html">Classpath
 exception</a>. This is the same license as used for JAVA SE and GNU Classpath.</p>
 
@@ -102,7 +100,7 @@ if you distribute ABCL, but otherwise the license of ABCL is not viral.
 </div>
 
 <div class="h3" title="bug-reporting" id="bug-reporting">
-<h3>How/Where should I report bugs?</h3>
+<h3 class="question">How/Where should I report bugs?</h3>
 
 <p>
 The current state of issues can be found in the <a
@@ -130,7 +128,7 @@ Developers can also usually be found on the
 </p>
 
 <div class="h3" title="speed" id="speed">
-<h3>Is ABCL faster or slower than implementation XYZ?</h3>
+<h3 class="question">Is ABCL faster or slower than implementation XYZ?</h3>
 
 <p>General comparisons are hard to make, the relative speeds depend
 on a lot of factors. For example timing outcomes of specific bits
@@ -155,7 +153,7 @@ The project welcomes initiatives to improve performance.</p>
 
 
 <div class="h3" title="qa" id="qa">
-<h3>What is the quality of the implementation? How can you tell?</h3>
+<h3 class="question">What is the quality of the implementation? How can you tell?</h3>
 
 <p>The project recognizes there are several dimensions to quality:</p>
 <ol>
@@ -188,26 +186,32 @@ past releases.</p>
 </div>
 
 <div class="h3" title="repository" id="repository">
-<h3>Where is ABCL's source code repository?</h3>
+<h3 class="question">Where is ABCL's source code repository?</h3>
 
-<p>If you want to build the latest (unstable) ABCL code,
-you can check out through
-svn://common-lisp.net/project/armedbear/svn/trunk/abcl.</p>
+<p>The source code may be viewed with a web browser by visiting  <a
+href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/">http://trac.common-lisp.net/armedbear/browser/trunk/abcl/</a>.
+</p>
+
+<p>If you want to build the source, ABCL trunk,
+can be checked out via <a
+href="http://subversion.apache.org/">Subversion (aka "svn")</a> from
+the URI 
+<a href="svn://common-lisp.net/project/armedbear/svn/trunk/abcl/">svn://common-lisp.net/project/armedbear/svn/trunk/abcl/</a>.</p>
 
 <p>
-This repository is also exported read-only via HTTP at 
+This ABCL source repository is also exported read-only via HTTP at 
 <a href="http://svn.common-lisp.net/armedbear/trunk/abcl">http://svn.common-lisp.net/armedbear/trunk/abcl</a>
 </p>
 </div>
 
 <div class="h3" title="documentation" id="documentation">
-<h3>Where is ABCL's documentation?</h3>
+<h3 class="question">Where is ABCL's documentation?</h3>
 
 <p>Documentation on ABCL can be found in several places, depending on the
   kind of documentation you're looking for.</p>
 
 <ol>
-  <li>Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20120110a.pdf">Armed Bear Common Lisp User Manual</a></li>
+  <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20120110a.pdf">Armed Bear Common Lisp User Manual</a></li>
   <li>Our <a href="http://trac.common-lisp.net/armedbear/wiki">wiki</a></li>
   <li>The <a href="http://trac.common-lisp.net/armedbear/browser">source
     code (JavaDoc and general comments)</a></li>
@@ -219,10 +223,10 @@ href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">example
 </div>
 
 <div class="h2" title="Building" id="building">
-<h2>Building</h2>
+<h2 class="topic">Building</h2>
 
 <div class="h3" title="Avoiding recompilation" id="avoiding-recompilation">
-<h3>The Ant build process seems to recompile from scratch each time.  How do I avoid this?</h3>
+<h3 class="question">The Ant build process seems to recompile from scratch each time.  How do I avoid this?</h3>
 
 <p>
 If the JVM system property <code>abcl.build.incremental</code> is set,
@@ -237,10 +241,10 @@ the <code>abcl.build.incremental</code> property.
 </div>
 
 <div class="h2" title="Running" id="running">
-<h2>Running</h2>
+<h2 class="topic">Running</h2>
 
 <div class="h3" title="Out of Memory errors" id="maxpermgen-errors">
-<h3>Java is running out of memory with an error reporting something
+<h3 class="question">Java is running out of memory with an error reporting something
 about "java.lang.OutOfMemoryError: PermGen space".  What can I
 do?</h3>
 
@@ -273,8 +277,8 @@ do?</h3>
   <code>'java.options'</code> variable is set to the desired options.
 </p>
 
-<div class="h3" title="What is the name of the startup run control script?" id="~/.abclrc">
-<h3>Is there a file that customizes the startup of the ABCL process?</h3>
+<div class="h3" title="What is the name of the startup run control script?" id="dotabclrc">
+<h3 class="question">Is there a file that customizes the startup of the ABCL process?</h3>
 
 <p>
   The file <code>~/.abclrc</code> is loaded by the implementation if the <code>--noinit</code> flag is not specified.

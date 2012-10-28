@@ -1,23 +1,51 @@
+body {
+    font-family: sans-serif;
+}
 /* Use CSS2 to automatically number the FAQ questions and answer */
+ol#toc, div#general {
+    counter-reset: topic;
+}
 ol#toc {
+    border-style: solid;
+}
+ol#toc li.topic, div#general h2.topic {
+    list-style: none;
     counter-reset: question;
 }
-ol#toc  li {
+div#general h2.topic {
+    margin-left: -4em;
+}
+ol#toc li.topic:before, div#general h2.topic:before {
+    content: counter(topic) ".  ";
+    counter-increment: topic;
+}
+ol#toc li.question {
     list-style: none;
 }
-ol#toc > li  li:before {
-    content: counter(question) ". "; 
+ol#toc li.question:before,  div#general h3.question:before {
+    content: counter(topic) "." counter(question) ".  "; 
     counter-increment: question;
 }
-
-div#general {
-    counter-reset: answer;
-}
-div#general h3:before {
-    content: counter(answer) ". "; 
-    counter-increment: answer
+div#general h3.question {
+    margin-left: -2em;
 }
 
-ol#toc li li {
-    margin-left: 1em;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
