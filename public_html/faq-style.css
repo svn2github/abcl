@@ -6,6 +6,7 @@ ol#toc, div#general {
     counter-reset: topic;
 }
 ol#toc {
+    border-radius: 1em;
     border-style: solid;
     padding: 1cm;
 }
