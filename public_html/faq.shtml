@@ -10,7 +10,7 @@
 </head>
 
 <body>
- <div class="header">
+ <div id="title" class="header">
    <h1>FAQ: ABCL - Common Lisp on the JVM</h1>
  </div>
 

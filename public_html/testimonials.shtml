@@ -18,13 +18,13 @@ dd { margin-top: 0.3cm;
 </head>
 
 <body>
- <div class="header">
-   <h1><!--#include virtual="project-name" --></h1>
+ <div id="title" class="header">
+   <h1>ABCL Testimonials</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
 
-<div style="float:left;width:80ex;margin-top:1cm">
+<div id="main">
 
 <h1>Testimonials</h1>
 
