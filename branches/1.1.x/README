@@ -50,7 +50,7 @@ following command:
 
 which should result in output like the following
 
-    Armed Bear Common Lisp 1.1.0-dev
+    Armed Bear Common Lisp 1.1.0
     Java 1.6.0_21 Sun Microsystems Inc.
     Java HotSpot(TM) Client VM
     Low-level initialization completed in 0.3 seconds.
@@ -219,5 +219,5 @@ On behalf of all ABCL development team and contributors,
     Alessio Stalla
     Ville Voutilainen
 
-August 2012 
+December 2012 
 
