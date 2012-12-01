@@ -114,9 +114,7 @@ not-documented
 --- Function: \textbf{jclass-of} [\textbf{java}] \textit{object \&optional name}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the name of the Java class of OBJECT. If the NAME argument is
-  supplied, verifies that OBJECT is an instance of the named class. The name
-  of the class or nil is always returned as a second value.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -138,6 +136,34 @@ Returns the name of METHOD as a Lisp string
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:GET-CURRENT-CLASSLOADER}
+\index{GET-CURRENT-CLASSLOADER}
+--- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW-ARRAY-FROM-LIST}
+\index{JNEW-ARRAY-FROM-LIST}
+--- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
+   initialized from a Lisp list.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD}
+\index{JMETHOD}
+--- Function: \textbf{jmethod} [\textbf{java}] \textit{class-ref method-name \&rest parameter-class-refs}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:GET-DEFAULT-CLASSLOADER}
 \index{GET-DEFAULT-CLASSLOADER}
 --- Function: \textbf{get-default-classloader} [\textbf{java}] \textit{}
@@ -153,15 +179,6 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Return a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) methods of CLASS
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:GET-CURRENT-CLASSLOADER}
-\index{GET-CURRENT-CLASSLOADER}
---- Function: \textbf{get-current-classloader} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -183,30 +200,12 @@ Returns a reference to the Java class designated by NAME-OR-CLASS-REF. If the CL
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JNEW-ARRAY-FROM-LIST}
-\index{JNEW-ARRAY-FROM-LIST}
---- Function: \textbf{jnew-array-from-list} [\textbf{java}] \textit{element-type list}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JMETHOD}
-\index{JMETHOD}
---- Function: \textbf{jmethod} [\textbf{java}] \textit{class-ref method-name \&rest parameter-class-refs}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a reference to the Java method METHOD-NAME of CLASS-REF with the given PARAMETER-CLASS-REFS.
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JPROPERTY-VALUE}
 \index{JPROPERTY-VALUE}
---- Function: \textbf{jproperty-value} [\textbf{java}] \textit{obj prop}
+--- Function: \textbf{jproperty-value} [\textbf{java}] \textit{object property}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+setf-able access on the Java Beans notion of property named PROPETRY on OBJECT.
 \end{adjustwidth}
 
 \paragraph{}
@@ -216,6 +215,15 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 Returns the type (Java class) of FIELD
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCLASS-CONSTRUCTORS}
+\index{JCLASS-CONSTRUCTORS}
+--- Function: \textbf{jclass-constructors} [\textbf{java}] \textit{class}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of constructors for CLASS
 \end{adjustwidth}
 
 \paragraph{}
@@ -251,15 +259,6 @@ Creates and loads a Java class with methods calling Lisp closures
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JCLASS-CONSTRUCTORS}
-\index{JCLASS-CONSTRUCTORS}
---- Function: \textbf{jclass-constructors} [\textbf{java}] \textit{class}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a vector of constructors for CLASS
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JSTATIC}
 \index{JSTATIC}
 --- Function: \textbf{jstatic} [\textbf{java}] \textit{method class \&rest args}
@@ -275,15 +274,6 @@ Invokes the static method METHOD on class CLASS with ARGS.
 
 \begin{adjustwidth}{5em}{5em}
 Returns a vector of parameter types (Java classes) for METHOD
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JNEW}
-\index{JNEW}
---- Function: \textbf{jnew} [\textbf{java}] \textit{constructor \&rest args}
-
-\begin{adjustwidth}{5em}{5em}
-Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
 \end{adjustwidth}
 
 \paragraph{}
@@ -314,6 +304,33 @@ Returns T if OBJECT is a JAVA-OBJECT.
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:JINPUT-STREAM}
+\index{JINPUT-STREAM}
+--- Function: \textbf{jinput-stream} [\textbf{java}] \textit{pathname}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a java.io.InputStream for resource denoted by PATHNAME.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:UNREGISTER-JAVA-EXCEPTION}
+\index{UNREGISTER-JAVA-EXCEPTION}
+--- Function: \textbf{unregister-java-exception} [\textbf{java}] \textit{exception-name}
+
+\begin{adjustwidth}{5em}{5em}
+Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JNEW}
+\index{JNEW}
+--- Function: \textbf{jnew} [\textbf{java}] \textit{constructor \&rest args}
+
+\begin{adjustwidth}{5em}{5em}
+Invokes the Java constructor CONSTRUCTOR with the arguments ARGS.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:JARRAY-COMPONENT-TYPE}
 \index{JARRAY-COMPONENT-TYPE}
 --- Function: \textbf{jarray-component-type} [\textbf{java}] \textit{atype}
@@ -328,16 +345,10 @@ Returns the component type of the array type ATYPE
 --- Generic Function: \textbf{add-to-classpath} [\textbf{java}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
+Add JAR-OR-JARS to the JVM classpath optionally specifying the CLASSLOADER to add.
 
-\paragraph{}
-\label{JAVA:UNREGISTER-JAVA-EXCEPTION}
-\index{UNREGISTER-JAVA-EXCEPTION}
---- Function: \textbf{unregister-java-exception} [\textbf{java}] \textit{exception-name}
-
-\begin{adjustwidth}{5em}{5em}
-Unregisters the Java Throwable EXCEPTION-NAME previously registered by REGISTER-JAVA-EXCEPTION.
+JAR-OR-JARS is either a pathname designating a jar archive or the root
+directory to search for classes or a list of such values.
 \end{adjustwidth}
 
 \paragraph{}
@@ -372,15 +383,6 @@ For more control over the type of the array, use JNEW-ARRAY-FROM-LIST.
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JMEMBER-PUBLIC-P}
-\index{JMEMBER-PUBLIC-P}
---- Function: \textbf{jmember-public-p} [\textbf{java}] \textit{member}
-
-\begin{adjustwidth}{5em}{5em}
-MEMBER is a public member of its declaring class
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:+NULL+}
 \index{+NULL+}
 --- Variable: \textbf{+null+} [\textbf{java}] \textit{}
@@ -395,7 +397,16 @@ The JVM null object reference.
 --- Function: \textbf{ensure-java-class} [\textbf{java}] \textit{jclass}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Attempt to ensure that the Java class referenced by JCLASS exists in the current process of the implementation.
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMEMBER-PUBLIC-P}
+\index{JMEMBER-PUBLIC-P}
+--- Function: \textbf{jmember-public-p} [\textbf{java}] \textit{member}
+
+\begin{adjustwidth}{5em}{5em}
+MEMBER is a public member of its declaring class
 \end{adjustwidth}
 
 \paragraph{}
@@ -408,21 +419,21 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JMETHOD-LET}
-\index{JMETHOD-LET}
---- Macro: \textbf{jmethod-let} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JCLASS-ARRAY-P}
 \index{JCLASS-ARRAY-P}
 --- Function: \textbf{jclass-array-p} [\textbf{java}] \textit{class}
 
 \begin{adjustwidth}{5em}{5em}
 Returns T if CLASS is an array class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JMETHOD-LET}
+\index{JMETHOD-LET}
+--- Macro: \textbf{jmethod-let} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -537,6 +548,15 @@ Returns the vector of interfaces of CLASS
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:JMAKE-INVOCATION-HANDLER}
+\index{JMAKE-INVOCATION-HANDLER}
+--- Function: \textbf{jmake-invocation-handler} [\textbf{java}] \textit{function}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:+TRUE+}
 \index{+TRUE+}
 --- Variable: \textbf{+true+} [\textbf{java}] \textit{}
@@ -546,12 +566,12 @@ The JVM primitive value for boolean true.
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JMAKE-INVOCATION-HANDLER}
-\index{JMAKE-INVOCATION-HANDLER}
---- Function: \textbf{jmake-invocation-handler} [\textbf{java}] \textit{function}
+\label{JAVA:JMEMBER-PROTECTED-P}
+\index{JMEMBER-PROTECTED-P}
+--- Function: \textbf{jmember-protected-p} [\textbf{java}] \textit{member}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+MEMBER is a protected member of its declaring class
 \end{adjustwidth}
 
 \paragraph{}
@@ -573,15 +593,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JMEMBER-PROTECTED-P}
-\index{JMEMBER-PROTECTED-P}
---- Function: \textbf{jmember-protected-p} [\textbf{java}] \textit{member}
-
-\begin{adjustwidth}{5em}{5em}
-MEMBER is a protected member of its declaring class
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:MAKE-IMMEDIATE-OBJECT}
 \index{MAKE-IMMEDIATE-OBJECT}
 --- Function: \textbf{make-immediate-object} [\textbf{java}] \textit{object \&optional type}
@@ -599,13 +610,22 @@ null JAVA-OBJECT from NIL.
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:JCLASS-FIELDS}
+\index{JCLASS-FIELDS}
+--- Function: \textbf{jclass-fields} [\textbf{java}] \textit{class \&key declared public}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:JNEW-ARRAY-FROM-ARRAY}
 \index{JNEW-ARRAY-FROM-ARRAY}
 --- Function: \textbf{jnew-array-from-array} [\textbf{java}] \textit{element-type array}
 
 \begin{adjustwidth}{5em}{5em}
 Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
-   initialized from ARRAY
+   initialized from ARRAY.
 \end{adjustwidth}
 
 \paragraph{}
@@ -615,15 +635,6 @@ Returns a new Java array with base type ELEMENT-TYPE (a string or a class-ref)
 
 \begin{adjustwidth}{5em}{5em}
 Returns the Java class that OBJ belongs to
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JCLASS-FIELDS}
-\index{JCLASS-FIELDS}
---- Function: \textbf{jclass-fields} [\textbf{java}] \textit{class \&key declared public}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a vector of all (or just the declared/public, if DECLARED/PUBLIC is true) fields of CLASS
 \end{adjustwidth}
 
 \paragraph{}
@@ -683,21 +694,21 @@ Supported argument patterns:
 \end{adjustwidth}
 
 \paragraph{}
-\label{JAVA:JCONSTRUCTOR-PARAMS}
-\index{JCONSTRUCTOR-PARAMS}
---- Function: \textbf{jconstructor-params} [\textbf{java}] \textit{constructor}
-
-\begin{adjustwidth}{5em}{5em}
-Returns a vector of parameter types (Java classes) for CONSTRUCTOR
-\end{adjustwidth}
-
-\paragraph{}
 \label{JAVA:JMEMBER-STATIC-P}
 \index{JMEMBER-STATIC-P}
 --- Function: \textbf{jmember-static-p} [\textbf{java}] \textit{member}
 
 \begin{adjustwidth}{5em}{5em}
 MEMBER is a static member of its declaring class
+\end{adjustwidth}
+
+\paragraph{}
+\label{JAVA:JCONSTRUCTOR-PARAMS}
+\index{JCONSTRUCTOR-PARAMS}
+--- Function: \textbf{jconstructor-params} [\textbf{java}] \textit{constructor}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a vector of parameter types (Java classes) for CONSTRUCTOR
 \end{adjustwidth}
 
 \paragraph{}
@@ -733,7 +744,7 @@ Stores NEW-VALUE at the given index in JAVA-ARRAY.
 --- Function: \textbf{jarray-length} [\textbf{java}] \textit{java-array}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns the length of a Java primitive array.
 \end{adjustwidth}
 
 \paragraph{}
@@ -746,21 +757,21 @@ Dereferences the Java array JAVA-ARRAY using the given INDICIES, coercing the re
 \end{adjustwidth}
 
 \paragraph{}
+\label{JAVA:JMAKE-PROXY}
+\index{JMAKE-PROXY}
+--- Generic Function: \textbf{jmake-proxy} [\textbf{java}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+Returns a proxy Java object implementing the provided interface(s) using methods implemented in Lisp - typically closures, but implementations are free to provide other mechanisms. You can pass an optional 'lisp-this' object that will be passed to the implementing methods as their first argument. If you don't provide this object, NIL will be used. The second argument of the Lisp methods is the name of the Java method being implemented. This has the implication that overloaded methods are merged, so you have to manually discriminate them if you want to. The remaining arguments are java-objects wrapping the method's parameters.
+\end{adjustwidth}
+
+\paragraph{}
 \label{JAVA:JCLASS-FIELD}
 \index{JCLASS-FIELD}
 --- Function: \textbf{jclass-field} [\textbf{java}] \textit{class field-name}
 
 \begin{adjustwidth}{5em}{5em}
 Returns the field named FIELD-NAME of CLASS
-\end{adjustwidth}
-
-\paragraph{}
-\label{JAVA:JMAKE-PROXY}
-\index{JMAKE-PROXY}
---- Generic Function: \textbf{jmake-proxy} [\textbf{java}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
 \end{adjustwidth}
 
 \paragraph{}

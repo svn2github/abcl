@@ -4,7 +4,7 @@
 --- Function: \textbf{mailbox-empty-p} [\textbf{threads}] \textit{mailbox}
 
 \begin{adjustwidth}{5em}{5em}
-Returns non-NIL if the mailbox can be read from, NIL otherwise.
+not-documented
 \end{adjustwidth}
 
 \paragraph{}
@@ -53,18 +53,18 @@ Releases a lock on the `mutex'.
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:OBJECT-WAIT}
-\index{OBJECT-WAIT}
---- Function: \textbf{object-wait} [\textbf{threads}] \textit{}
+\label{THREADS:MAKE-THREAD}
+\index{MAKE-THREAD}
+--- Function: \textbf{make-thread} [\textbf{threads}] \textit{function \&key name}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:MAKE-THREAD}
-\index{MAKE-THREAD}
---- Function: \textbf{make-thread} [\textbf{threads}] \textit{function \&key name}
+\label{THREADS:OBJECT-WAIT}
+\index{OBJECT-WAIT}
+--- Function: \textbf{object-wait} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -91,7 +91,7 @@ not-documented
 \paragraph{}
 \label{THREADS:MAKE-MAILBOX}
 \index{MAKE-MAILBOX}
---- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g2304220) NIL)}
+--- Function: \textbf{make-mailbox} [\textbf{threads}] \textit{\&key ((queue g348097) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -122,8 +122,7 @@ Acquires a lock on the `mutex'.
 
 \begin{adjustwidth}{5em}{5em}
 Returns two values. The second returns non-NIL when the mailbox
-is empty. The first is the next item to be read from the mailbox
-if the first is NIL.
+is empty. The first is the next item to be read from the mailbox.
 
 Note that due to multi-threading, the first value returned upon
 peek, may be different from the one returned upon next read in the
@@ -169,18 +168,18 @@ When the function returns, the thread's original computation continues. If  mult
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:MAKE-MUTEX}
-\index{MAKE-MUTEX}
---- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g2304421) NIL)}
+\label{THREADS:THREAD}
+\index{THREAD}
+--- Class: \textbf{thread} [\textbf{threads}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{THREADS:THREAD}
-\index{THREAD}
---- Class: \textbf{thread} [\textbf{threads}] \textit{}
+\label{THREADS:MAKE-MUTEX}
+\index{MAKE-MUTEX}
+--- Function: \textbf{make-mutex} [\textbf{threads}] \textit{\&key ((in-use g348357) NIL)}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented

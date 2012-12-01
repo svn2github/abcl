@@ -1,13 +1,4 @@
 \paragraph{}
-\label{EXTENSIONS:COMPILE-FILE-IF-NEEDED}
-\index{COMPILE-FILE-IF-NEEDED}
---- Function: \textbf{compile-file-if-needed} [\textbf{extensions}] \textit{input-file \&rest allargs \&key force-compile \&allow-other-keys}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:MOST-POSITIVE-JAVA-LONG}
 \index{MOST-POSITIVE-JAVA-LONG}
 --- Variable: \textbf{most-positive-java-long} [\textbf{extensions}] \textit{}
@@ -44,15 +35,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:GROVEL-JAVA-DEFINITIONS}
-\index{GROVEL-JAVA-DEFINITIONS}
---- Function: \textbf{grovel-java-definitions} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:*AUTOLOAD-VERBOSE*}
 \index{*AUTOLOAD-VERBOSE*}
 --- Variable: \textbf{*autoload-verbose*} [\textbf{extensions}] \textit{}
@@ -77,15 +59,6 @@ not-documented
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:PROCESS-KILL}
-\index{PROCESS-KILL}
---- Function: \textbf{process-kill} [\textbf{extensions}] \textit{process}
-
-\begin{adjustwidth}{5em}{5em}
-Kills the process.
 \end{adjustwidth}
 
 \paragraph{}
@@ -152,6 +125,15 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:WRITE-TIMEOUT}
+\index{WRITE-TIMEOUT}
+--- Function: \textbf{write-timeout} [\textbf{extensions}] \textit{socket seconds}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:CDR}
 \index{CDR}
 --- Macro: \textbf{\%cdr} [\textbf{extensions}] \textit{}
@@ -175,22 +157,13 @@ not-documented
 --- Function: \textbf{make-socket} [\textbf{extensions}] \textit{host port}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Create a TCP socket for client communication to HOST on PORT.
 \end{adjustwidth}
 
 \paragraph{}
 \label{EXTENSIONS:*ENABLE-INLINE-EXPANSION*}
 \index{*ENABLE-INLINE-EXPANSION*}
 --- Variable: \textbf{*enable-inline-expansion*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:PROCESS-INPUT}
-\index{PROCESS-INPUT}
---- Function: \textbf{process-input} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -233,27 +206,9 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:PROCESS}
-\index{PROCESS}
---- Class: \textbf{process} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:CADDR}
 \index{CADDR}
 --- Macro: \textbf{\%caddr} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:SIMPLE-SEARCH}
-\index{SIMPLE-SEARCH}
---- Function: \textbf{simple-search} [\textbf{extensions}] \textit{sequence1 sequence2}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -296,6 +251,15 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:*DISASSEMBLER*}
+\index{*DISASSEMBLER*}
+--- Variable: \textbf{*disassembler*} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:CLASSP}
 \index{CLASSP}
 --- Function: \textbf{classp} [\textbf{extensions}] \textit{}
@@ -305,12 +269,12 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:*DISASSEMBLER*}
-\index{*DISASSEMBLER*}
---- Variable: \textbf{*disassembler*} [\textbf{extensions}] \textit{}
+\label{EXTENSIONS:MAKE-TEMP-DIRECTORY}
+\index{MAKE-TEMP-DIRECTORY}
+--- Function: \textbf{make-temp-directory} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Create and return the pathname of a previously non-existent directory.
 \end{adjustwidth}
 
 \paragraph{}
@@ -341,30 +305,12 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:PROCESS-ERROR}
-\index{PROCESS-ERROR}
---- Function: \textbf{process-error} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:SOCKET-LOCAL-PORT}
 \index{SOCKET-LOCAL-PORT}
 --- Function: \textbf{socket-local-port} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the local port number of the given socket.
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:PROCESS-ALIVE-P}
-\index{PROCESS-ALIVE-P}
---- Function: \textbf{process-alive-p} [\textbf{extensions}] \textit{process}
-
-\begin{adjustwidth}{5em}{5em}
-Return t if process is still alive, nil otherwise.
+Returns the local port number of the SOCKET.
 \end{adjustwidth}
 
 \paragraph{}
@@ -445,40 +391,13 @@ not-documented
 --- Function: \textbf{socket-close} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:UPTIME}
-\index{UPTIME}
---- Function: \textbf{uptime} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
+Close the client SOCKET.
 \end{adjustwidth}
 
 \paragraph{}
 \label{EXTENSIONS:*ED-FUNCTIONS*}
 \index{*ED-FUNCTIONS*}
 --- Variable: \textbf{*ed-functions*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:COMPILE-SYSTEM}
-\index{COMPILE-SYSTEM}
---- Function: \textbf{compile-system} [\textbf{extensions}] \textit{\&key quit (zip t) output-path}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:*LOAD-TRUENAME-FASL*}
-\index{*LOAD-TRUENAME-FASL*}
---- Variable: \textbf{*load-truename-fasl*} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -494,12 +413,57 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:RESOLVE}
+\index{RESOLVE}
+--- Function: \textbf{resolve} [\textbf{extensions}] \textit{symbol}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:CANCEL-FINALIZATION}
+\index{CANCEL-FINALIZATION}
+--- Function: \textbf{cancel-finalization} [\textbf{extensions}] \textit{object}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:UPTIME}
+\index{UPTIME}
+--- Function: \textbf{uptime} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:COMPILE-SYSTEM}
+\index{COMPILE-SYSTEM}
+--- Function: \textbf{compile-system} [\textbf{extensions}] \textit{\&key quit (zip t) (cls-ext *compile-file-class-extension*) (abcl-ext *compile-file-type*) output-path}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:*LOAD-TRUENAME-FASL*}
+\index{*LOAD-TRUENAME-FASL*}
+--- Variable: \textbf{*load-truename-fasl*} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:SOCKET-ACCEPT}
 \index{SOCKET-ACCEPT}
 --- Function: \textbf{socket-accept} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Block until able to return a new socket for handling a incoming request to the specified server SOCKET.
 \end{adjustwidth}
 
 \paragraph{}
@@ -539,72 +503,12 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:RESOLVE}
-\index{RESOLVE}
---- Function: \textbf{resolve} [\textbf{extensions}] \textit{symbol}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:CANCEL-FINALIZATION}
-\index{CANCEL-FINALIZATION}
---- Function: \textbf{cancel-finalization} [\textbf{extensions}] \textit{object}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:MAKE-SLIME-OUTPUT-STREAM}
 \index{MAKE-SLIME-OUTPUT-STREAM}
 --- Function: \textbf{make-slime-output-stream} [\textbf{extensions}] \textit{function}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:RUN-PROGRAM}
-\index{RUN-PROGRAM}
---- Function: \textbf{run-program} [\textbf{extensions}] \textit{program args \&key environment (wait t)}
-
-\begin{adjustwidth}{5em}{5em}
-Creates a new process running the the PROGRAM.
-ARGS are a list of strings to be passed to the program as arguments. 
-
-For no arguments, use nil which means that just the name of the
-program is passed as arg 0.
-
-Returns a process structure containing the JAVA-OBJECT wrapped Process
-object, and the PROCESS-INPUT, PROCESS-OUTPUT, and PROCESS-ERROR streams.
-
-c.f. http://download.oracle.com/javase/6/docs/api/java/lang/Process.html
-
-Notes about Unix environments (as in the :environment):
-
-    * The ABCL implementation of run-program, like SBCL, Perl and many
-      other programs, copies the Unix environment by default.
-
-    * Running Unix programs from a setuid process, or in any other
-      situation where the Unix environment is under the control of
-      someone else, is a mother lode of security problems. If you are
-      contemplating doing this, read about it first. (The Perl
-      community has a lot of good documentation about this and other
-      security issues in script-like programs.)
-
-The \&key arguments have the following meanings:
-
-:environment 
-    An alist of STRINGs (name . value) describing the new
-    environment. The default is to copy the environment of the current
-    process.
-
-:wait 
-    If non-NIL, which is the default, wait until the created process
-    finishes. If NIL, continue running Lisp until the program
-    finishes.
 \end{adjustwidth}
 
 \paragraph{}
@@ -635,29 +539,9 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:INTERNAL-COMPILER-ERROR}
-\index{INTERNAL-COMPILER-ERROR}
---- Function: \textbf{internal-compiler-error} [\textbf{extensions}] \textit{format-control \&rest format-arguments}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:JAR-PATHNAME}
 \index{JAR-PATHNAME}
 --- Class: \textbf{jar-pathname} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-NIL
-
-\paragraph{}
-\label{EXTENSIONS:SIMPLE-STRING-SEARCH}
-\index{SIMPLE-STRING-SEARCH}
---- Function: \textbf{simple-string-search} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -682,6 +566,26 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:CAR}
+\index{CAR}
+--- Macro: \textbf{\%car} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+NIL
+
+\paragraph{}
+\label{EXTENSIONS:SIMPLE-STRING-SEARCH}
+\index{SIMPLE-STRING-SEARCH}
+--- Function: \textbf{simple-string-search} [\textbf{extensions}] \textit{}
+
+\begin{adjustwidth}{5em}{5em}
+not-documented
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:RUN-SHELL-COMMAND}
 \index{RUN-SHELL-COMMAND}
 --- Function: \textbf{run-shell-command} [\textbf{extensions}] \textit{command \&key directory (output *standard-output*)}
@@ -694,15 +598,6 @@ not-documented
 \label{EXTENSIONS:*SAVED-BACKTRACE*}
 \index{*SAVED-BACKTRACE*}
 --- Variable: \textbf{*saved-backtrace*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:CAR}
-\index{CAR}
---- Macro: \textbf{\%car} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -750,16 +645,7 @@ not-documented
 --- Function: \textbf{make-temp-file} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:DESCRIBE-COMPILER-POLICY}
-\index{DESCRIBE-COMPILER-POLICY}
---- Function: \textbf{describe-compiler-policy} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
+Create and return the pathname of a previously non-existent file.
 \end{adjustwidth}
 
 \paragraph{}
@@ -777,7 +663,7 @@ not-documented
 --- Function: \textbf{socket-peer-address} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the peer address of the given socket as a dotted quad string.
+Returns the peer address of the SOCKET as a dotted quad string.
 \end{adjustwidth}
 
 \paragraph{}
@@ -804,7 +690,7 @@ Return the value of the environment VARIABLE if it exists, otherwise return NIL.
 --- Function: \textbf{server-socket-close} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Close the server SOCKET.
 \end{adjustwidth}
 
 \paragraph{}
@@ -885,22 +771,13 @@ not-documented
 --- Function: \textbf{make-server-socket} [\textbf{extensions}] \textit{port}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Create a TCP server socket listening for clients on PORT.
 \end{adjustwidth}
 
 \paragraph{}
 \label{EXTENSIONS:INTERRUPT-LISP}
 \index{INTERRUPT-LISP}
 --- Function: \textbf{interrupt-lisp} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:AVER}
-\index{AVER}
---- Macro: \textbf{aver} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -925,15 +802,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:PROCESS-EXIT-CODE}
-\index{PROCESS-EXIT-CODE}
---- Function: \textbf{process-exit-code} [\textbf{extensions}] \textit{instance}
-
-\begin{adjustwidth}{5em}{5em}
-The exit code of a process.
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:SOURCE-FILE-POSITION}
 \index{SOURCE-FILE-POSITION}
 --- Function: \textbf{source-file-position} [\textbf{extensions}] \textit{}
@@ -948,7 +816,7 @@ not-documented
 --- Function: \textbf{socket-peer-port} [\textbf{extensions}] \textit{socket}
 
 \begin{adjustwidth}{5em}{5em}
-Returns the peer port number of the given socket.
+Returns the peer port number of the given SOCKET.
 \end{adjustwidth}
 
 \paragraph{}
@@ -970,15 +838,6 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:SOCKET-LOCAL-ADDRESS}
-\index{SOCKET-LOCAL-ADDRESS}
---- Function: \textbf{socket-local-address} [\textbf{extensions}] \textit{socket}
-
-\begin{adjustwidth}{5em}{5em}
-Returns the local address of the given socket as a dotted quad string.
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:NEQ}
 \index{NEQ}
 --- Function: \textbf{neq} [\textbf{extensions}] \textit{obj1 obj2}
@@ -997,21 +856,30 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
+\label{EXTENSIONS:SOCKET-LOCAL-ADDRESS}
+\index{SOCKET-LOCAL-ADDRESS}
+--- Function: \textbf{socket-local-address} [\textbf{extensions}] \textit{socket}
+
+\begin{adjustwidth}{5em}{5em}
+Returns the local address of the SOCKET as a dotted quad string.
+\end{adjustwidth}
+
+\paragraph{}
+\label{EXTENSIONS:READ-TIMEOUT}
+\index{READ-TIMEOUT}
+--- Function: \textbf{read-timeout} [\textbf{extensions}] \textit{socket seconds}
+
+\begin{adjustwidth}{5em}{5em}
+Time in SECONDS to set local implementation of SO\_CREVTIMEO on SOCKET.
+\end{adjustwidth}
+
+\paragraph{}
 \label{EXTENSIONS:PATHNAME-JAR-P}
 \index{PATHNAME-JAR-P}
 --- Function: \textbf{pathname-jar-p} [\textbf{extensions}] \textit{}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:PROCESS-WAIT}
-\index{PROCESS-WAIT}
---- Function: \textbf{process-wait} [\textbf{extensions}] \textit{process}
-
-\begin{adjustwidth}{5em}{5em}
-Wait for process to quit running for some reason.
 \end{adjustwidth}
 
 \paragraph{}
@@ -1027,15 +895,6 @@ not-documented
 \label{EXTENSIONS:*BATCH-MODE*}
 \index{*BATCH-MODE*}
 --- Variable: \textbf{*batch-mode*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:PROCESS-P}
-\index{PROCESS-P}
---- Function: \textbf{process-p} [\textbf{extensions}] \textit{object}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
@@ -1097,15 +956,6 @@ EXTERNAL-FORMAT must be of the same format as specified for OPEN.
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:PROCESS-OUTPUT}
-\index{PROCESS-OUTPUT}
---- Function: \textbf{process-output} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
 \label{EXTENSIONS:URL-PATHNAME}
 \index{URL-PATHNAME}
 --- Class: \textbf{url-pathname} [\textbf{extensions}] \textit{}
@@ -1115,27 +965,18 @@ not-documented
 \end{adjustwidth}
 
 \paragraph{}
-\label{EXTENSIONS:COMPILER-UNSUPPORTED-FEATURE-ERROR}
-\index{COMPILER-UNSUPPORTED-FEATURE-ERROR}
---- Class: \textbf{compiler-unsupported-feature-error} [\textbf{extensions}] \textit{}
+\label{EXTENSIONS:GETENV-ALL}
+\index{GETENV-ALL}
+--- Function: \textbf{getenv-all} [\textbf{extensions}] \textit{variable}
 
 \begin{adjustwidth}{5em}{5em}
-not-documented
+Returns all environment variables as an alist containing (name . value)
 \end{adjustwidth}
 
 \paragraph{}
 \label{EXTENSIONS:*DEBUG-LEVEL*}
 \index{*DEBUG-LEVEL*}
 --- Variable: \textbf{*debug-level*} [\textbf{extensions}] \textit{}
-
-\begin{adjustwidth}{5em}{5em}
-not-documented
-\end{adjustwidth}
-
-\paragraph{}
-\label{EXTENSIONS:COMPILER-ERROR}
-\index{COMPILER-ERROR}
---- Function: \textbf{compiler-error} [\textbf{extensions}] \textit{format-control \&rest format-arguments}
 
 \begin{adjustwidth}{5em}{5em}
 not-documented
