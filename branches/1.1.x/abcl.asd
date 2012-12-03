@@ -26,6 +26,9 @@
 	    (:module package  :depends-on (abcl-rt)
 		     :pathname "test/lisp/abcl/" :components
 		     ((:file "package")))
+            (:module manual :pathname "doc/manual/" 
+                     :components ((:file "grovel")
+                                  (:file "index" :depends-on (grovel))))
             (:module test :depends-on (package)
 		     :pathname "test/lisp/abcl/" :components
                      ((:file "utilities")
