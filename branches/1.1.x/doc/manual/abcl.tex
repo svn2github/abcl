@@ -25,8 +25,9 @@ ABCL 1.1 now contains (A)MOP.  We hope you enjoy!  --The Mgmt.
 \chapter{Introduction}
 
 Armed Bear Common Lisp (ABCL) is an implementation of Common Lisp that
-runs on the Java Virtual Machine.  It compiles to Java bytecode and
-integrates with Java code and libraries in a seamless way:
+runs on the Java Virtual Machine.  It compiles Common Lisp to Java 5
+bytecode, providing the following integration methods for interfacing
+with Java code and librariess:
 \begin{itemize}
 \item Lisp code can create Java objects and call their methods (see
   Section~\ref{sec:lisp-java}, page~\pageref{sec:lisp-java}).
@@ -1262,12 +1263,17 @@ on January 10, 2012.
 In December 2012, we we revised the implementation with
 the release of abcl-1.1.0 by adding (A)MOP.
 
-\chapter{Appendix SYSTEM}
+\appendix 
+\chapter{The SYSTEM Dictionary}
+
+The public interfaces in this package are subject to change with
+ABCL 1.2.
 
 \include{system}
 
-\chapter{Appendix JSS}
+\chapter{The JSS Dictionary}
 
+These public interfaces are provided by the JSS contrib.
 \include{jss}
 
 
