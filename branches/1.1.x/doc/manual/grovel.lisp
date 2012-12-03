@@ -13,6 +13,10 @@
 (defun texify-string (string &optional remove)
   (with-output-to-string (s)
     (loop for char across string
+         ;; when (string= char #\_) ;; XXX FIXME
+         ;; do (progn
+         ;;      (write-char #\_ s)
+         ;;      (write-char #\_ s))
          do (if (find char '(#\& #\% #\#))
                 (unless remove
                   (write-char #\\ s)
