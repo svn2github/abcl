@@ -1,4 +1,4 @@
-
+(in-package :cl-user)
 (defun grovel-docstrings-as-tex (&optional (package (find-package :java)))
   (let ((output-file (format nil "~A.tex" (string-downcase (package-name package)))))
     (with-open-file (stream output-file :direction :output)
