@@ -10,7 +10,7 @@
 \title{Armed Bear Common Lisp User Manual}
 \date{Version 1.1.0\\
 \smallskip
-December 1, 2012}
+December 3, 2012}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -18,10 +18,10 @@ December 1, 2012}
 
 \tableofcontents
 
-%%\chapter{Preface}
+\chapter{Preface}
 %%Preface to the second edition, abcl-1.1.0.
-
-ABCL 1.1 now contains (A)MOP.  We hope you enjoy.
+\section{Second Edition}
+ABCL 1.1 now contains (A)MOP.  We hope you enjoy!  --The Mgmt.
 
 \chapter{Introduction}
 
@@ -1053,7 +1053,10 @@ semantic to the execution of \code{REQUIRE} on the following symbols:
       \item \code{mvn}
         These systems name common JVM artifacts from the distributed pom.xml graph of Maven Aether:
         \begin{enumerate}
-          \item \code{jna} Dynamically load 'jna.jar' version 3.4.0 from the network.
+          \item \code{jna} Dynamically load 'jna.jar' version 3.5.1
+            from the network \footnote{This loading can be inhibited
+              if, at runtime, the Java class corresponding
+              ``:classname'' clause of the system defition is present.}
         \end{enumerate}
       \item \code{quicklisp-abcl} (Not working) boot a local Quicklisp
         installation via the ASDF:IRI type introduced bia ABCL-ASDF.
@@ -1076,7 +1079,7 @@ reader in the definition of the \#\" reader macro.  See section
 
 \section{ASDF}
 
-asdf-2.25 (see \cite{asdf}) is packaged as core component of ABCL,
+asdf-2.26.6 (see \cite{asdf}) is packaged as core component of ABCL,
 but not initialized by default, as it relies on the CLOS subsystem
 which can take a bit of time to start \footnote{While this time is
   ``merely'' on the order of seconds for contemporary 2011 machines,
