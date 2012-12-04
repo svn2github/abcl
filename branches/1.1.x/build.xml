@@ -376,6 +376,7 @@ from ${abcl.home.dir}
     </target>
 
     <target name="abcl.stamp.version.uptodate">
+      <delete file="${build.classes.dir}/org/armedbear/lisp/version"/>
       <uptodate property="abcl.stamp.version.uptodate.p" 
                 targetfile="${abcl.version.path}"
                 srcfile="${build.classes.dir}/org/armedbear/lisp/Version.class"/>
