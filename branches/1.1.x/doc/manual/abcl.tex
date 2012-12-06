@@ -825,7 +825,7 @@ the description and retrieval of resources named in a
 ``understands''.  By definition, support is built-in into the JVM to
 access the ``http'' and ``https'' schemes but additional protocol
 handlers may be installed at runtime by having \textsc{JVM} symbols
-present in the sun.net.protocol.dynamic pacakge. See \cite{maso2000}
+present in the sun.net.protocol.dynamic package. See \cite{maso2000}
 for more details.
 
 \textsc{ABCL} has created specializations of the ANSI
@@ -868,7 +868,7 @@ following caveats:
   underlying \textsc{URI} are discarded between resolutions (i.e. the
   implementation does not attempt to cache the results of current name
   resolution of the representing resource unless it is requested to be
-  resolved.)  Upon resolution, any cannoicalization procedures
+  resolved.)  Upon resolution, any canoicalization procedures
   followed in resolving the resource (e.g. following redirects) are
   discarded.  Users may programatically initiate a new, local
   computation by applying the \code{CL:TRUENAME} function to a
@@ -882,7 +882,7 @@ following caveats:
 
 The implementation of \code{EXT:URL-PATHNAME} allows the \textsc{ABCL}
 user to dynamically load code from the network.  For example,
-Quicklisp (\cite{quicklisp}) may be completely installed from the REPL
+Quicklisp (\cite{quicklisp}) may be completely installed from the \textsc{REPL}
 as the single form:
 
 \begin{listing-lisp}
@@ -892,7 +892,7 @@ as the single form:
 will load and execute the Quicklisp setup code.
 
 The implementation currently breaks \textsc{ANSI} conformance by allowing the
-types able to be READ for the DEVICE to return a possible \code{CONS} of
+types able to be \code{CL:READ} for the \var{DEVICE} to return a possible \code{CONS} of
 \code{CL:PATHNAME} objects.  %% citation from CLHS needed.
 
 In order to ``smooth over'' the bit about types being \code{CL:READ} from
@@ -1038,8 +1038,8 @@ We implement a special hexadecimal escape sequence for specifying 32
 bit characters to the Lisp reader\footnote{This represents a
   compromise with contemporary in 2011 32bit hosting architecures for
   which we wish to make text processing efficient.  Should the User
-  require more control over UNICODE processing we recommend Edi Weisz'
-  excellent work with FLEXI-STREAMS which we fully support}, namely we
+  require more control over \textsc{UNICODE} processing we recommend Edi Weisz'
+  excellent work with \textsc|{FLEXI-STREAMS}  which we fully support}, namely we
 allow a sequences of the form \verb~#\U~\emph{\texttt{xxxx}} to be processed
 by the reader as character whose code is specified by the hexadecimal
 digits \emph{\texttt{xxxx}}.  The hexadecimal sequence may be one to four digits
@@ -1098,8 +1098,9 @@ can successful resolve the symbol.
 \section{JSS optionally extends the Reader}
 
 The JSS contrib consitutes an additional, optional extension to the
-reader in the definition of the \#\" reader macro.  See section
-\ref{section:jss} on page \pageref{section:jss} for more information.
+reader in the definition of the \code{SHARPSIGN-DOUBLE-QUOTE}
+(``\#\"'') reader macro.  See section \ref{section:jss} on page
+\pageref{section:jss} for more information.
 
 \section{ASDF}
 
@@ -1309,8 +1310,8 @@ ABCL 1.2.
 \chapter{The JSS Dictionary}
 
 These public interfaces are provided by the JSS contrib.
-\include{jss}
 
+\include{jss}
 
 
 \bibliography{abcl}
