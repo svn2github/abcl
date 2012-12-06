@@ -11,10 +11,13 @@
 <> rdfs:seeAlso         <urn:not.org> .
 
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
-<> dc:modified          "03-DEC-2012" .
+<> dc:modified          "06-DEC-2012" .
 
 <> dc:version           "abcl-1.1.0" .
-<> abcl:releaseCandidate      "rc-2" .
+<> abcl:releaseCandidate      "rc-3" .
+
+<> rdfs:seeAlso <README> .
+<> rdfs:seeAlso <file:doc/manual/abcl.tex> .
 
 <https://abcl.org/index#doap>
   a                     doap:Project ;
@@ -31,11 +34,13 @@
   doap:license  [
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ,
      <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
-               ] .
+  ] .
 
 doap:Project rdfs:seeAlso 
   <http://trac.common-lisp.net/armedbear/timeline> , 
   <http://trac.common-lisp.net/armedbear/wiki> , 
   <http://code.google.com/p/abcl-dynamic-install/> .
 
-  
+<> doap:packages 
+   abcl:abcl-contrib ;
+   rdfs:seeAlso <file:contrib/README.markdown> .
