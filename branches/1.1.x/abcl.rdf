@@ -22,12 +22,23 @@
   dc:created           "01-JAN-2004" ;
   dc:modified          "06-DEC-2012" ;
 
+<<<<<<< local
+<> dc:version           "abcl-1.1.0" .
+<>  a abcl:releaseCandidate   "rc-3" .
+=======
   dc:version           "abcl-1.1.0" ;
   abcl:releaseCandidate      "rc-3" .
+>>>>>>> other
 
+<<<<<<< local
+<> rdfs:seeAlso <file:README> .
+<> rdfs:seeAlso <file:MANUAL> .
+<> rdfs:seeAlso <file:doc/manual/abcl.tex> .
+=======
 <> 
   rdfs:seeAlso <README> ;
   rdfs:seeAlso <file:doc/manual/abcl.tex> .
+>>>>>>> other
 
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 
