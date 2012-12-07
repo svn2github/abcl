@@ -650,6 +650,8 @@ will compile (if necessary) and load JSS.
 
     <patternset id="abcl.dist.misc"
                 description="Additional includes in the source distributions relative to basedir">
+
+      <include name="abcl.rdf"/>
       <include name="build.xml"/>
       <include name="abcl.properties.in"/>
       <include name="COPYING"/>

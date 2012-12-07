@@ -114,8 +114,8 @@ be in a directory named '../ansi-test/'."
   (funcall (intern (symbol-name 'run) :abcl.test.ansi)
 	   :compile-tests nil))
 
-(defsystem :ansi-compiled :version "1.2" 
-           :description "Test ABCL with the compiled ANSI tests." 
+(defsystem :ansi-compiled :version "1.2.0" 
+           :description "Test ABCL with the compiled ANSI tests.  <> asdf:defsystem <urn:abcl.org/release/1.1.0/ansi-compiled#1.2.0> ." 
            :depends-on (ansi-rt)
            :components 
            ((:module ansi-tests :pathname "test/lisp/ansi/" :components
@@ -130,7 +130,8 @@ be in a directory named '../ansi-test/'."
 	   :compile-tests t))
 
 (defsystem :cl-bench 
-  :description "Test ABCL with CL-BENCH."
+  :description "Test ABCL with CL-BENCH. <> asdf:defsystem <urn:abcl.org/release/1.1.0/cl-bench#1.0.0> ."
+  :version "1.0.0"
   :components ((:module cl-bench-package :pathname "../cl-bench/"
                         :components ((:file "defpackage")))
                (:module cl-bench-wrapper :pathname "test/lisp/cl-bench/" 

@@ -1,6 +1,10 @@
 # -*- Mode: n3 -*-
-
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
 @prefix abcl:            <https://abcl.org#> .
+
+<> dc:version           "abcl-1.1.0" .
+<> abcl:release          "rc-3" .
+
 <> 
  abcl:is "W3C Turtle RDF serializations format" ; 
  abcl:tag   <http://svn.common-lisp.net/tags/1.1.0/> .
@@ -20,25 +24,18 @@
   dc:identifier        <urn:abcl.org/release/1.1.0> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "06-DEC-2012" ;
+  dc:modified          "07-DEC-2012" ;
 
-<<<<<<< local
-<> dc:version           "abcl-1.1.0" .
-<>  a abcl:releaseCandidate   "rc-3" .
-=======
   dc:version           "abcl-1.1.0" ;
   abcl:releaseCandidate      "rc-3" .
->>>>>>> other
 
-<<<<<<< local
-<> rdfs:seeAlso <file:README> .
-<> rdfs:seeAlso <file:MANUAL> .
-<> rdfs:seeAlso <file:doc/manual/abcl.tex> .
-=======
-<> 
-  rdfs:seeAlso <README> ;
-  rdfs:seeAlso <file:doc/manual/abcl.tex> .
->>>>>>> other
+<>  rdfs:seeAlso  [ 
+    a rdf:Alt ;
+    rdf:_1 <file:README> ;
+    rdf:_2 <file:MANUAL> ;
+    rdf:_3 <file:doc/manual/abcl.tex> 
+] .
+
 
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 
@@ -125,6 +122,22 @@ doap:Project rdfs:seeAlso
   <http://trac.common-lisp.net/armedbear/wiki> , 
   <http://code.google.com/p/abcl-dynamic-install/> .
 
-<> doap:packages 
-   abcl:abcl-contrib ;
-   rdfs:seeAlso <file:contrib/README.markdown> .
+<> doap:packages  [ 
+    a rdf:Alt;
+    rdf:_1 abcl:abcl ;
+    rdf:_2 abcl:abcl-contrib ;
+    rdf:_3 abcl:asdf-install ;
+    rdf:_4 abcl:jss ;
+    rdf:_5 abcl:jfli ;
+    rdf:_6 abcl:abcl-asdf ;
+    rdf:_7 abcl:jna ;
+    rdf:_8 abcl:asdf-jar 
+] .
+
+abcl:abcl-contrib  
+  dc:identifier <urn:abcl.org/release/1.1.0/abcl-contrib#1.1.0> ;
+  rdfs:seeAlso <file:contrib/README.markdown> .                             
+
+abcl:asdf-install
+  dc:identifier <urn:abcl.org/release/1.1.0/contrib/asdf-install#0.6.10.2> ;
+  rdfs:seeAlso <file:contrib/asdf-install/README> .                             

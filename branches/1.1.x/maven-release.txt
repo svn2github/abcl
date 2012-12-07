@@ -1,5 +1,9 @@
 # Releasing ABCL on Sonatype's OSS Maven repository - instructions
 #
+# WARNING: <file:pom.xml> and <file:contrib/pom.xml> are not currently valid descriptions of how to build ABCL.
+#
+# TODO  Use the Maven Ant plugin to drive the standard build process.
+#
 # This assumes your settings.xml (/etc/maven2/settings.xml for Ubuntu-packaged Maven) contains something like this in its <servers></servers> section:
 #
 # <server>

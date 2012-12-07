@@ -128,6 +128,15 @@ Some notes on other compatibility issues:
      In the JSS package loaded from [abcl-contrib]() 
      
 abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/     
+
+# See Also
+
+An earlier version of this software is used in[lsw2][] Semantic Web
+package for dealing with OWL2 ontologies in RDF(S) and other
+notations.
+    
+[lsw2]: http://code.google.com/p/lsw2/    
+
    
 # Colophon
 

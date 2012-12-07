@@ -176,12 +176,16 @@ effect as loading the ASDF definition.
 BUGS
 ====
 
+ABCL now has a manual stating its conformance to the ANSI standard,
+providing a compliant and practical Common Lisp implementation.  
+
 ABCL is a conforming ANSI Common Lisp implementation.  Any other
 behavior should be reported as a bug.
 
-ABCL now has a manual stating its conformance to the ANSI standard,
-providing a compliant and practical Common Lisp implementation.
-Because of this, 
+The secondary and tertiary values of CL:LISP-IMPLEMENTATION-VERSION
+provide additional information about the exact JVM runtime which ABCL
+finds itself hosted upon which may be especially useful when
+discussing and tracking issues on the Internet.
 
 
 ### Tests 
