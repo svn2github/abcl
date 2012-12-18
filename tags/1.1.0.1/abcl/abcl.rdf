@@ -1,0 +1,143 @@
+# -*- Mode: n3 -*-
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+@prefix abcl:            <https://abcl.org#> .
+
+<> dc:version           "abcl-1.1.0.1" .
+<> a abcl:release                      .
+
+<> 
+ abcl:is "W3C Turtle RDF serializations format" ; 
+ abcl:tag   <http://svn.common-lisp.net/tags/1.1.0/> .
+
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
+@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+
+<> a doap:Project .
+
+<> rdfs:seeAlso         <urn:abcl.not.org> .
+<> rdfs:seeAlso         <urn:not.org> .
+
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+<> 
+  abcl:tag             <http://svn.common-lisp.net/tags/1.1.0/> ;
+  dc:identifier        <urn:abcl.org/release/1.1.0> ;           
+  doap:language        "Common Lisp" ;
+  dc:created           "01-JAN-2004" ;
+  dc:modified          "07-DEC-2012" ;
+
+  dc:version           "abcl-1.1.0.1" ;
+  abcl:releaseCandidate      "release" .
+
+<>  rdfs:seeAlso  [ 
+    a rdf:Alt ;
+    rdf:_1 <file:README> ;
+    rdf:_2 <file:MANUAL> ;
+    rdf:_3 <file:doc/manual/abcl.tex> 
+] .
+
+
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+
+<abcl:doap>
+  a                     doap:Project ;
+  doap:label            "Armed Bear Common Lisp" ;
+  doap:download    <http://common-lisp.net/project/armedbear/> ;
+
+  dc:abstract      "An implementation of ANSI Common Lisp that runs on the JVM." ;
+  doap:shortname   "ABCL" ;
+  abcl:contributors """ehu easye v-ille astalla rudi peter""" .
+
+
+<abcl:doap>  doap:language  "Common Lisp" .
+
+<> <urn:abcl.org:releng:implementation:language> [ 
+
+   a rdf:Bag;
+   rdf:_1 "Java";
+   rdf:_2  "Ant"; 
+   rdf:_3 "Bourne Shell Script"; 
+   rdf:_4"Windows Batch Script" 
+] .
+
+
+<abcl:doap> 
+  dc:contributor [ 
+    a rdf:Alt;
+    rdf:_1 _:ehu ;  
+    rdf:_2 _:easye ;
+    rdf:_3 _:ville ;
+    rdf:_4 _:astala ;
+    rdf:_5 _:rudi 
+] .
+
+<abcl:doap>  
+  doap:language 
+  "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
+
+_:user dc:identifier <http://ville.not.org/#me>  ; 
+       rdf:label "V-ille"  .
+
+
+ <http://purl.org/dc/elements/1.1/>  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
+
+<> doap:license  [
+     dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
+     dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
+
+     rdfs:seeAlso <urn:abcl.org/release/1.1.0> ;
+     dc:licenseDocument <file:COPYING> ;
+     dc:licenseDocument <http://svn.common-lisp.net/branches/1.1.x/src/org/armedbear/LICENSE> ;
+] .
+
+doap:Project rdfs:seeAlso [
+  a rdf:Bag;
+  rdf:_1 <http://trac.common-lisp.net/armedbear/timeline> ;
+  rdf:_2 <http://trac.common-lisp.net/armedbear/wiki> ;
+  rdf:_3 <http://code.google.com/p/abcl-dynamic-install/> ;
+  dc:source   abcl:tag ;
+  dc:Software [ 
+     a rdf:Bag;
+     rdf:_1 <urn:abcl:previousVersion> ; 
+     rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.1.jar> 
+  ] ;
+] .
+
+<> abcl:provides <release#abcl-contrib.jar> ;
+   rdfs:seeAlso <file:contrib/README.markdown>.
+
+<> dc:Standard  <urn:abcl.org/ansi/common-lisp#X3J13> ;
+   rdfs:seeAlso [ 
+     a rdf:Bag ;
+     rdf:_1  <urn:ansi.common-lisp> ; 
+     rdf:_2 "ANSI+INCITS+226-1994+(R2004).pdf" 
+   ] ;
+   dc:abstract  
+     "ANSI INCITS 226-1994 (R2004) American National Standard for Programming Language Common LISP (X3J13)" .
+
+<> rdfs:seeAlso <urn:abcl.org/ansi/common-lisp#X3J13> .
+
+doap:Project rdfs:seeAlso 
+  <http://trac.common-lisp.net/armedbear/timeline> , 
+  <http://trac.common-lisp.net/armedbear/wiki> , 
+  <http://code.google.com/p/abcl-dynamic-install/> .
+
+<> doap:packages  [ 
+    a rdf:Alt;
+    rdf:_1 abcl:abcl ;
+    rdf:_2 abcl:abcl-contrib ;
+    rdf:_3 abcl:asdf-install ;
+    rdf:_4 abcl:jss ;
+    rdf:_5 abcl:jfli ;
+    rdf:_6 abcl:abcl-asdf ;
+    rdf:_7 abcl:jna ;
+    rdf:_8 abcl:asdf-jar 
+] .
+
+abcl:abcl-contrib  
+  dc:identifier <urn:abcl.org/release/1.1.0/abcl-contrib#1.1.0> ;
+  rdfs:seeAlso <file:contrib/README.markdown> .                             
+
+abcl:asdf-install
+  dc:identifier <urn:abcl.org/release/1.1.0/contrib/asdf-install#0.6.10.2> ;
+  rdfs:seeAlso <file:contrib/asdf-install/README> .                             
