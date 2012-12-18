@@ -1,7 +1,14 @@
+Version 1.1.0.1
+=============
+svn.uri=:"http//svn.common-lisp.net/armedbear/tags/1.1.0.1/abcl/CHANGES"
+(18 December 2012)
+
+
 Version 1.1.0
 =============
-svn.uri=:"http//common-lisp.net/project/armedbear/svn/trunk/abcl/"
-(22 November 2012)
+svn.uri=:"http//svn.common-lisp.net/armedbear/tags/1.1.0/abcl/CHANGES"
+
+(07 December 2012)
 
 Features
 --------
@@ -77,6 +84,23 @@ Features
 Changes
 -------
 
+
+  * ANSI [#241]
+ 
+     ** &AUX parameters fixes RESTAS 
+
+    
+  * [#221] Stack exhaustsion on funcall in non-existing package
+
+  * [#113] DEFSTRUCT concurrency 
+
+  * [#216][#211] Compiler 
+
+    ** stack inconsistency
+
+  * [#187] Better SORT and STABLE-SORT via Jorge Tavares [???]
+
+
   * [#249] PATHNAME merge semantics DWIMs on an inferred type
 
   Extends ANSI PATHNAME in a non-conforming manner, which was probably
@@ -118,7 +142,64 @@ Fixes
 
   * [#187] Better SORT and STABLE-SORT via Jorge Tavares [???]
 
+Issues Resolved
+---------------
 
+    * [#234]    ABCL-ASDF mvn errors with VERSION slot unbound  
+    * [#237]    JNA fails to load blocking CFFI 
+    * [#249]    Problems under Ubuntu   
+    * [#250]    SYS:SHA256 does not compile     
+    * [#265]    COMPILE-FILE.2 COMPILE-FILE.2A ANSI regression  
+    * [#268]    ABCL-ASDF working with maven-3.0.3      
+    * [#269]    SLIME cannot browse systems with November Quicklisp     
+    * [#270]    Is BUGS.DEFEGENERIC.1 a valid test?     
+    * [#271]    ASDF-2.26 changes synced upstream
+    * [#272]    DESCRIBE.[14] ANSI regression   rschlatte       
+    * [#275]    ABCL-CONTRIB still provided if abcl-contrib.jar cannot be located       
+    * [#276]    defmethod doesn't call add-method       
+    * [#277]    reinitialize-instance on class metaobjects incorrect
+    * [#113]    DEFSTRUCT redefinition can crash ABCL on MAKE-STRUCT
+    * [#199]    CL:DEFMETHOD fails for &AUX arguments that reference other arguments    
+    * [#213]    ABCL-ASDF breakage on trunk     
+    * [#215]    ABCL-ASDF:RESOLVE should work in more (some?) cases     
+    * [#229]    JSS method resolution failure   
+    * [#246]    CFFI: dynamically generated classes referred from .fasl can not be found after ABCL restart
+    * [#168]    Compilation fails for quicklisp let-plus        
+    * [#187]    Stack Overflow for Worst-case Vector Sort       
+    * [#202]    ENSURE-GENERIC-FUNCTION assumes LAMBDA-LIST is NIL
+    * [#204]    abcl-asdf maybe-parse-mvn ignores version information
+    * [#205]    JSS logic for resolving methods a little wonky (could use better diagnostics on why resolution has failed)      
+    * [#207]    DECLARE should signal conditions when type declarations are violated
+    * [#210]    Add JFLI to contrib     
+    * [#217]    ANSI tests wont run on Revision 14011: /trunk/abcl      
+    * [#219]    Keyword argument checking for lambda lists is too lenient for ANSI      
+    * [#220]    Lambda list checking too lenient        
+    * [#224]    Autoloader fails when *read-XXXX* variables bound to non-standard values        
+    * [#225]    One of the paths in STD-COMPUTE-DISCRIMINATING function not working     
+    * [#235]    Compiled cl+ssl sources not reloadable  
+    * [#241]    &rest and &aux can't coexist anymore in lambda lists    
+    * [#243]    ClassCastException in MAKE-PATHNAME     
+    * [#245]    Slots of a class with a custom meta-class are reported as unbound.      
+    * [#247]    CFFI: $Proxy3 is not assignable to com.sun.jna.Pointer  
+    * [#252]    MOP rework broke profiler?      
+    * [#254]    Cannot load ASDF systems in jar archives with ASDF-BINARY-LOCATIONS-COMPATIBILTY enabled
+    * [#255]    ASDF file encoding specification doesn't work   
+    * [#263]    loading systems from abcl-contrib fails if CLASSPATH has a component with wildcard
+    * [#264]    abcl-asdf.asd broken since revision 14233
+    * [#60      ]Implement USE-FAST-CALLS properly
+    * [#130]    "SLIME under Windows has ""extra"" CRLF"        
+    * [#172]    DOCUMENTATION does not work for generic functions       
+    * [#174]    Conformance bug in time implementation when using SLIME 
+    * [#175]    abcl.release target fails occasionally  unassigned      
+    * [#189]    Compiler fails for 'unsigned-byte type declaration      
+    * [#201]    &WHOLE broken in DEFINE-METHOD-COMBINATION      
+    * [#206]    COMPILER-UNSUPPORTED-FEATURE-ERROR is derived from CONDITION, rather than from ERROR    
+    * [#208]    "Files loaded via ""--load <FILE>"" on the command line have no pathname defaults"      
+    * [#211]    closure-common fails to load correctly after compilation        
+    * [#214]    Stack overflow when compiler macro with fallback is triggered   
+    * [#232]    Allow wrapper script to reference install directory instead of build directory
+    * [#192]    ASDF::IMPLEMENTATION-IDENTIFIER contains ABCL build environment identifier
+    * [#195]    prompt is displayed twice when evaluating NIL at the REPL
 
 Version 1.0.1
 ==============
