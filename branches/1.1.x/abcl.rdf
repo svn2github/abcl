@@ -1,15 +1,21 @@
 # -*- Mode: n3 -*-
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 @prefix abcl:            <https://abcl.org#> .
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
 
-<> dc:version           "abcl-1.1.0.1" .
-<> a abcl:release                      .
+<> dc:version           "abcl-1.1.0.2"  ;
+   abcl:releaseCandidate      "release" ;
+   a abcl:release                       ;
+   abcl:tag             <http://svn.common-lisp.net/tags/1.1.0.2/> ;
+   dc:identifier        <urn:abcl.org/release/1.1.0.2> ;           
+   doap:language        "Common Lisp" ;
+   dc:created           "01-JAN-2004" ;
+   dc:modified          "19-DEC-2012" .
 
 <> 
  abcl:is "W3C Turtle RDF serializations format" ; 
  abcl:tag   <http://svn.common-lisp.net/tags/1.1.0/> .
 
-@prefix doap:            <http://usefulinc.com/ns/doap#> .
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
 
@@ -18,26 +24,12 @@
 <> rdfs:seeAlso         <urn:abcl.not.org> .
 <> rdfs:seeAlso         <urn:not.org> .
 
-@prefix dc:              <http://purl.org/dc/elements/1.1/> .
-<> 
-  abcl:tag             <http://svn.common-lisp.net/tags/1.1.0/> ;
-  dc:identifier        <urn:abcl.org/release/1.1.0> ;           
-  doap:language        "Common Lisp" ;
-  dc:created           "01-JAN-2004" ;
-  dc:modified          "07-DEC-2012" ;
-
-  dc:version           "abcl-1.1.0.1" ;
-  abcl:releaseCandidate      "release" .
-
 <>  rdfs:seeAlso  [ 
     a rdf:Alt ;
     rdf:_1 <file:README> ;
     rdf:_2 <file:MANUAL> ;
     rdf:_3 <file:doc/manual/abcl.tex> 
 ] .
-
-
-@prefix dc:              <http://purl.org/dc/elements/1.1/> .
 
 <abcl:doap>
   a                     doap:Project ;
@@ -76,7 +68,7 @@
   "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
 
 _:user dc:identifier <http://ville.not.org/#me>  ; 
-       rdf:label "V-ille"  .
+       rdf:label "V-ille"  .               
 
 
  <http://purl.org/dc/elements/1.1/>  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
