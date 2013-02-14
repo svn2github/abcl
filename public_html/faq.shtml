@@ -65,10 +65,9 @@ Armed Bear Common Lisp is a conforming implementation of the
 is included in the <a href="#user-manual">User Manual</a>.</p>
 
 <p>
-The development version of ABCL, <a href="#repository">abcl-1.1.0-dev (aka "ABCL trunk")</a>, contains a complete
-implementation of the <a
-href="http://www.lisp.org/mop/index.html">AMOP</a> that is being
-extensively tested for release with <a href="http://trac.common-lisp.net/armedbear/milestone/1.1.0">abcl-1.1.0</a>.
+With the release of version 1.1.0, ABCL now contains a complete
+implementation of <a
+href="http://www.lisp.org/mop/index.html">AMOP</a>.
 </p>
 </div>
 
@@ -117,7 +116,7 @@ Alternatively, to report a bug, please mail a description of the
 problem, the version of ABCL you are using, and if possible a set of
 steps to reproduce the problem to the <a
 href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">armedbear-devel
-mailing list</a>.  We try to respond within a day at most to messages.
+mailing list</a>.  We endeavor to respond within a day to messages.
 A convenient way to browse the mailing list archives can be found by
 <a href="http://news.gmane.org/gmane.lisp.armedbear.devel">the gmane
 loom interface to the NNTP group gmane.lisp.armedbear.devel</a>.
@@ -175,7 +174,7 @@ this is already the case.
   Additionally, compilation of <a href="http://ap5.com/">AP5</a> is used to
   improve this measure too.</p>
 
-<p>ABCL 1.0.1 fails roughly 20 out of 21702 tests in the ANSI test
+<p>ABCL 1.1.1 fails roughly 12 out of 21702 tests in the ANSI test
 suite in interpreted and compiled modes, a constant number over the
 past releases.</p>
 
@@ -212,7 +211,7 @@ This ABCL source repository is also exported read-only via HTTP at
   kind of documentation you're looking for.</p>
 
 <ol>
-  <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20120110a.pdf">Armed Bear Common Lisp User Manual</a></li>
+  <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20130214a.pdf">Armed Bear Common Lisp User Manual</a></li>
   <li>Our <a href="http://trac.common-lisp.net/armedbear/wiki">wiki</a></li>
   <li>The <a href="http://trac.common-lisp.net/armedbear/browser">source
     code (JavaDoc and general comments)</a></li>
