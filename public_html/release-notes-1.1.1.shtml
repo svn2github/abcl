@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>ABCL - Release notes v1.1.0</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html;
+                                           charset=ISO-8859-1"/>
+  <link rel="rdf" type="application/rdf" href="http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/abcl.rdf"/>
+
+</head>
+
+<body>
+ <div class="header">
+   <h1>ABCL - Release notes for version v1.1.1</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<h2>Changes in ABCL 1.1.1</h2>
+
+<p>
+  abcl-1.1.1 is a maintenance release.
+</p>
+
+<dl>
+  <dt>(A)MOP</dt>
+
+  <dd>All reported errors with the MOP implementation have been addressed.</dd>
+
+  <dt>SETF autoloader</dt>
+
+  <dd>An autoloader for SETF expansion functions has been implemented,
+    eliminating the errors associated with not being able to use (SETF
+    SYMBOL) without first invoking SYMBOL as a function.
+  </dd>
+
+  <dt>ANSI Test</dt>
+  <dd> All outstanding regressions in the ANSI test suite with respect to
+    abcl-1.0.1 have been fixed.
+  </dd>
+  
+  <dt>ABCL-ASDF</dt>
+
+  <dd>The ability to resolve Maven components in ASDF system definitions has been restored.
+  </dd>
+
+</dl>
+
+<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/CHANGES">CHANGES</a>.</p>
+  
+
+<p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
+
+</div>
+
+<div style="float:left;width:100%">
+ <hr />
+ <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.1.0.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>
+</div>
+</body>
+</html>
