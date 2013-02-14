@@ -3,20 +3,20 @@
 @prefix abcl:            <https://abcl.org#> .
 @prefix doap:            <http://usefulinc.com/ns/doap#> .
 
-<> dc:version           "abcl-1.1.1-dev"  ;
-   abcl:branch          <http://svn.common-lisp.net/armedbear/branches/1.1.x/>
+<> dc:version           "abcl-1.1.1"  ;
+#   abcl:branch          <http://svn.common-lisp.net/armedbear/branches/1.1.x/>
 #   abcl:releaseCandidate      "dev" ;
 #   abcl:buildIdentifier       "dev" ;
-#   a abcl:release                       ;
-#   abcl:tag             <http://svn.common-lisp.net/armedbear/tags/1.1.0.2/> ;
-#   dc:identifier        <urn:abcl.org/release/1.1.0.2> ;           
+   a abcl:release                       ;
+   abcl:tag             <http://svn.common-lisp.net/armedbear/tags/1.1.1/> ;
+   dc:identifier        <urn:abcl.org/release/1.1.1> ;           
    doap:language        "Common Lisp" ;
    dc:created           "01-JAN-2004" ;
-   dc:modified          "19-DEC-2012" .
+   dc:modified          "14-FEB-2013" .
 
 <> 
  abcl:is "W3C Turtle RDF serializations format" ; 
- abcl:tag   <http://svn.common-lisp.net/tags/1.1.0/> .
+ abcl:tag   <http://svn.common-lisp.net/tags/1.1.1/> .
 
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
@@ -54,7 +54,6 @@
    rdf:_4"Windows Batch Script" 
 ] .
 
-
 <abcl:doap> 
   dc:contributor [ 
     a rdf:Alt;
@@ -79,7 +78,7 @@ _:user dc:identifier <http://ville.not.org/#me>  ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
      dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
 
-     rdfs:seeAlso <urn:abcl.org/release/1.1.0> ;
+     rdfs:seeAlso <urn:abcl.org/release/1.1.1> ;
      dc:licenseDocument <file:COPYING> ;
      dc:licenseDocument <http://svn.common-lisp.net/branches/1.1.x/src/org/armedbear/LICENSE> ;
 ] .
@@ -125,13 +124,36 @@ doap:Project rdfs:seeAlso
     rdf:_5 abcl:jfli ;
     rdf:_6 abcl:abcl-asdf ;
     rdf:_7 abcl:jna ;
-    rdf:_8 abcl:asdf-jar 
+    rdf:_8 abcl:asdf-jar ;
+    rdf:_9 abcl:quicklisp-abcl ;
 ] .
 
 abcl:abcl-contrib  
-  dc:identifier <urn:abcl.org/release/1.1.0/abcl-contrib#1.1.0> ;
+  dc:identifier <urn:abcl.org/release/1.1.1/abcl-contrib#1.1.1> ;
   rdfs:seeAlso <file:contrib/README.markdown> .                             
 
 abcl:asdf-install
-  dc:identifier <urn:abcl.org/release/1.1.0/contrib/asdf-install#0.6.10.2> ;
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/asdf-install#0.6.10.2> ;
   rdfs:seeAlso <file:contrib/asdf-install/README> .                             
+
+abcl:abcl-asdf
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/abcl-asdf#1.1.0> ;
+  rdfs:seeAlso <file:contrib/asdf-asdf/README.markdown> .                             
+
+abcl:asdf-jar 
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/asdf-jar#0.2.1> ;
+  rdfs:seeAlso <file:contrib/asdf-jar/README.markdown> .                             
+
+abcl:jfli
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/jfli#0.2.0> ;
+  rdfs:seeAlso <file:contrib/jfli/README> .                             
+
+abcl:jss
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/jss#3.0.5> ;
+  rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
+
+abcl:jna
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/jna#3.5.1> .
+
+abcl:quicklisp-abcl
+  dc:identifier <urn:abcl.org/release/1.1.1/contrib/quicklisp-abcl#0.2.0> .

@@ -8,9 +8,9 @@
 
 \begin{document}
 \title{Armed Bear Common Lisp User Manual}
-\date{Version 1.1.0\\
+\date{Version 1.1.1\\
 \smallskip
-December 7, 2012}
+February 14, 2013}
 \author{Mark Evenson \and Erik H\"{u}lsmann \and Rudolf Schlatte \and
   Alessio Stalla \and Ville Voutilainen}
 
@@ -18,7 +18,7 @@ December 7, 2012}
 
 \tableofcontents
 
-%%Preface to the second edition, abcl-1.1.0.
+%%Preface to the second edition, abcl-1.1.1.
 
 \subsection{Preface to the Second Edition}
 
@@ -116,7 +116,7 @@ contemporary Common Lisp.
 \textsc{ABCL} is licensed under the terms of the \textsc{GPL} v2 of
 June 1991 with the ``classpath-exception'' (see the file
 \texttt{COPYING} in the source distribution \footnote{See
-  \url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/COPYING}} for
+  \url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/COPYING}} for
 the license, term 13 in the same file for the classpath exception).
 This license broadly means that you must distribute the sources to
 ABCL, including any changes you make, together with a program that
@@ -142,7 +142,7 @@ course.
 
 
 \textsc{ABCL} is packaged as a single jar file usually named either
-\texttt{abcl.jar} or possibly something like \texttt{abcl-1.1.0.jar} if
+\texttt{abcl.jar} or possibly something like \texttt{abcl-1.1.1.jar} if
 using a versioned package on the local filesystem from your system
 vendor.  This jar file can be executed from the command line to obtain a
 \textsc{REPL}\footnote{Read-Eval Print Loop, a Lisp command-line}, viz:
@@ -1145,7 +1145,7 @@ CL-USER> (require 'asdf)
 
 The \textsc{ABCL} contrib is packaged as a separate jar archive usually named
 \code{abcl-contrib.jar} or possibly something like
-\code{abcl-contrib-1.1.0.jar}.  The contrib jar is not loaded by the
+\code{abcl-contrib-1.1.1.jar}.  The contrib jar is not loaded by the
 implementation by default, and must be first intialized by the
 \code{REQUIRE} mechanism before using any specific contrib:
 
@@ -1232,7 +1232,7 @@ Notice that all recursive dependencies have been located and installed
 locally from the network as well.
 
 More extensive documentations and examples can be found at
-\url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/contrib/abcl-asdf/README.markdown}.
+\url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/abcl-asdf/README.markdown}.
 
 
 \section{asdf-jar}
@@ -1244,7 +1244,7 @@ this package will recursively package all the required source and
 fasls in a jar archive.
 
 The documentation for this contrib can be found at
-\url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/contrib/asdf-jar/README.markdown}.
+\url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/asdf-jar/README.markdown}.
 
 
 \section{jss}
@@ -1280,14 +1280,14 @@ CL-USER) (#"propertyNames" (#"getProperties" 'java.lang.System))
 \end{listing-lisp} %$ <-- un-confuse Emacs font-lock
 
 Some more information on jss can be found in its documentation at
-\url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/contrib/jss/README.markdown}.
+\url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/jss/README.markdown}.
 
 \section{jfli}
 \label{section:jfli}
 
 The contrib contains a pure-Java version of JFLI. 
 
-\url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/contrib/jfli/README}.
+\url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/jfli/README}.
 
 
 \section{asdf-install}
@@ -1302,7 +1302,7 @@ the value of the \textsc{ASDF} central registry in
 stashing \textsc{ABCL} specific system definitions for convenient
 access.
 
-\url{http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/contrib/asdf-install/README}.
+\url{http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/asdf-install/README}.
 
 
 \chapter{History}
@@ -1327,8 +1327,9 @@ stating the conformance of Armed Bear Common Lisp to \textsc{ANSI}, we
 released abcl-1.0.0.  We released abcl-1.0.1 as a maintainence release
 on January 10, 2012.
 
-In December 2012, we revised the implementation by adding \textsc{(A)MOP}
-with the release of abcl-1.1.0.
+In December 2012, we revised the implementation by adding
+\textsc{(A)MOP} with the release of abcl-1.1.0.  We released
+abcl-1.1.1 as a maintainence release on Feburary 14, 2013.
 
 \appendix 
 

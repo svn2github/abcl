@@ -164,6 +164,6 @@ The following ASDF defintion loads enough JVM artifacts to use the
     Created: 2011-01-01
     Revised: 2012-12-06
 
-    <> dc:documentation <urn:abcl.org/release/1.1.0/abcl-contrib#1.1.0> .    
+    <> dc:documentation <urn:abcl.org/release/1.1.1/abcl-contrib#1.1.0> .    
 
     
