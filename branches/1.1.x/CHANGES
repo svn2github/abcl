@@ -1,6 +1,12 @@
+Version 1.1.2
+=============
+svn.uri=:"http//svn.common-lisp.net/armedbear/branches/1.1.x/CHANGES"
+(unreleased)
+
+
 Version 1.1.1
 =============
-svn.uri=:"http//svn.common-lisp.net/armedbear/tags/1.1.1/CHANGES"
+svn.uri=:"http//svn.common-lisp.net/armedbear/tags/abcl/1.1.1/CHANGES"
 (14 Feburary 2013)
 
 Fixes

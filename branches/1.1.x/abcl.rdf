@@ -4,19 +4,18 @@
 @prefix doap:            <http://usefulinc.com/ns/doap#> .
 
 <> dc:version           "abcl-1.1.1"  ;
-#   abcl:branch          <http://svn.common-lisp.net/armedbear/branches/1.1.x/>
-#   abcl:releaseCandidate      "dev" ;
-#   abcl:buildIdentifier       "dev" ;
-   a abcl:release                       ;
-   abcl:tag             <http://svn.common-lisp.net/armedbear/tags/1.1.1/> ;
-   dc:identifier        <urn:abcl.org/release/1.1.1> ;           
+#   a abcl:release                       ;
    doap:language        "Common Lisp" ;
    dc:created           "01-JAN-2004" ;
    dc:modified          "14-FEB-2013" .
 
 <> 
  abcl:is "W3C Turtle RDF serializations format" ; 
- abcl:tag   <http://svn.common-lisp.net/tags/1.1.1/> .
+   abcl:branch          <http://svn.common-lisp.net/armedbear/branches/1.1.x/> ;
+   # abcl:tag   <http://svn.common-lisp.net/tags/1.1.1/> ;
+#   abcl:releaseCandidate      "dev" ;
+   abcl:buildIdentifier       "dev" .
+
 
 @prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
