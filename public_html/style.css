@@ -11,7 +11,7 @@ div#main {
 
 div#title {
     width: 80%;
-    margin-left: 10%;
+    margin-left: 12%;
 }
 
 .header {
@@ -30,8 +30,6 @@ div#title {
     font-size: small;
     font-style: italic;
     text-align: right;
-    background-color:#3366ff;
-    color: #ffffff;
     border-radius: 1em;
     border-width: 2px;
     border-color:#002244;
@@ -40,7 +38,7 @@ div#title {
 
 .footer a:link, .footer a:visited {
     font-weight: bold;
-    color: #ffffff;
+
     text-decoration: underline;
 }
 
@@ -88,10 +86,10 @@ div#title {
 
 /* "rn" meaning release notes */
 div.rn {
-    float:        left;
-    width:        20cm;
+    max-width:        20cm;
     margin-top:    1cm;
     margin-bottom: 1cm;
+    margin-left: 15%;
 }
 div.rn dl {
     width:      20cm;
@@ -106,8 +104,8 @@ div.rn dl dt {
     padding-left:       1em;
     padding-top:        0.3em;
     padding-bottom:     0.3em;
-  border-top-left-radius:	1em;
-  border-bottom-right-radius:	0.5em;
+    border-top-left-radius:	1em;
+    border-bottom-right-radius:	0.5em;
 }
 div.rn dl dd {
     margin-top: 1em;
@@ -152,15 +150,22 @@ td.summary-header a:link, td.summary-header a:visited {
     color: white;
 }
 
+div#left-bar {
+    float: left;
+    width: 10%;
+}
 div#left-menu {
     background-color: #3366ff;
     border-radius: 1em;
     border-style: solid;
     border-color: #999999;
     float: left;
-    width: 10%;
     font-family: sans-serif;
     font-size: smaller;
+}
+
+div#oloh-button {
+    float: left;
 }
 
 ul.menu-list  {

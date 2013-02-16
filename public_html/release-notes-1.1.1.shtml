@@ -3,7 +3,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>ABCL - Release notes v1.1.0</title>
+  <title>Release Notes for ABCL 1.1.0</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html;
                                            charset=ISO-8859-1"/>
@@ -12,15 +12,13 @@
 </head>
 
 <body>
- <div class="header">
-   <h1>ABCL - Release notes for version v1.1.1</h1>
+ <div id="title" class="header">
+   <h1>Release Notes for ABCL 1.1.1</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
 
 <div class="rn">
-
-<h2>Changes in ABCL 1.1.1</h2>
 
 <p>
   abcl-1.1.1 is a maintenance release.
@@ -57,15 +55,15 @@
 
 </div>
 
-<div style="float:left;width:100%">
- <hr />
+<div class="footer">
  <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+ <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
-<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.1.0.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.0.1.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>
 </div>
+
 </body>
 </html>

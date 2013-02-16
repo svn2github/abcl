@@ -6,28 +6,18 @@
   <title><!--#include virtual="project-name" --></title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style type="text/css">
-dt { font-size: 110%; font-weight: bold }
-dd { }
-</style>
 </head>
 
 <body>
- <div class="header">
-   <h1><!--#include virtual="project-name" --></h1>
+ <div id= "title" class="header">
+   <h1>ABCL 0.13 Release Notes</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
 
-<div style="float:left;width:80ex;margin-top:1cm">
+<div class="rn">
 
-
-<h2 style="text-align:center">Release notes for ABCL 0.13</h2>
-
-<p>
-  <b style="font-family: sans-serif; font-size: large;">Major changes and new features</b>
-</p>
-<dl style="margin-left:3cm;width:20cm">
+<dl>
   <dt>JSR-223: Java Scripting Plugin
   </dt>
   <dd>ABCL supports - when built with the <code>javax.script</code> package
@@ -47,21 +37,17 @@ dd { }
   <dd>Patterns such as #p"cl-*.lisp" are now supported.</dd>
 </dl>
 
-<h2 style="text-align:center">Release notes for ABCL 0.12 and older</h2>
-
-<p>These release notes have not been created before. If someone takes
-  the effort to create them, they will be added for 0.11 and 0.12.</p>
-
 </div>
 
-<div style="float:left;width:100%">
- <hr />
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+<div class="footer">
+ <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
+
 </body>
 </html>

@@ -3,24 +3,20 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>ABCL - Release notes v0.27</title>
+  <title>Release notes for ABCL 0.27</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
 </head>
 
 <body>
- <div class="header">
-   <h1>ABCL - Release notes for version 0.27</h1>
+ <div id="title" class="header">
+   <h1>Release Notes for ABCL 0.27</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
 
 <div class="rn">
 
-<h2>Most notable changes in ABCL 0.27</h2>
-
-
-<p><a href="release-notes-0.26.shtml">Release notes for older releases</a>.</p>
 
 <dl>
   <dt>Specify JVM artifacts by the ABCL-ASDF contrib
@@ -59,15 +55,17 @@
 </div>
 
 
+<p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
 
-<div style="float:left;width:100%">
- <hr />
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+<div class="footer">
+ <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
+
 </body>
 </html>

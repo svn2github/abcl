@@ -3,28 +3,22 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>Index of Armed Bear Common List Release Notes</title>
+  <title>Index of Armed Bear Common Lisp (ABCL) Release Notes</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-<style>
-dt { font-size: 110%; font-weight: bold }
-dd { }
-</style>
+
 </head>
 
 <body>
- <div class="header">
-   <h1><!--#include virtual="project-name" --></h1>
+ <div id="title" class="header">
+   <h1>Index of Armed Bear Common Lisp (ABCL) Release Notes</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
 
-<div style="float:left;width:80ex;margin-top:1cm">
+<div id="main">
 
-
-<h2 style="text-align:center">Index of Armed Bear Common List Release Notes</h2>
-
-<ul style="margin-left:3cm;width:20cm">
+<ul>
   <li><a href="release-notes-0.13.shtml">abcl-0.13</a></li>
   <li><a href="release-notes-0.14.shtml">abcl-0.14</a></li>
   <li><a href="release-notes-0.15.shtml">abcl-0.15</a></li>
@@ -42,18 +36,20 @@ dd { }
   <li><a href="release-notes-0.27.shtml">abcl-0.27</a></li>
   <li><a href="release-notes-1.0.0.shtml">abcl-1.0.0</a></li>
   <li><a href="release-notes-1.0.1.shtml">abcl-1.0.1</a></li>
+  <li><a href="release-notes-1.1.0.shtml">abcl-1.1.0</a></li>
+  <li><a href="release-notes-1.1.1.shtml">abcl-1.1.1</a></li>
 </ul>
 
 </div>
-
-<div style="float:left;width:100%">
- <hr />
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+<div class="footer">
+ <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id$</div>
 </div>
+
 </body>
 </html>
