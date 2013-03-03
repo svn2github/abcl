@@ -1,0 +1,21 @@
+
+
+Purpose
+=======
+
+The purpose of the branch is to abstract a layer out of
+compiler-pass2 to manage byte code emission, with stack and local
+types tracked throughout the code emission.
+
+The result should be a layer which collects enough information
+to be able to generate "format 50" class files. Additionally,
+the layer should provide for a place to hook in other code
+backends.
+
+Status
+======
+
+The branch is used to record my thoughts and progress on the matter
+as well as discuss the general direction with co-developers.
+
+Actual code can be compiled, but isn't used so far.
