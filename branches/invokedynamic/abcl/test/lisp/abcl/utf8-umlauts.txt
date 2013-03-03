@@ -1,3 +1,0 @@
-;; some umlauts: ÄÄÄÄääääÖÖÖÖööööÅÅÅÅåååå
-(defun not-so-hard ()
-  (format t "just a debug print~%"))
