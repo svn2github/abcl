@@ -1,7 +1,7 @@
-;;; jvm-class-file.lisp
+;;; jvm-method.lisp
 ;;;
 ;;; Copyright (C) 2010 Erik Huelsmann
-;;; $Id: jvm-class-file.lisp 14096 2012-08-15 22:55:27Z ehuelsmann $
+;;; $Id$
 ;;;
 ;;; This program is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU General Public License
