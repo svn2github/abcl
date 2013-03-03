@@ -43,6 +43,7 @@
   (require "DUMP-FORM")
   (require "JVM-INSTRUCTIONS")
   (require "JVM-CLASS-FILE")
+  (require "JVM-METHOD")
   (require "JVM")
   (require "COMPILER-PASS1")
   (require "JAVA"))
@@ -145,6 +146,7 @@
     (5
      (emit 'iconst_5))
     (t
+     (assert (<= most-negative-fixnum n most-positive-fixnum))
      (if (<= -128 n 127)
          (emit 'bipush n)
          (if (<= -32768 n 32767)

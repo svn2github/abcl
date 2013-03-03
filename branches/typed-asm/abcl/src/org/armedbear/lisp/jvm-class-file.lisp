@@ -467,11 +467,17 @@ in the constant pool."
 (declaim (inline make-constant-float make-constant-int))
 (defun make-constant-float (index value)
   "Creates a `constant-float/int' structure instance containing a float."
-  (%make-constant-float/int 4 index value))
+  (%make-constant-float/int 4 index (if (minusp value)
+                                        (1+ (logxor (- value) #xFFFFFFFF)) ;; convert to unsigned
+                                value)))
 
 (defun make-constant-int (index value)
   "Creates a `constant-float/int' structure instance containing an int."
-  (%make-constant-float/int 3 index value))
+  (assert (and t (<= most-negative-fixnum value most-positive-fixnum)))
+  (%make-constant-float/int 3 index
+                            (if (minusp value)
+                                (1+ (logxor (- value) #xFFFFFFFF)) ;; convert to unsigned
+                                value)))
 
 (defstruct (constant-double/long (:constructor
                                   %make-constant-double/long (tag index value))
@@ -828,11 +834,12 @@ The class can't be modified after finalization."
   (finalize-attributes (class-file-attributes class) nil class))
 
 
-(declaim (inline write-u1 write-u2 write-u4 write-s4))
+(declaim (inline write-u1 write-u2 write-u4))
 (defun write-u1 (n stream)
   (declare (optimize speed))
   (declare (type (unsigned-byte 8) n))
   (declare (type stream stream))
+  (assert (<= #x0 n #xFF))
   (write-8-bits n stream))
 
 (defknown write-u2 (t t) t)
@@ -840,6 +847,7 @@ The class can't be modified after finalization."
   (declare (optimize speed))
   (declare (type (unsigned-byte 16) n))
   (declare (type stream stream))
+  (assert (<= #x0 n #xFFFF))
   (write-8-bits (logand (ash n -8) #xFF) stream)
   (write-8-bits (logand n #xFF) stream))
 
@@ -847,16 +855,9 @@ The class can't be modified after finalization."
 (defun write-u4 (n stream)
   (declare (optimize speed))
   (declare (type (unsigned-byte 32) n))
+  (assert (<= #x0 n #xFFFFFFFF))
   (write-u2 (logand (ash n -16) #xFFFF) stream)
   (write-u2 (logand n #xFFFF) stream))
-
-(declaim (ftype (function (t t) t) write-s4))
-(defun write-s4 (n stream)
-  (declare (optimize speed))
-  (cond ((minusp n)
-         (write-u4 (1+ (logxor (- n) #xFFFFFFFF)) stream))
-        (t
-         (write-u4 n stream))))
 
 (declaim (ftype (function (t t t) t) write-ascii))
 (defun write-ascii (string length stream)
@@ -867,7 +868,6 @@ The class can't be modified after finalization."
   (dotimes (i length)
     (declare (type (unsigned-byte 16) i))
     (write-8-bits (char-code (char string i)) stream)))
-
 
 (declaim (ftype (function (t t) t) write-utf8))
 (defun write-utf8 (string stream)

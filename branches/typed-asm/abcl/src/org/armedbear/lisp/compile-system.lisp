@@ -294,6 +294,7 @@
       (load (do-compile "source-transform.lisp"))
       (load (do-compile "compiler-macro.lisp"))
       (load (do-compile "jvm-instructions.lisp"))
+      (load (do-compile "jvm-method.lisp"))
       (load (do-compile "setf.lisp"))
       (load (do-compile "extensible-sequences-base.lisp"))
       (load (do-compile "require.lisp"))
