@@ -26,9 +26,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:svn:svn://common-lisp.net/project/armedbear/svn/trunk/</connection>
-    <developerConnection>scm:svn:svn+ssh://common-lisp.net/project/armedbear/svn/trunk/</developerConnection>
-    <url>http://trac.common-lisp.net/armedbear/browser/trunk/abcl</url>
+    <connection>scm:svn:http://abcl.org/svn/trunk/</connection>
+    <developerConnection>scm:svn:svn+ssh://abcl.org/project/armedbear/svn/trunk/</developerConnection>
+    <url>http://lisp.not.org/trac/armedbear/browser/trunk/abcl</url>
   </scm>
   <developers>
     <developer>

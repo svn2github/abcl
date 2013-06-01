@@ -62,7 +62,7 @@
 ;;;; notes were included.  Please see the ABCL revision history via
 ;;;; the interface at
 ;;;;
-;;;; http://trac.common-lisp.net/armedbear/browser/trunk/abcl/src/org/armedbear/lisp/gray-streams.lisp 
+;;;; http://lisp.not.org/trac/armedbear/browser/trunk/abcl/src/org/armedbear/lisp/gray-streams.lisp 
 ;;;;
 ;;;; for a more relevant history vis a vis the ABCL implementation.
 ;;;;

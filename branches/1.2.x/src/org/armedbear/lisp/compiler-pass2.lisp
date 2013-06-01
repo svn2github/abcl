@@ -6842,7 +6842,7 @@ We need more thought here.
     ;; We used to use JSR and RET JVM instructions to prevent
     ;; duplication of output code. However, this led to JVM stack
     ;; inconsistency errors
-    ;; (see http://trac.common-lisp.net/armedbear/ticket/21)
+    ;; (see http://lisp.not.org/trac/armedbear/ticket/21)
     (let* ((protected-form (cadr form))
            (unwinding-form (caddr form))
            (cleanup-forms (cdddr form))
