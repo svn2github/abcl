@@ -6,8 +6,9 @@ Created by Alan Ruttenberg
 ### Colophon
 
 <> dc:created "2005" ;
+   dc:author <urn:alan.ruttenberg> ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "-DEC-2012" ;
+   dc:revised "03-JUN-2013" ;
    rdfs:seeAlso <urn:abcl.org/release/1.2.0/contrib/jss#3.0.6> .
 
 
