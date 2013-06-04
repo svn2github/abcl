@@ -9,7 +9,8 @@ released at ECLM 2013 Madrid, ES // 01 June 2013
 
    * a more robust MOP implementation
 
-   * common cases of creating purely synthetic JAVA:RUNTIME-CLASS now work
+   * Common cases of creating purely synthetic JAVA:JNEW-RUNTIME-CLASS
+     now (mostly) work.  Please report corner cases for fixing.
 
    * the system autoloader has been extended to cover functions bound to
      symbol properties
@@ -20,6 +21,7 @@ Issues Resolved
 [#200]   ABCL compiler fails to produce loadable fasl for XPATH                                [#321]   ASDF 3.01 
 [#256]   Compilation failure in com.informatimago
 [#274]   compiling "com.informatimago.common-lisp.cesarum") hangs [> 10 minutes]
+[#153]
  [#32]   Modify the currently disabled runtime-class.lisp code to not require ASM
 [#152]   ql:closer-mop doesn't work
 [#203]   Failure as build host for SBCL            
