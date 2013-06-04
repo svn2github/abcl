@@ -3,6 +3,13 @@ JSS
 
 Created by Alan Ruttenberg
 
+### Colophon
+
+<> dc:created "2005" ;
+   dc:author "Mark <evenson.not.org@gmail.com>";
+   dc:revised "-DEC-2012" ;
+   rdfs:seeAlso <urn:abcl.org/release/1.2.0/contrib/jss#3.0.6> .
+
 
 JSS stands for either "Java Simple Syntax" or "Java Syntax Sucks",
 depending on your mood.
@@ -116,24 +123,17 @@ Some notes on other compatibility issues:
    
 # API
 
-  1.0 
+##  1.0 
     Equivalent to Alan Ruttenberg's version included with the original
     [lsw]().  
     
-[lsw]: http://mumble.net:8080/svn/lsw/trunk/
+[lsw]:  http://mumble.net:8080/svn/lsw/trunk/
 [lsw2]: let-me-google-that-for-you    
     
 
-  3.0 
+##  3.0 
      In the JSS package loaded from [abcl-contrib]() 
      
 abcl-contrib: http://svn.common-lisp.net/armedbear/trunk/abcl/contrib/     
    
-# Colophon
-
-<> dc:created "2005" ;
-   dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "06-DEC-2012" ;
-   <> abcl:documents <urn:abcl.org/release/1.2.0/contrib/jss#3.0.5" .
-
    

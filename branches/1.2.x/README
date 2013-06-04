@@ -1,13 +1,23 @@
-Armed Bear Common Lisp README
-=============================
+README for Armed Bear Common Lisp 
+=================================
+
+### Colophon
+
+<> dc:created "2005" ;
+   a dc:readme ;
+   dc:author "Mark <evenson.not.org@gmail.com>";
+   dc:revised "03-JUN-2012" ;
+   rdfs:seeAlso <http://abcl.org/releases/1.2.0> .
 
 GENERAL INFORMATION
 -------------------
 
-Armed Bear Common Lisp is a conforming implementation of ANSI Common
-Lisp that runs in a Java virtual machine.  It compiles Lisp code
-directly to Java byte code.
-
+Armed Bear Common Lisp (ABCL) is a conforming implementation of ANSI
+Common Lisp (CL) running in a Java virtual machine (JVM).  ABCL
+features an implementation of CL:COMPILE-FILE that emits operating
+system neutral byte archives packaged by the zip compression format
+which contains artifacts whose loading the implementation of CL:LOAD
+understands.
 
 LICENSE
 =======
@@ -34,9 +44,19 @@ for each linked independent module, the terms and conditions of the
 license of that module. An independent module is a module which is not
 derived from or based on this software. If you modify this software,
 you may extend this exception to your version of the software, but you
-are not obligated to do so. If you do not wish to do so, delete this
-exception statement from your version.
+are not obligated to do so. Otherwise, your modified implementation
+now falls under the terms of the original license minus this
+exception.  If you do not wish to do so, delete this exception
+statement from your version.
 
+BUGS
+====
+
+ABCL is a conforming ANSI Common Lisp implementation.  Any other
+behavior should be reported as a bug.
+
+ABCL now has a manual stating its conformance to the ANSI standard,
+providing a compliant and practical Common Lisp implementation.
 
 RUNNING FROM BINARY RELEASE
 ===========================
@@ -173,36 +193,39 @@ will build ABCL.  If ASDF isn't present, simply LOAD the
 effect as loading the ASDF definition.
 
 
-BUGS
-====
 
-ABCL is a conforming ANSI Common Lisp implementation.  Any other
-behavior should be reported as a bug.
+## Contact
 
-ABCL now has a manual stating its conformance to the ANSI standard,
-providing a compliant and practical Common Lisp implementation.
-Because of this, 
+Please report problems to either the [development mailing list][abcl-smtp]:
+
+[abcl-smtp]: http://news.gmane.org/gmane.lisp.armedbear.devel
+
+or the [Trac interface with a suitable OpenID][abcl-trac].
+
+[abcl-trac]   http://lisp.not.org/trac/armedbear
+
 
 
 ### Tests 
 
-ABCL 1.2.0 now fails only 1[4-6] out of 21708 total tests in the ANSI CL
+ABCL 1.2.0 now fails only 1[1-3] out of 21708 total tests in the ANSI CL
 test suite (derived from the tests originally written for GCL).
 
 Maxima's test suite runs without failures.
 
-ABCL comes with a test suite, see the output of `ant help.test` for more
-information.
+ABCL comes with a test suite.  Please see the output of `ant
+help.test` for more information.
 
 ### Deficiencies 
 
-As of abcl-1.2.0, there are no known deficiencies with the MOP.
+As of abcl-1.2.0, there are no known deficiencies with the
+implementation of (A)MOP.
 
-# Contact
+[Please consult the state of issues][abcl-issues] for detailed
+information on the state of the implementation with respect to
+conformance to the ANSI standard.
 
-Please report problems to the development mailing list:
-
-    <armedbear-devel@common-lisp.net>
+[abcl-issues]: http://lisp.not.org/trac/armedbear/report/1
 
 Have fun!
 
