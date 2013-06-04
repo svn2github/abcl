@@ -224,28 +224,32 @@ Returns the type (Java class) of FIELD
 --- Function: \textbf{jnew-runtime-class} [\textbf{java}] \textit{class-name \&rest args \&key (superclass java.lang.Object) interfaces constructors methods fields (access-flags (quote (public))) annotations}
 
 \begin{adjustwidth}{5em}{5em}
-Creates and loads a Java class with methods calling Lisp closures
-   as given in METHODS.  CLASS-NAME and SUPER-NAME are strings,
-   INTERFACES is a list of strings, CONSTRUCTORS, METHODS and FIELDS are
-   lists of constructor, method and field definitions.
 
-   Constructor definitions - currently NOT supported - are lists of the form
-   (argument-types function \&optional super-invocation-arguments)
-   where argument-types is a list of strings and function is a lisp function of
-   (1+ (length argument-types)) arguments; the instance (`this') is passed in as
-   the last argument. The optional super-invocation-arguments is a list of numbers
-   between 1 and (length argument-types), where the number k stands for the kth argument
-   to the just defined constructor. If present, the constructor of the superclass
-   will be called with the appropriate arguments. E.g., if the constructor definition is
-   (("java.lang.String" "int") \#'(lambda (string i this) ...) (2 1))
-   then the constructor of the superclass with argument types (int, java.lang.String) will
-   be called with the second and first arguments.
+Creates and loads a Java class with methods calling Lisp closures as
+given in METHODS.  CLASS-NAME and SUPER-NAME are strings, INTERFACES
+is a list of strings, CONSTRUCTORS, METHODS and FIELDS are lists of
+constructor, method and field definitions.
 
-   Method definitions are lists of the form
-   (method-name return-type argument-types function \&key modifiers annotations)
-   where method-name is a string, return-type and argument-types are strings or keywords for
-   primitive types (:void, :int, etc.), and function is a Lisp function of minimum arity
-   (1+ (length argument-types)); the instance (`this') is passed in as the first argument.
+Constructor definitions - currently NOT supported - are lists of the
+form (argument-types function \&optional super-invocation-arguments)
+where argument-types is a list of strings and function is a lisp
+function of (1+ (length argument-types)) arguments; the instance
+(`this') is passed in as the last argument. The optional
+super-invocation-arguments is a list of numbers between 1 and (length
+argument-types), where the number k stands for the kth argument to the
+just defined constructor. If present, the constructor of the
+superclass will be called with the appropriate arguments. E.g., if the
+constructor definition is (("java.lang.String" "int") \#'(lambda
+(string i this) ...) (2 1)) then the constructor of the superclass
+with argument types (int, java.lang.String) will be called with the
+second and first arguments.
+
+Method definitions are lists of the form (method-name return-type
+argument-types function \&key modifiers annotations) where
+   method-name is a string, return-type and argument-types are strings
+   or keywords for primitive types (:void, :int, etc.), and function
+   is a Lisp function of minimum arity (1+ (length argument-types));
+   the instance (`this') is passed in as the first argument.
 
    Field definitions are lists of the form (field-name type \&key modifiers annotations).
 \end{adjustwidth}
