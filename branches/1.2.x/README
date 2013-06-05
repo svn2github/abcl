@@ -6,7 +6,7 @@ README for Armed Bear Common Lisp
 <> dc:created "2005" ;
    a dc:readme ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "03-JUN-2012" ;
+   dc:revised "05-JUN-2012" ;
    rdfs:seeAlso <http://abcl.org/releases/1.2.0> .
 
 GENERAL INFORMATION
@@ -202,7 +202,7 @@ Please report problems to either the [development mailing list][abcl-smtp]:
 
 or the [Trac interface with a suitable OpenID][abcl-trac].
 
-[abcl-trac]   http://lisp.not.org/trac/armedbear
+[abcl-trac]:   http://lisp.not.org/trac/armedbear
 
 
 
