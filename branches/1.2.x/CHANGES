@@ -18,7 +18,8 @@ released at ECLM 2013 Madrid, ES // 01 June 2013
 Issues Resolved
 ---------------
 
-[#200]   ABCL compiler fails to produce loadable fasl for XPATH                                [#321]   ASDF 3.01 
+[#200]   ABCL compiler fails to produce loadable fasl for XPATH                      
+[#321]   ASDF 3.01 
 [#256]   Compilation failure in com.informatimago
 [#274]   compiling "com.informatimago.common-lisp.cesarum") hangs [> 10 minutes]
 [#153]
@@ -30,7 +31,8 @@ Issues Resolved
 [#303]   CL:LOAD ignores :EXTERNAL-FORMAT argument
 [#304]   Stack abstraction inconsistency between Java and Lisp frames
 [#308]   Compiled FLET exhausts the stack
-[#309]   Printer should obey package-local nicknames                                           [#310]   Invocation of tests from from build.xml broken
+[#309]   Printer should obey package-local nicknames   
+[#310]   Invocation of tests from from build.xml broken
 [#311]   UIOP fails to upgrade
 [#312]   BORDEAUX-THREADS-TEST::CONDITION-VARIABLE hangs
 [#282]   Spurious macros redefinition warnings
