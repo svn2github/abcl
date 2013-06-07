@@ -59,7 +59,7 @@
 <h3 class="question">What is ABCL?</h3>
 <p>ABCL stands for Armed Bear Common Lisp.  ABCL is an implementation
 of Common Lisp hosted on the <a href="http://en.wikipedia.org/wiki/Java_virtual_machine">Java Virtual Machine</a>.  With the release of <a
-href="http://common-lisp.net/project/armedbear/#downloads">abcl-1.0</a>,
+href="http://lisp.not.org/project/armedbear/#downloads">abcl-1.0</a>,
 Armed Bear Common Lisp is a conforming implementation of the
 <a href="ftp://ftp1.ansi.org/cust_serv/td_10-25-10/ANSI%2BINCITS%2B226-1994%2B(R2004).pdf">ANSI Common Lisp specification</a>.  The required statement of conformance
 is included in the <a href="#user-manual">User Manual</a>.</p>
@@ -196,11 +196,11 @@ href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/">http://trac.com
 can be checked out via <a
 href="http://subversion.apache.org/">Subversion (aka "svn")</a> from
 the URI 
-<a href="svn://common-lisp.net/project/armedbear/svn/trunk/abcl/">svn://common-lisp.net/project/armedbear/svn/trunk/abcl/</a>.</p>
+<a href="svn://lisp.not.org/project/armedbear/svn/trunk/abcl/">svn://lisp.not.org/project/armedbear/svn/trunk/abcl/</a>.</p>
 
 <p>
 This ABCL source repository is also exported read-only via HTTP at 
-<a href="http://svn.common-lisp.net/armedbear/trunk/abcl">http://svn.common-lisp.net/armedbear/trunk/abcl</a>
+<a href="http://abcl.org/svn/trunk/abcl">http://abcl.org/svn/trunk/abcl</a>
 </p>
 </div>
 

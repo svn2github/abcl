@@ -26,31 +26,31 @@
               <tr>
                 <td style="font-weight: bold">Binary</td>
                 <td>
-                  <a href="releases/1.1.1/abcl-bin-1.1.1.tar.gz">abcl-bin-1.1.1.tar.gz</a>
-                  <a href="releases/1.1.1/abcl-bin-1.1.1.tar.gz.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.2.0/abcl-bin-1.2.0.tar.gz">abcl-bin-1.0.0.tar.gz</a>
+                  <a href="releases/1.2.0/abcl-bin-1.2.0.tar.gz.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.1.1/abcl-bin-1.1.1.zip">abcl-bin-1.1.1.zip</a>
-                  <a href="releases/1.1.1/abcl-bin-1.1.1.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.2.0/abcl-bin-1.2.0.zip">abcl-bin-1.2.0.zip</a>
+                  <a href="releases/1.2.0/abcl-bin-1.2.0.zip.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.1.1/abcl-contrib-1.1.1.jar">abcl-contrib-1.1.1.jar</a>
-                  <a href="releases/1.1.1/abcl-contrib-1.1.1.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.2.0/abcl-contrib-1.2.0.jar">abcl-contrib-1.2.0.jar</a>
+                  <a href="releases/1.2.0/abcl-contrib-1.2.0.zip.asc" class="asc">(pgp)</a>
                 </td>
               </tr>
               
               <tr>
                 <td style="font-weight: bold">Source</td>
                 <td>
-                  <a href="releases/1.1.1/abcl-src-1.1.1.tar.gz">abcl-src-1.1.1.tar.gz</a>
-                  <a href="releases/1.1.1/abcl-src-1.1.1.tar.gz.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.2.0/abcl-src-1.2.0.tar.gz">abcl-src-1.2.0.tar.gz</a>
+                  <a href="releases/1.2.0/abcl-src-1.2.0.tar.gz.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.1.1/abcl-src-1.1.1.zip">abcl-src-1.1.1.zip</a>
-                  <a href="releases/1.1.1/abcl-src-1.1.1.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.2.0/abcl-src-1.2.0.zip">abcl-src-1.2.0.zip</a>
+                  <a href="releases/1.2.0/abcl-src-1.2.0.zip.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/contrib/">
+                  <a href="http://abcl.org/svn/tags/1.2.0/abcl/contrib/">
                     abcl-contrib source
                   </a>
                 </td>
@@ -92,7 +92,7 @@
                 <li> <a href="http://abcl-dev.blogspot.com/"> Blog </a> </li>
                 <li> Introduction: <a href="doc/abcl-install-with-java.html">building &amp; running</a> </li>
                 <li> <a href="doc/abcl-user.html">Documentation</a> </li>
-                <li> <a href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">Examples</a> </li>
+                <li> <a href="http://lisp.not.org/tags/1.2.0/abcl/examples">Examples</a> </li>
                 <li> <a href="testimonials.shtml">Testimonials</a> </li>
                 <li> <a href="bugreporting.shtml">Bug reporting</a> </li>
               </ul>
@@ -103,8 +103,8 @@
                 href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old mailing list (abandoned)</a></li>
                 <li> <a href="http://news.gmane.org/gmane.editors.j.devel">Mailing list access on gmane</a></li>
                 <li> <a href="faq.shtml#repository">Repository</a> </li>
-                <li> <a href="http://trac.common-lisp.net/armedbear/wiki/TitleIndex">Technical wiki</a> </li>
-                <li> <a href="http://trac.common-lisp.net/armedbear/report/1">Bug tracker</a> </li>
+                <li> <a href="http://lisp.not.org/trac/armedbear/wiki/TitleIndex">Technical wiki</a> </li>
+                <li> <a href="http://lisp.not.org/trac/armedbear/report/1">Bug tracker</a> </li>
                 <li> <a href="contributing.shtml">Contributing</a> </li>
               </ul>
             </td>
@@ -176,7 +176,7 @@
 
     <div style="float:left;width:100%">
       <hr />
-      <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+      <p>Back to <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
 
       <div class="check">
         <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
