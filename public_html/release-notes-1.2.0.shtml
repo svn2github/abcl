@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Release Notes for ABCL 1.2.0</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html;
+                                           charset=ISO-8859-1"/>
+  <link rel="rdf" type="application/rdf" href="http://abcl.org/svn/tags/1.2.0/abcl/abcl.rdf"/>
+
+</head>
+
+<body>
+ <div id="title" class="header">
+   <h1>Release Notes for ABCL 1.2.0</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<p>
+  abcl-1.2.0 is a feature release
+</p>
+
+<pre>
+http//abcl.org/svn/tags/1.2.0/abcl/CHANGES
+released at ECLM 2013 Madrid, ES // 01 June 2013 
+
+   * Package local nicknames to behave like SBCL
+
+   * ASDF 3.0.1 is now shipped with the implementation
+
+   * a more robust MOP implementation
+
+   * Common cases of creating purely synthetic JAVA:JNEW-RUNTIME-CLASS
+     now (mostly) work.  Please report corner cases for fixing.
+
+   * the system autoloader has been extended to cover functions bound to
+     symbol properties
+
+Issues Resolved
+---------------
+
+[#200]   ABCL compiler fails to produce loadable fasl for XPATH                      
+[#321]   ASDF 3.01 
+[#256]   Compilation failure in com.informatimago
+[#274]   compiling "com.informatimago.common-lisp.cesarum") hangs [> 10 minutes]
+[#153]
+ [#32]   Modify the currently disabled runtime-class.lisp code to not require ASM
+[#152]   ql:closer-mop doesn't work
+[#203]   Failure as build host for SBCL            
+[#300]   Gray streams aren't streams
+[#302]   Symbols fail to autoload
+[#303]   CL:LOAD ignores :EXTERNAL-FORMAT argument
+[#304]   Stack abstraction inconsistency between Java and Lisp frames
+[#308]   Compiled FLET exhausts the stack
+[#309]   Printer should obey package-local nicknames   
+[#310]   Invocation of tests from from build.xml broken
+[#311]   UIOP fails to upgrade
+[#312]   BORDEAUX-THREADS-TEST::CONDITION-VARIABLE hangs
+[#282]   Spurious macros redefinition warnings
+</pre>
+
+<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.2.0/abcl/CHANGES">CHANGES</a>.</p>
+  
+
+<p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
+
+</div>
+
+<div class="footer">
+ <p>ABCL is <a href="http://lisp.not.org/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.0.1.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>
+</div>
+
+</body>
+</html>
