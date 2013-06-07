@@ -189,7 +189,7 @@ past releases.</p>
 <h3 class="question">Where is ABCL's source code repository?</h3>
 
 <p>The source code may be viewed with a web browser by visiting  <a
-href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/">http://trac.common-lisp.net/armedbear/browser/trunk/abcl/</a>.
+href="http://lisp.not.org/trac/armedbear/browser/trunk/abcl/">http://lisp.not.org/trac/armedbear/browser/trunk/abcl/</a>.
 </p>
 
 <p>If you want to build the source, ABCL trunk,
