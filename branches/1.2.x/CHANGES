@@ -1,6 +1,14 @@
+Version 1.2.1
+=============
+http//abcl.org/svn/tags/1.2.1/abcl/CHANGES
+Unreleased
+
+  * Fix (make-instance 'standard-generic-function)
+
+
 Version 1.2.0
 =============
-http//abcl.org/svn/tags/abcl/1.2.0/CHANGES
+http//abcl.org/svn/tags/1.2.0/abcl/CHANGES
 released at ECLM 2013 Madrid, ES // 01 June 2013 
 
    * Package local nicknames to behave like SBCL

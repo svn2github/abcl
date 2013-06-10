@@ -9,7 +9,7 @@ Created by Alan Ruttenberg
    dc:author <urn:alan.ruttenberg> ;
    dc:author "Mark <evenson.not.org@gmail.com>";
    dc:revised "03-JUN-2013" ;
-   rdfs:seeAlso <urn:abcl.org/release/1.2.0/contrib/jss#3.0.6> .
+   rdfs:seeAlso <urn:abcl.org/release/1.2.1/contrib/jss#3.0.6> .
 
 
 JSS stands for either "Java Simple Syntax" or "Java Syntax Sucks",
