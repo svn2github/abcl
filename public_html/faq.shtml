@@ -104,7 +104,7 @@ if you distribute ABCL, but otherwise the license of ABCL is not viral.
 
 <p>
 The current state of issues can be found in the <a
-href="http://trac.lisp.not.org/armedbear/report/1">ABCL issue
+href="http://lisp.not.org/trac/armedbear/report/1">ABCL issue
 tracker</a>.  Individuals with an <a
 href="http://en.wikipedia.org/wiki/Openid">OpenID</a> such as a Google
 ID may enter information directly in the bug tracker after
