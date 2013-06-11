@@ -202,7 +202,7 @@ the URI
   kind of documentation you're looking for.</p>
 
 <ol>
-  <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20130214a.pdf">Armed Bear Common Lisp User Manual</a></li>
+  <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20130607a.pdf">Armed Bear Common Lisp User Manual</a></li>
   <li>Our <a href="http://lisp.not.org/trac/armedbear/wiki">wiki</a></li>
   <li>The <a href="http://lisp.not.org/trac/armedbear/browser">source
     code (JavaDoc and general comments)</a></li>
