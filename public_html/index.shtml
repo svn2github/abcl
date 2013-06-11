@@ -26,7 +26,7 @@
               <tr>
                 <td style="font-weight: bold">Binary</td>
                 <td>
-                  <a href="releases/1.2.0/abcl-bin-1.2.0.tar.gz">abcl-bin-1.0.0.tar.gz</a>
+                  <a href="releases/1.2.0/abcl-bin-1.2.0.tar.gz">abcl-bin-1.2.0.tar.gz</a>
                   <a href="releases/1.2.0/abcl-bin-1.2.0.tar.gz.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
