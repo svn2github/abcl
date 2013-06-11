@@ -104,7 +104,7 @@ if you distribute ABCL, but otherwise the license of ABCL is not viral.
 
 <p>
 The current state of issues can be found in the <a
-href="http://trac.common-lisp.net/armedbear/report/1">ABCL issue
+href="http://trac.lisp.not.org/armedbear/report/1">ABCL issue
 tracker</a>.  Individuals with an <a
 href="http://en.wikipedia.org/wiki/Openid">OpenID</a> such as a Google
 ID may enter information directly in the bug tracker after
@@ -114,12 +114,8 @@ authenticating by your provider. </p>
 
 Alternatively, to report a bug, please mail a description of the
 problem, the version of ABCL you are using, and if possible a set of
-steps to reproduce the problem to the <a
-href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">armedbear-devel
+steps to reproduce the problem to the <a href="http://news.gmane.org/gmane.lisp.armedbear.devel">armedbear-devel
 mailing list</a>.  We endeavor to respond within a day to messages.
-A convenient way to browse the mailing list archives can be found by
-<a href="http://news.gmane.org/gmane.lisp.armedbear.devel">the gmane
-loom interface to the NNTP group gmane.lisp.armedbear.devel</a>.
 </p>
 
 <p>
@@ -193,15 +189,10 @@ href="http://lisp.not.org/trac/armedbear/browser/trunk/abcl/">http://lisp.not.or
 </p>
 
 <p>If you want to build the source, ABCL trunk,
-can be checked out via <a
-href="http://subversion.apache.org/">Subversion (aka "svn")</a> from
+can be checked out via <a href="http://subversion.apache.org/">Subversion (aka "svn")</a> from
 the URI 
-<a href="svn://lisp.not.org/project/armedbear/svn/trunk/abcl/">svn://lisp.not.org/project/armedbear/svn/trunk/abcl/</a>.</p>
+<a href="http://abcl.org/svn/trunk/abcl/">http://abcl.org/svn/trunk/abcl/</a>.</p>
 
-<p>
-This ABCL source repository is also exported read-only via HTTP at 
-<a href="http://abcl.org/svn/trunk/abcl">http://abcl.org/svn/trunk/abcl</a>
-</p>
 </div>
 
 <div class="h3" title="documentation" id="documentation">
@@ -212,11 +203,10 @@ This ABCL source repository is also exported read-only via HTTP at
 
 <ol>
   <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20130214a.pdf">Armed Bear Common Lisp User Manual</a></li>
-  <li>Our <a href="http://trac.common-lisp.net/armedbear/wiki">wiki</a></li>
-  <li>The <a href="http://trac.common-lisp.net/armedbear/browser">source
+  <li>Our <a href="http://lisp.not.org/trac/armedbear/wiki">wiki</a></li>
+  <li>The <a href="http://lisp.not.org/trac/armedbear/browser">source
     code (JavaDoc and general comments)</a></li>
-  <li>Specific <a
-href="http://trac.common-lisp.net/armedbear/browser/trunk/abcl/examples">examples</a></li>
+  <li>Specific <a href="http://lisp.not.org/trac/armedbear/browser/trunk/abcl/examples">examples</a></li>
 </ol>
 </div>
 
@@ -292,7 +282,7 @@ do?</h3>
 
 <div style="float:left;width:100%">
  <hr />
- <p>Back to <a href="http://common-lisp.net/">Common-lisp.net</a>.</p>
+ <p>Back to <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>

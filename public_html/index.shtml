@@ -99,10 +99,8 @@
             </td>
             <td>
               <ul>
-                <li> <a href="http://common-lisp.net/cgi-bin/mailman/listinfo/armedbear-devel">Mailing list</a> and <a
-                href="https://lists.sourceforge.net/lists/listinfo/armedbear-j-devel">the old mailing list (abandoned)</a></li>
-                <li> <a href="http://news.gmane.org/gmane.editors.j.devel">Mailing list access on gmane</a></li>
-                <li> <a href="faq.shtml#repository">Repository</a> </li>
+                <li> <a href="http://news.gmane.org/gmane.lisp.armedbear.devel">Mailing list</a></li>
+                <li> <a href="faq.shtml#repository">Source repository</a> </li>
                 <li> <a href="http://lisp.not.org/trac/armedbear/wiki/TitleIndex">Technical wiki</a> </li>
                 <li> <a href="http://lisp.not.org/trac/armedbear/report/1">Bug tracker</a> </li>
                 <li> <a href="contributing.shtml">Contributing</a> </li>

@@ -63,7 +63,7 @@ Issues Resolved
 [#282]   Spurious macros redefinition warnings
 </pre>
 
-<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.2.0/abcl/CHANGES">CHANGES</a>.</p>
+<p>The distribution contains a more detailed documentation of <a href="http://abcl.org/svn/tags/1.2.0/abcl/CHANGES">CHANGES</a>.</p>
   
 
 <p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>

@@ -7,7 +7,7 @@
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html;
                                            charset=ISO-8859-1"/>
-  <link rel="rdf" type="application/rdf" href="http://svn.common-lisp.net/armedbear/tags/1.1.0/abcl/abcl.rdf"/>
+  <link rel="rdf" type="application/rdf" href="http://abcl.org/svn/tags/1.1.0/abcl/abcl.rdf"/>
 
 </head>
 
@@ -48,7 +48,7 @@
 
 </dl>
 
-<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.1.1/abcl/CHANGES">CHANGES</a>.</p>
+<p>The distribution contains a more detailed documentation of <a href="http://abcl.org/svn/tags/1.1.1/abcl/CHANGES">CHANGES</a>.</p>
   
 
 <p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
@@ -56,8 +56,8 @@
 </div>
 
 <div class="footer">
- <p>ABCL is <a href="http://common-lisp.net/project/armedbear">Armed Bear Common Lisp</a>.</p>
- <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
+ <p>ABCL is <a href="http://abcl.org">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
