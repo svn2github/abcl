@@ -1,9 +1,17 @@
 Version 1.2.1
 =============
-http//abcl.org/svn/tags/1.2.1/abcl/CHANGES
-Unreleased
+http//abcl.org/svn/tags/abcl/1.2.1/CHANGES
+unreleased
+http://abcl.org/releases/1.2.1/rc-2
 
-  * Fix (make-instance 'standard-generic-function)
+*  Tested:  orcl-jdk-1.7.0_21 orcl-jdk-1.6.0_43
+
+** ansi tests rc-2 failing 11-13 of 21708 total.  
+   Some regressions since 1.1.1
+
+*  Stablility fixes; additional Quicklisp compatibility
+
+** Fix (make-instance 'standard-generic-function)
 
 
 Version 1.2.0

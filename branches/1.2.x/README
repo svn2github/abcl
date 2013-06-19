@@ -6,7 +6,7 @@ README for Armed Bear Common Lisp
 <> dc:created "2005" ;
    a dc:readme ;
    dc:author "Mark <evenson.not.org@gmail.com>";
-   dc:revised "05-JUN-2012" ;
+   dc:revised "19-JUN-2012" ;
    rdfs:seeAlso <http://abcl.org/releases/1.2.1> .
 
 GENERAL INFORMATION
