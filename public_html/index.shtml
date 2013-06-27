@@ -92,7 +92,7 @@
                 <li> <a href="http://abcl-dev.blogspot.com/"> Blog </a> </li>
                 <li> Introduction: <a href="doc/abcl-install-with-java.html">building &amp; running</a> </li>
                 <li> <a href="doc/abcl-user.html">Documentation</a> </li>
-                <li> <a href="http://lisp.not.org/tags/1.2.1/abcl/examples">Examples</a> </li>
+                <li> <a href="http://abcl.org/svn/tags/1.2.1/abcl/examples">Examples</a> </li>
                 <li> <a href="testimonials.shtml">Testimonials</a> </li>
                 <li> <a href="bugreporting.shtml">Bug reporting</a> </li>
               </ul>
