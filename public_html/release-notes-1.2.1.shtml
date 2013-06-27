@@ -13,7 +13,7 @@
 
 <body>
  <div id="title" class="header">
-   <h1>Release Notes for ABCL 1.2.0</h1>
+   <h1>Release Notes for ABCL 1.2.1</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
@@ -21,7 +21,7 @@
 <div class="rn">
 
 <p>
-  abcl-1.2.0 is a maintenance release
+  abcl-1.2.1 is a maintenance release
 </p>
 
 <pre>
@@ -35,7 +35,7 @@
 ** Fix (make-instance 'standard-generic-function)
 </pre>
 
-<p>The distribution contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.2.0/abcl/CHANGES">CHANGES</a>.</p>
+<p>The distribution (perhaps) contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.2.1/abcl/CHANGES">CHANGES</a>.</p>
   
 
 <p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
