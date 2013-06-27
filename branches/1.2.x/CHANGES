@@ -1,8 +1,8 @@
 Version 1.2.1
 =============
 http//abcl.org/svn/tags/abcl/1.2.1/CHANGES
-unreleased
-http://abcl.org/releases/1.2.1/rc-2
+27 June 2013
+http://abcl.org/releases/1.2.1
 
 *  Tested:  orcl-jdk-1.7.0_21 orcl-jdk-1.6.0_43
 

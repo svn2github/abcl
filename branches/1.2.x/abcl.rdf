@@ -16,14 +16,14 @@
 @prefix dc:              <http://purl.org/dc/elements/1.1/> .
 <> 
   abcl:branch           <http://svn.common-lisp.net/armedbear/trunk/abcl> ;
-  dc:identifier         <urn:abcl.org/release/1.2.1#rc-3> ;           
+  dc:identifier         <urn:abcl.org/release/1.2.1> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "23-JUN-2013" ;
+  dc:modified          "26-JUN-2013" ;
   abcl:version         "1.2.1" ;
-  abcl:release         "rc-3"  .
+  abcl:release         nil  .
 
-<> dc:version <urn:abcl.org/release/1.2.1#rc-3> . 
+<> dc:version <urn:abcl.org/release/1.2.1> . 
 
 <> 
   rdfs:seeAlso <file:README> ;
