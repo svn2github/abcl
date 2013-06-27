@@ -4,7 +4,7 @@ http//abcl.org/svn/tags/abcl/1.2.1/CHANGES
 27 June 2013
 http://abcl.org/releases/1.2.1
 
-*  Tested:  orcl-jdk-1.7.0_21 orcl-jdk-1.6.0_43
+*  Tested:  orcl-jdk-1.7.0_25 orcl-jdk-1.6.0_43
 
 ** ansi tests rc-2 failing 11-13 of 21708 total.  
    Some regressions since 1.1.1
