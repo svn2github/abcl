@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * machine_type.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2004-2007 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -33,37 +33,26 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-public final class Version
+// ### machine-type
+public final class machine_type extends Primitive
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
+  private machine_type()
   {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
+    super("machine-type");
   }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
+  @Override
+  public LispObject execute()
+  {
+    String s = System.getProperty("os.arch");
+    if (s == null)
+      s = "UNKNOWN";
+    else if (s.equals("amd64"))
+      s = "X86-64";
+    else
+      s = s.toUpperCase();
+    return new SimpleString(s);
   }
+
+  private static final Primitive MACHINE_TYPE = new machine_type();
 }

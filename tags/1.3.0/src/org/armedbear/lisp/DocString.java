@@ -1,8 +1,7 @@
 /*
- * Version.java
+ * DocString.java
  *
- * Copyright (C) 2003-2008 Peter Graves
- * $Id$
+ * Copyright (C) 2010 Matt Seddon
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,40 +29,24 @@
  * obligated to do so.  If you do not wish to do so, delete this
  * exception statement from your version.
  */
-
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.lang.annotation.*;
 
-public final class Version
-{
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
-  }
-
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+/**
+ * An annotation type to expose documentation to ABCL.
+ * <i>Note:</i> the TAGS ant target also pulls information from here. It
+ * expects <tt>name</tt> to be the first item in the DocString declaration,
+ * and not broken onto multiple lines.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DocString {
+    /** The lisp name. */
+    public String name() default "";
+    /** The arguments. */
+    public String args() default "";
+    /** The return value(s) of a function */
+    public String returns() default "";
+    /** The documentation string. */
+    public String doc() default "";
 }

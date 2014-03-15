@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * SeriousCondition.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2004-2005 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,48 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import static org.armedbear.lisp.Lisp.*;
 
-public final class Version
+public class SeriousCondition extends Condition
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
+    public SeriousCondition()
+    {
     }
-    return version;
-  }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    protected SeriousCondition(LispClass cls)
+    {
+        super(cls);
+    }
+
+    public SeriousCondition(LispObject initArgs)
+    {
+        super(initArgs);
+    }
+
+    public SeriousCondition(String message)
+    {
+        super(message);
+    }
+
+    @Override
+    public LispObject typeOf()
+    {
+        return Symbol.SERIOUS_CONDITION;
+    }
+
+    @Override
+    public LispObject classOf()
+    {
+        return StandardClass.SERIOUS_CONDITION;
+    }
+
+    @Override
+    public LispObject typep(LispObject type)
+    {
+        if (type == Symbol.SERIOUS_CONDITION)
+            return T;
+        if (type == StandardClass.SERIOUS_CONDITION)
+            return T;
+        return super.typep(type);
+    }
 }

@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * Return.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2002-2005 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,47 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-public final class Version
+public final class Return extends ControlTransfer
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
-  }
+    public final LispObject tag;
+    public final LispObject block;
+    public final LispObject result;
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    public Return(LispObject tag, LispObject block, LispObject result)
+    {
+        this.tag = tag;
+        this.block = block;
+        this.result = result;
+    }
+
+    public Return(LispObject tag, LispObject result)
+    {
+        this.tag = tag;
+        this.block = null;
+        this.result = result;
+    }
+
+    public LispObject getTag()
+    {
+        return tag;
+    }
+
+    public LispObject getBlock()
+    {
+        return block;
+    }
+
+    public LispObject getResult()
+    {
+        return result;
+    }
+
+    @Override
+    public LispObject getCondition()
+    {
+        StringBuilder sb = new StringBuilder("No block named ");
+        sb.append(tag.princToString());
+        sb.append(" is currently visible.");
+        return new ControlError(sb.toString());
+    }
 }

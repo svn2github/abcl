@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * SpecialBindingsMark.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2009 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,26 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+/** Class used to mark special bindings state.
+ * Returned by LispThread.markSpecialBindings() and consumed by
+ * LispThread.resetSpecialBindings() to abstract from the implementation.
+ */
+final public class SpecialBindingsMark {
 
-public final class Version
-{
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
+    /** The index in the specials array of the saved binding. */
+    int idx;
+
+    /** Special binding state to be restored */
+    // package level access
+    SpecialBinding binding;
+    SpecialBindingsMark next;
+
+    /** Constructor to be called by LispThread.markSpecialBindings() only */
+    // package level access
+    SpecialBindingsMark(int idx, SpecialBinding binding,
+                        SpecialBindingsMark next) {
+        this.idx = idx;
+        this.binding = binding;
+        this.next = next;
     }
-    return version;
-  }
-
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
 }

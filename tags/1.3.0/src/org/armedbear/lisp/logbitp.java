@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * logbitp.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2003-2005 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,45 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import static org.armedbear.lisp.Lisp.*;
 
-public final class Version
+import java.math.BigInteger;
+
+// ### logbitp index integer => generalized-boolean
+public final class logbitp extends Primitive
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
+    private logbitp()
+    {
+        super("logbitp", "index integer");
     }
-    return version;
-  }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+
+    {
+        int index = -1;
+        if (first instanceof Fixnum) {
+            index = ((Fixnum)first).value;
+        } else if (first instanceof Bignum) {
+            // FIXME If the number is really big, we're not checking the right
+            // bit...
+            if (((Bignum)first).value.signum() > 0)
+                index = Integer.MAX_VALUE;
+        }
+        if (index < 0)
+            return type_error(first, Symbol.UNSIGNED_BYTE);
+        BigInteger n;
+        if (second instanceof Fixnum)
+            n = ((Fixnum)second).getBigInteger();
+        else if (second instanceof Bignum)
+            n = ((Bignum)second).value;
+        else
+            return type_error(second, Symbol.INTEGER);
+        // FIXME See above.
+        if (index == Integer.MAX_VALUE)
+            return n.signum() < 0 ? T : NIL;
+        return n.testBit(index) ? T : NIL;
+    }
+
+    private static final Primitive LOGBITP = new logbitp();
 }

@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * SpecialBinding.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2002-2008 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -33,37 +33,44 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-public final class Version
+final public class SpecialBinding
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
-  }
+    /** The index in the specials array of the symbol
+     *  to which this value belongs.
+     */
+    final int idx;
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    /** The value bound */
+    public LispObject value;
+
+    SpecialBinding(int idx, LispObject value)
+    {
+        this.idx = idx;
+        this.value = value;
+    }
+
+    /** Return the value of the binding,
+     * checking a valid binding.
+     *
+     * If the binding is invalid, an unbound variable error
+     * is raised.
+     */
+    final public LispObject getValue()
+    {
+        if (value == null)
+            // return or not: error doesn't return anyway
+            Lisp.error(new UnboundVariable(LispThread.specialNames.get(new Integer(idx)).get()));
+
+        return value;
+    }
+
+    /** Sets the value of the binding.
+     *
+     * Note: this method can only be called when the
+     *    binding is the one which is currently visible.
+     */
+    final public void setValue(LispObject value)
+    {
+        this.value = value;
+    }
 }

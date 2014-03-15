@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * gc.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2003-2005 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,40 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import static org.armedbear.lisp.Lisp.*;
 
-public final class Version
+// ### gc
+public final class gc extends Primitive
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
+    private gc()
+    {
+        super("gc", PACKAGE_EXT);
     }
-    return version;
-  }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    @Override
+    public LispObject execute()
+    {
+        Runtime runtime = Runtime.getRuntime();
+        long free = 0;
+        long maxFree = 0;
+        while (true) {
+            try {
+                runtime.gc();
+                Thread.sleep(100);
+                runtime.runFinalization();
+                Thread.sleep(100);
+                runtime.gc();
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e) {}
+            free = runtime.freeMemory();
+            if (free > maxFree)
+                maxFree = free;
+            else
+                break;
+        }
+        return number(free);
+    }
+
+    private static final Primitive GC = new gc();
 }

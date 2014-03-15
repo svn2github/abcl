@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * logtest.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2003-2005 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  * As a special exception, the copyright holders of this library give you
  * permission to link this library with independent modules to produce an
@@ -33,37 +33,42 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import static org.armedbear.lisp.Lisp.*;
 
-public final class Version
+import java.math.BigInteger;
+
+// ### logtest integer-1 integer-2 => generalized-boolean
+// (logtest x y) == (not (zerop (logand x y)))
+public final class logtest extends Primitive
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
+    private logtest()
+    {
+        super("logtest", "integer-1 integer-2");
     }
-    return version;
-  }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    @Override
+    public LispObject execute(LispObject first, LispObject second)
+
+    {
+        if (first instanceof Fixnum && second instanceof Fixnum) {
+            return (((Fixnum)first).value & ((Fixnum)second).value) == 0 ? NIL : T;
+        } else {
+            BigInteger n1, n2;
+            if (first instanceof Fixnum)
+                n1 = ((Fixnum)first).getBigInteger();
+            else if (first instanceof Bignum)
+                n1 = ((Bignum)first).value;
+            else
+                return type_error(first, Symbol.INTEGER);
+            if (second instanceof Fixnum)
+                n2 = ((Fixnum)second).getBigInteger();
+            else if (second instanceof Bignum)
+                n2 = ((Bignum)second).value;
+            else
+                return type_error(second, Symbol.INTEGER);
+            return n1.and(n2).signum() == 0 ? NIL : T;
+        }
+    }
+
+    private static final Primitive LOGTEST = new logtest();
 }

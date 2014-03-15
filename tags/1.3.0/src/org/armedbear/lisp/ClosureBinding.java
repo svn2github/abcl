@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * ClosureBinding.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2009 Erik Huelsmann
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -33,37 +33,18 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-public final class Version
+/** This class serves merely to store a reference to an
+ * object, used in the closure array.
+ *
+ * Objects of this type are used to model the fact that
+ * closures close over bindings and not over values.
+ *
+ */
+public class ClosureBinding
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
-  {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
-  }
+    public LispObject value;
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
-  }
+    public ClosureBinding(LispObject value) {
+        this.value = value;
+    }
 }

@@ -1,7 +1,7 @@
 /*
- * Version.java
+ * StorageCondition.java
  *
- * Copyright (C) 2003-2008 Peter Graves
+ * Copyright (C) 2004-2007 Peter Graves
  * $Id$
  *
  * This program is free software; you can redistribute it and/or
@@ -33,37 +33,43 @@
 
 package org.armedbear.lisp;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import static org.armedbear.lisp.Lisp.*;
 
-public final class Version
+public class StorageCondition extends SeriousCondition
 {
-  private Version() {}
-  
-  static final String baseVersion = "1.3.0";
-  
-  static void init() {
-    try {
-      InputStream input = Version.class.getResourceAsStream("version");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String v = reader.readLine().trim();
-      version = v;
-    } catch (Throwable t) {
-      version = baseVersion;
-    } 
-  }
-  
-  static String version = "";
-  public synchronized static String getVersion()
+  public StorageCondition()
   {
-    if ("".equals(version)) {
-      init();
-    }
-    return version;
   }
 
-  public static void main(String args[]) {
-    System.out.println(Version.getVersion());
+  public StorageCondition(LispObject initArgs)
+  {
+    super(initArgs);
+  }
+
+  public StorageCondition(String message)
+  {
+    super(message);
+  }
+
+  @Override
+  public LispObject typeOf()
+  {
+    return Symbol.STORAGE_CONDITION;
+  }
+
+  @Override
+  public LispObject classOf()
+  {
+    return StandardClass.STORAGE_CONDITION;
+  }
+
+  @Override
+  public LispObject typep(LispObject type)
+  {
+    if (type == Symbol.STORAGE_CONDITION)
+      return T;
+    if (type == StandardClass.STORAGE_CONDITION)
+      return T;
+    return super.typep(type);
   }
 }
