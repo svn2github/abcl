@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Release Notes for ABCL 1.3.0/title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <meta http-equiv="Content-Type" content="text/html;
+                                           charset=ISO-8859-1"/>
+  <link rel="rdf" type="application/rdf" href="http://abcl.org/svn/tags/1.2.0/abcl/abcl.rdf"/>
+
+</head>
+
+<body>
+ <div id="title" class="header">
+   <h1>Release Notes for ABCL 1.3.0</h1>
+ </div>
+
+<!--#include virtual="left-menu" -->
+
+<div class="rn">
+
+<p>
+  abcl-1.3.0 is a feature release.
+</p>
+
+<pre>
+15-MAR-2014
+
+## Features
+
+*  Make LispStackFrame.UNAVAILABLE_ARG a singleton object,
+   and lazily create the little used portions of the Lisp stack.
+
+    Aggressively cache and control the use of memory by the underlying
+    Lisp stack frame representation by introducing the private
+    LispThread.StackFrame and LispThread.StackSegments classes.
+
+    Contributed by Dmitry Nadezhin.
+
+    LispStackFrame object are allocated on every
+    LispThread.execute(...) .  However, they are seldom [accessed]
+    ([... verify via] inspect[tion of the] stack trace). This patch
+    delays allocation of LispStackFrame? objects until they are
+    requested.  Raw information about stack frames is stored in
+    stack. Stack is an Object[] array (more precisely a list of [...]4
+    [Mib] Object[] arrays).
+
+    ME: We are going to need a way to try to less agressively grab 4Mib
+    chunks in low memory situations.
+
+    Memory profiling of ABCL shows that the classes with largest
+    allocation count are org.armedbear.lisp.LispStackFrame and
+    org.armedbear.lisp.LispStackFrame.UnavailableArgument.
+
+    Contributed by Dmitry Nadezhin.
+
+    [r14572]: http://abcl.org/trac/changeset/14572
+    [r14579]: http://abcl.org/trac/changeset/14579
+
+*  ASDF 3.0.1.94 shipped with the implementation
+
+*  per function call stack and memory exception handler in CL:COMPILE
+
+   Inline calls to jrun-exception-protected (used by handler-bind to
+   catch out of memory conditions).  This commit saves generation
+   roughly 50 cls files.
+
+   [r14552]: http://abcl.org/trac/changeset/14552
+
+*  SYS:SHA256 audited
+
+    The functionality if the SYS:SHA256 algorithim has been audited for
+    use on inputs of single for files with recently shipping ORCL Java 7
+    implementations (through jdk-1.7.0_51).
+
+    [r14582]:  http://abcl.org/trac/changeset/14582
+
+* Connect to NetBeans controlled JDWP via SLIME
+
+    The Netbeans IDE configuration now includes a way to connect to
+    the running-under-jdb ABCL via SLIME.  One needs a version of
+    SLIME able to be loaded from its 'swank.asd' definition.  
+
+* Install 'abcl.jar' and 'abcl-contrib.jar' locally as Maven artifacts
+
+    The Ant `abcl.mvn.install` target now installs build artifacts
+    into the local Maven repository (Olof-Joachim Frahm)
+
+    [r14579]: http://abcl.org/trac/changeset/14606
+
+## Compatibility
+
+*  CL:DIRECTORY 
+
+   The implementation specific :RESOLVE-SYMLINKS argument to the ANSI
+   DIRECTORY function has been changed to nil.  This implements
+   behavior closer to SBCL and guarantees that a DIRECTORY operation
+   will not signal a file error.
+
+   [r14619]: http://abcl.org/trac/changeset/14619
+   [ticket-340]: http://abcl.org/trac/ticket/340
+
+## Fixes
+
+*  Fix CL:SLEEP for intervals less than a millisecond.  
+
+   For intervals less than or equal to a nanosecond, including an
+   interval of zero, the current thread merely yields execution to
+   other threads.
+
+   [r14632]: http://abcl.org/trac/changeset/14632
+
+
+## Tested
+
+### "Java_HotSpot(TM)_64-Bit_Server_VM-Oracle_Corporation-1.7.0_51-b13" "x86_64-Mac_OS_X-10.9.1"
+
+### "Java_HotSpot(TM)_64-Bit_Server_VM-Oracle_Corporation-1.8.0-b129" "x86_64-Mac_OS_X-10.9.2"
+
+## Contrib
+
+#### abcl-asdf
+
+*  Now working with both Maven 3.0.x and 3.1.x.  Thanks to Anton for
+   the help!
+
+   [ticket-328]: http://abcl.org/trac/ticket/328
+
+*  cache Maven dependency resolution to avoid repeated lookups.
+
+   Instead of calling ABCL-ASDF:RESOLVE in both the ASDF COMPILE-OP
+   and LOAD-OP, we now cache the result of invocation in COMPILE-OP
+   and add this value in the LOAD-OP phase. Contributed by Cyrus
+   Harmon.
+
+   [r14631]: http://abcl.org/trac/changeset/14631
+
+#### jna
+  
+   Now references jna-4.0.0.  Some incompatibility with CFFI ([in
+   progress with fixing upstream][cffi-easye]).
+
+[cffi-easye]: http://github.com/easye/cffi/
+
+
+</pre>
+
+<p>The distribution (perhaps) contains a more detailed documentation of <a href="http://svn.common-lisp.net/armedbear/tags/1.2.1/abcl/CHANGES">CHANGES</a>.</p>
+  
+
+<p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
+
+</div>
+
+<div class="footer">
+ <p>ABCL is <a href="http://lisp.not.org/project/armedbear">Armed Bear Common Lisp</a>.</p>
+ <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+
+ <div class="check">
+   <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
+ </div>
+<div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.0.1.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>
+</div>
+
+</body>
+</html>
