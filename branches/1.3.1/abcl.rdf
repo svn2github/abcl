@@ -24,7 +24,7 @@
   dc:modified          "27-JAN-2014" ;
   dc:version           "abcl-1.3.1" ;
 
-  abcl:release-candidate "rc-1" . 
+  abcl:release-candidate "rc-2" . 
 
 <> 
   rdfs:seeAlso <file:README> ;
