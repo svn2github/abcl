@@ -92,7 +92,7 @@
                 <li> <a href="http://abcl-dev.blogspot.com/"> Blog </a> </li>
                 <li> Introduction: <a href="doc/abcl-install-with-java.html">building &amp; running</a> </li>
                 <li> <a href="doc/abcl-user.html">Documentation</a> </li>
-                <li> <a href="http://abcl.org/svn/tags/1.2.1/abcl/examples">Examples</a> </li>
+                <li> <a href="http://abcl.org/svn/trunk/abcl/examples">Examples</a> </li>
                 <li> <a href="testimonials.shtml">Testimonials</a> </li>
                 <li> <a href="bugreporting.shtml">Bug reporting</a> </li>
               </ul>
@@ -101,8 +101,8 @@
               <ul>
                 <li> <a href="http://news.gmane.org/gmane.lisp.armedbear.devel">Mailing list</a></li>
                 <li> <a href="faq.shtml#repository">Source repository</a> </li>
-                <li> <a href="http://abcl.org/trac/armedbear/wiki/TitleIndex">Technical wiki</a> </li>
-                <li> <a href="http://abcl.org/trac/armedbear/report/1">Bug tracker</a> </li>
+                <li> <a href="http://abcl.org/trac/wiki/TitleIndex">Technical wiki</a> </li>
+                <li> <a href="http://abcl.org/trac/report/1">Bug tracker</a> </li>
                 <li> <a href="contributing.shtml">Contributing</a> </li>
               </ul>
             </td>
