@@ -52,10 +52,10 @@ href="http://abcl.org/svn/tags/1.1.0/abcl/CHANGES">CHANGES</a>.</p>
 </div>
 
 <div class="footer">
- <p>ABCL is <a href="http://abcl.org">Armed Bear Common Lisp</a>.</p>
- <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+  <p>ABCL is <a href="http://abcl.org/">Armed Bear Common Lisp</a>.</p>
+  <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
- <div class="check">
+  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
  </div>
 <div style="float:right;font-size:10px;font-family:monospace">$Id: release-notes-1.0.1.shtml 13748 2012-01-10 18:58:49Z mevenson $</div>

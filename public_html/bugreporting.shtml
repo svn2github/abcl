@@ -64,7 +64,7 @@ busy, but we will take a look at all bug reports when we have time.
 </div>
 <div style="float:left;width:100%">
  <hr />
- <p>Back to <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+ <p>Hosted as part of  <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>

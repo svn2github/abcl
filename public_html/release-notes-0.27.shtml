@@ -58,8 +58,8 @@
 <p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
 
 <div class="footer">
- <p>ABCL is <a href="http://abcl.org">Armed Bear Common Lisp</a>.</p>
- <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+  <p>ABCL is <a href="http://abcl.org/">Armed Bear Common Lisp</a>.</p>
+  <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>

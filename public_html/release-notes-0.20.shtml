@@ -23,7 +23,7 @@
   <dt>Support for metaclasses</dt>
   <dd>ABCL now supports user-defined CLOS metaclasses. The MOP has been improved and extended to accomodate for this new feature. This is the first funded feature added to ABCL: funds were provided to implement it and the relevant tests. As a consequence of the addition of this important feature, the JAVA-CLASS built-in metaclass has been reimplemented in Lisp and has been improved in the process.</dd>
   <dt>Support for URLs as pathnames</dt>
-  <dd>Pathnames can now be used to represent URLs: PATHNAME-JAR and PATHNAME-URL subtypes now handle Jar and URL references working for OPEN, LOAD, PROBE-FILE, FILE-WRITE-DATE, DIRECTORY, et. al. See <a href="http://lisp.not.org/trac/armedbear/ticket/95">Ticket #95</a> for more details.</dd>
+  <dd>Pathnames can now be used to represent URLs: PATHNAME-JAR and PATHNAME-URL subtypes now handle Jar and URL references working for OPEN, LOAD, PROBE-FILE, FILE-WRITE-DATE, DIRECTORY, et. al. See <a href="http://abcl.org/trac/ticket/95">Ticket #95</a> for more details.</dd>
   <dt>ASDF2</dt>
   <dd>The version of ASDF included in ABCL has been updated to ASDF2 (specifically to ASDF 1.719). This version of ASDF is integrated with URL support in pathnames (see the previous point) and is thus capable of loading Lisp systems directly from Jar archives.</dd>
   <dt>Multithreading enhancements</dt>
@@ -37,8 +37,8 @@
 <p><a href="release-notes.shtml">Release notes for older releases</a>.</p>
 
 <div class="footer">
- <p>ABCL is <a href="http://abcl.org">Armed Bear Common Lisp</a>.</p>
- <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+  <p>ABCL is <a href="http://abcl.org/">Armed Bear Common Lisp</a>.</p>
+  <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>

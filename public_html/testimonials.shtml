@@ -33,10 +33,14 @@ dd { margin-top: 0.3cm;
 <dd>With my Java background and my love for Lisp, I've found ABCL to be the ideal choice for my open source projects, in particular:
 <ul>
   <li>DynaSpring (<a href="http://code.google.com/p/dynaspring/">http://code.google.com/p/dynaspring/</a>), a Lisp-based DSL for the Spring framework: it replaces the ugly-ugly XML with our beloved parentheses, bringing new features to Spring (conditional evaluation, modularity constructs, etc.) and making it much more user-extensible;</li>
-  <li>Snow (<a href="http://lisp.not.org/project/snow/">http://lisp.not.org/project/snow/</a>), a declarative GUI language in the vein of XUL, but obviously Lisp-based, targeting Swing. While still lacking many things, it combines a Lisp DSL with existing Java libraries to concisely describe the structure and layout of the GUI, and to make it easy to connect the UI with the application, thanks to its integration with Cells;</li>
+  <li>Snow (<a href="http://common-lisp.net/project/snow/">http://common-lisp.net/project/snow/</a>), a declarative GUI language in the vein of XUL, but obviously Lisp-based, targeting Swing. While still lacking many things, it combines a Lisp DSL with existing Java libraries to concisely describe the structure and layout of the GUI, and to make it easy to connect the UI with the application, thanks to its integration with Cells;</li>
   <li>and all the other experimental, unreleased stuff I do as a hobby (mainly related to web development and enterprise application development).</li>
 </ul>
-For me ABCL's selling point is of course its interoperability with Java and the consequent access to Java libraries, but I also appreciate its simplicity, portability (even FASLs are cross-platform, thanks to the JVM), and last but not least, the small but vibrant and helpful community.
+For me ABCL's selling point is of course its interoperability with
+Java and the consequent access to Java libraries, but I also
+appreciate its simplicity, portability (even FASLs are cross-platform,
+thanks to the JVM), and last but not least, the small but vibrant and
+helpful community.
 </dd>
 
 <dl>

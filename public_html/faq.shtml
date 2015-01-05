@@ -59,7 +59,7 @@
 <h3 class="question">What is ABCL?</h3>
 <p>ABCL stands for Armed Bear Common Lisp.  ABCL is an implementation
 of Common Lisp hosted on the <a href="http://en.wikipedia.org/wiki/Java_virtual_machine">Java Virtual Machine</a>.  With the release of <a
-href="http://lisp.not.org/project/armedbear/#downloads">abcl-1.0</a>,
+href="http://abcl.org/releases/">abcl-1.0</a>,
 Armed Bear Common Lisp is a conforming implementation of the
 <a href="ftp://ftp1.ansi.org/cust_serv/td_10-25-10/ANSI%2BINCITS%2B226-1994%2B(R2004).pdf">ANSI Common Lisp specification</a>.  The required statement of conformance
 is included in the <a href="#user-manual">User Manual</a>.</p>
@@ -104,7 +104,7 @@ if you distribute ABCL, but otherwise the license of ABCL is not viral.
 
 <p>
 The current state of issues can be found in the <a
-href="http://lisp.not.org/trac/armedbear/report/1">ABCL issue
+href="http://abcl.org/trac/report/1">ABCL issue
 tracker</a>.  Individuals with an <a
 href="http://en.wikipedia.org/wiki/Openid">OpenID</a> such as a Google
 ID may enter information directly in the bug tracker after
@@ -185,7 +185,7 @@ past releases.</p>
 <h3 class="question">Where is ABCL's source code repository?</h3>
 
 <p>The source code may be viewed with a web browser by visiting  <a
-href="http://lisp.not.org/trac/armedbear/browser/trunk/abcl/">http://lisp.not.org/trac/armedbear/browser/trunk/abcl/</a>.
+href="http://abcl.org/trac/browser/trunk/abcl/">http://abcl.org/trac/browser/trunk/abcl/</a>.
 </p>
 
 <p>If you want to build the source, ABCL trunk,
@@ -203,10 +203,10 @@ the URI
 
 <ol>
   <li id="user-manual">Users of the system are invited to start with the <a href="http://code.google.com/p/abcl-dynamic-install/downloads/detail?name=abcl-20130607a.pdf">Armed Bear Common Lisp User Manual</a></li>
-  <li>Our <a href="http://lisp.not.org/trac/armedbear/wiki">wiki</a></li>
-  <li>The <a href="http://lisp.not.org/trac/armedbear/browser">source
+  <li>Our <a href="http://abcl.org/trac/wiki">wiki</a></li>
+  <li>The <a href="http://abcl.org/trac/browser">source
     code (JavaDoc and general comments)</a></li>
-  <li>Specific <a href="http://lisp.not.org/trac/armedbear/browser/trunk/abcl/examples">examples</a></li>
+  <li>Specific <a href="http://abcl.org/trac/browser/trunk/abcl/examples">examples</a></li>
 </ol>
 </div>
 
@@ -282,7 +282,7 @@ do?</h3>
 
 <div style="float:left;width:100%">
  <hr />
- <p>Back to <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+ <p>Hosted as part of <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>

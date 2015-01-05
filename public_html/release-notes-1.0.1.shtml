@@ -33,7 +33,7 @@
   groveling, an index of symbols, and additional enhancements.
   </dd>
 
-  <dt>ABCL-CONTRIB<a href="http://lisp.not.org/trac/armedbear/ticket/181">[#181]</a></dt>
+  <dt>ABCL-CONTRIB<a href="http://abcl.org/trac/ticket/181">[#181]</a></dt>
 
   <dd>The implementation now correctly loads ASDF definitions
     from jar archives.  This had prevented the ABCL-CONTRIB loading
@@ -48,8 +48,8 @@
 </div>
 
 <div class="footer">
- <p>ABCL is <a href="http://abcl.org">Armed Bear Common Lisp</a>.</p>
- <p>Hosted via <a href="http://lisp.not.org/">lisp.not.org</a>.</p>
+  <p>ABCL is <a href="http://abcl.org/">Armed Bear Common Lisp</a>.</p>
+  <p>Hosted via <a href="http://common-lisp.net/">common-lisp.net</a>.</p>
 
  <div class="check">
    <a href="http://validator.w3.org/check/referer">Valid XHTML 1.0 Strict</a>
