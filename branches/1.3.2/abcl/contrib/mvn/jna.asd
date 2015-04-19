@@ -3,7 +3,7 @@
 ;;;; Need to have jna.jar present for CFFI to work.
 (asdf:defsystem :jna 
     :version "4.1.0"
-    :description  "<> asdf:defsystem <urn:abcl.org/release/1.3.0/contrib/jna#4.1.0>"
+    :description  "<> asdf:defsystem <urn:abcl.org/release/1.3.2/contrib/jna#4.1.0>"
     :defsystem-depends-on (jss abcl-asdf)
     :components ((:mvn "net.java.dev.jna/jna/4.1.0"
                   :alternate-uri "http://repo1.maven.org/maven2/net/java/dev/jna/jna/4.1.0/jna-4.1.0.jar"
