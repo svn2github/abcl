@@ -62,7 +62,7 @@ import org.armedbear.lisp.util.DecodingReader;
  * A base class for all Lisp built-in streams.
  *
  */
-public class Stream extends StructureObject {
+public class Stream extends LispObject {
     protected LispObject elementType;
     protected boolean isInputStream;
     protected boolean isOutputStream;
@@ -120,40 +120,40 @@ public class Stream extends StructureObject {
     // Binary output.
     private OutputStream out;
 
-    protected Stream(Symbol structureClass) {
-        super(structureClass);
+    protected Stream(Symbol streamClass) {
+      //        super(streamClass);
     }
 
-    public Stream(Symbol structureClass, InputStream stream) {
-        this(structureClass);
+    public Stream(Symbol streamClass, InputStream stream) {
+        this(streamClass);
         initAsBinaryInputStream(stream);
     }
 
-    public Stream(Symbol structureClass, Reader r) {
-        this(structureClass);
+    public Stream(Symbol streamClass, Reader r) {
+        this(streamClass);
         initAsCharacterInputStream(r);
     }
 
-    public Stream(Symbol structureClass, OutputStream stream) {
-        this(structureClass);
+    public Stream(Symbol streamClass, OutputStream stream) {
+        this(streamClass);
         initAsBinaryOutputStream(stream);
     }
 
-    public Stream(Symbol structureClass, Writer w) {
-        this(structureClass);
+    public Stream(Symbol streamClass, Writer w) {
+        this(streamClass);
         initAsCharacterOutputStream(w);
     }
 
-    public Stream(Symbol structureClass, InputStream inputStream, LispObject elementType) {
-        this(structureClass, inputStream, elementType, keywordDefault);
+    public Stream(Symbol streamClass, InputStream inputStream, LispObject elementType) {
+        this(streamClass, inputStream, elementType, keywordDefault);
     }
   
 
 
     // Input stream constructors.
-    public Stream(Symbol structureClass, InputStream inputStream,
+    public Stream(Symbol streamClass, InputStream inputStream,
                   LispObject elementType, LispObject format) {
-        this(structureClass);
+        this(streamClass);
         this.elementType = elementType;
         setExternalFormat(format);
 
@@ -171,18 +171,17 @@ public class Stream extends StructureObject {
         }
     }
 
-    public Stream(Symbol structureClass, InputStream inputStream, LispObject elementType, boolean interactive) {
-        this(structureClass, inputStream, elementType);
+    public Stream(Symbol streamClass, InputStream inputStream, LispObject elementType, boolean interactive) {
+        this(streamClass, inputStream, elementType);
         setInteractive(interactive);
     }
 
-    public Stream(Symbol structureClass, OutputStream outputStream, LispObject elementType) {
-        this(structureClass, outputStream, elementType, keywordDefault);
+    public Stream(Symbol streamClass, OutputStream outputStream, LispObject elementType) {
+        this(streamClass, outputStream, elementType, keywordDefault);
     }
 
     // Output stream constructors.
-    public Stream(Symbol structureClass, OutputStream outputStream, LispObject elementType, LispObject format) {
-        this(structureClass);
+    public Stream(Symbol streamClass, OutputStream outputStream, LispObject elementType, LispObject format) {
         this.elementType = elementType;
         setExternalFormat(format);
         if (elementType == Symbol.CHARACTER || elementType == Symbol.BASE_CHAR) {
@@ -198,10 +197,10 @@ public class Stream extends StructureObject {
         }
     }
 
-    public Stream(Symbol structureClass, OutputStream outputStream,
+    public Stream(Symbol streamClass, OutputStream outputStream,
                   LispObject elementType,
                   boolean interactive) {
-        this(structureClass, outputStream, elementType);
+        this(streamClass, outputStream, elementType);
         setInteractive(interactive);
     }
 

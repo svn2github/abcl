@@ -150,62 +150,43 @@ public class BuiltInClass extends LispClass
 
        For STREAM and SYSTEM-STREAM, that bit is added in boot.lisp */
 
-  public static final LispClass STREAM =
-    addClass(Symbol.STREAM,
-             new StructureClass(Symbol.STREAM, list(STRUCTURE_OBJECT)));
-  public static final LispClass SYSTEM_STREAM =
-    addClass(Symbol.SYSTEM_STREAM,
-             new StructureClass(Symbol.SYSTEM_STREAM, list(STREAM)));
-  public static final LispClass TWO_WAY_STREAM =
-    addClass(Symbol.TWO_WAY_STREAM,
-             new StructureClass(Symbol.TWO_WAY_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass BROADCAST_STREAM =
-    addClass(Symbol.BROADCAST_STREAM,
-             new StructureClass(Symbol.BROADCAST_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass ECHO_STREAM =
-    addClass(Symbol.ECHO_STREAM,
-             new StructureClass(Symbol.ECHO_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass CASE_FROB_STREAM =
-    addClass(Symbol.CASE_FROB_STREAM,
-             new StructureClass(Symbol.CASE_FROB_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass STRING_STREAM =
-    addClass(Symbol.STRING_STREAM,
-             new StructureClass(Symbol.STRING_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass STRING_INPUT_STREAM =
-    addClass(Symbol.STRING_INPUT_STREAM,
-             new StructureClass(Symbol.STRING_INPUT_STREAM, list(STRING_STREAM)));
-  public static final LispClass STRING_OUTPUT_STREAM =
-    addClass(Symbol.STRING_OUTPUT_STREAM,
-             new StructureClass(Symbol.STRING_OUTPUT_STREAM, list(STRING_STREAM)));
-  public static final LispClass SYNONYM_STREAM =
-    addClass(Symbol.SYNONYM_STREAM,
-             new StructureClass(Symbol.SYNONYM_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass FILE_STREAM =
-    addClass(Symbol.FILE_STREAM,
-             new StructureClass(Symbol.FILE_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass JAR_STREAM =
-    addClass(Symbol.JAR_STREAM,
-             new StructureClass(Symbol.JAR_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass URL_STREAM =
-    addClass(Symbol.URL_STREAM,
-             new StructureClass(Symbol.URL_STREAM, list(SYSTEM_STREAM)));
-  public static final LispClass CONCATENATED_STREAM =
-    addClass(Symbol.CONCATENATED_STREAM,
-             new StructureClass(Symbol.CONCATENATED_STREAM, list(SYSTEM_STREAM)));
+  public static final BuiltInClass STREAM = addClass(Symbol.STREAM);
+  public static final BuiltInClass SYSTEM_STREAM =
+    addClass(Symbol.SYSTEM_STREAM); 
+  public static final BuiltInClass TWO_WAY_STREAM =
+    addClass(Symbol.TWO_WAY_STREAM); 
+  public static final BuiltInClass BROADCAST_STREAM =
+    addClass(Symbol.BROADCAST_STREAM); 
+  public static final BuiltInClass ECHO_STREAM =
+    addClass(Symbol.ECHO_STREAM);
+  public static final BuiltInClass CASE_FROB_STREAM =
+    addClass(Symbol.CASE_FROB_STREAM); 
+  public static final BuiltInClass STRING_STREAM =
+    addClass(Symbol.STRING_STREAM); 
+  public static final BuiltInClass STRING_INPUT_STREAM =
+    addClass(Symbol.STRING_INPUT_STREAM); 
+  public static final BuiltInClass STRING_OUTPUT_STREAM =
+    addClass(Symbol.STRING_OUTPUT_STREAM); 
+  public static final BuiltInClass SYNONYM_STREAM =
+    addClass(Symbol.SYNONYM_STREAM); 
+  public static final BuiltInClass FILE_STREAM =
+    addClass(Symbol.FILE_STREAM); 
+  public static final BuiltInClass JAR_STREAM =
+    addClass(Symbol.JAR_STREAM); 
+  public static final BuiltInClass URL_STREAM =
+    addClass(Symbol.URL_STREAM); 
+  public static final BuiltInClass CONCATENATED_STREAM =
+    addClass(Symbol.CONCATENATED_STREAM); 
 
 
 
     // Implementation defined streams
   public static final LispClass SOCKET_STREAM =
-    addClass(Symbol.SOCKET_STREAM,
-             new StructureClass(Symbol.SOCKET_STREAM, list(TWO_WAY_STREAM)));
+    addClass(Symbol.SOCKET_STREAM);
   public static final LispClass SLIME_INPUT_STREAM =
-    addClass(Symbol.SLIME_INPUT_STREAM,
-             new StructureClass(Symbol.SLIME_INPUT_STREAM, list(STRING_STREAM)));
+    addClass(Symbol.SLIME_INPUT_STREAM);
   public static final LispClass SLIME_OUTPUT_STREAM =
-    addClass(Symbol.SLIME_OUTPUT_STREAM,
-             new StructureClass(Symbol.SLIME_OUTPUT_STREAM, list(STRING_STREAM)));
-
+    addClass(Symbol.SLIME_OUTPUT_STREAM);
 
 
   static
@@ -314,7 +295,7 @@ public class BuiltInClass extends LispClass
                                STREAM, STRUCTURE_OBJECT, CLASS_T);
     SOCKET_STREAM.setCPL(SOCKET_STREAM, TWO_WAY_STREAM, SYSTEM_STREAM, STREAM,
                          STRUCTURE_OBJECT, CLASS_T);
-    STREAM.setCPL(STREAM, STRUCTURE_OBJECT, CLASS_T);
+    STREAM.setCPL(STREAM, CLASS_T);
     STRING.setDirectSuperclass(VECTOR);
     STRING.setCPL(STRING, VECTOR, ARRAY, SEQUENCE, CLASS_T);
     STRING_INPUT_STREAM.setCPL(STRING_INPUT_STREAM, STRING_STREAM,
