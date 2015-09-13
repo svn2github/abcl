@@ -324,12 +324,11 @@ public abstract class LispClass extends StandardObject
         return findClass(first, second != NIL);
       }
       @Override
-      public LispObject execute(LispObject first, LispObject second,
-                                LispObject third)
-
+      public LispObject execute(LispObject className, LispObject errorp,
+                                LispObject env)
       {
-        // FIXME Use environment!
-        return findClass(first, second != NIL);
+        return (env == NIL) ? findClass(className, errorp != NIL)
+          : checkEnvironment(env).findClass(className, errorp != NIL);
       }
     };
 
@@ -339,7 +338,6 @@ public abstract class LispClass extends StandardObject
     {
       @Override
       public LispObject execute(LispObject first, LispObject second)
-
       {
         final Symbol name = checkSymbol(first);
         if (second == NIL)
@@ -349,6 +347,19 @@ public abstract class LispClass extends StandardObject
           }
         addClass(name, second);
         return second;
+      }
+
+      @Override
+      public LispObject execute(LispObject className, LispObject clazz,
+                                  LispObject errorp, LispObject env)
+      {
+        if (clazz == NIL)
+        {
+          checkEnvironment(env).removeClass(className);
+          return clazz;
+        }
+
+        return checkEnvironment(env).addClass(className, clazz);
       }
     };
 
