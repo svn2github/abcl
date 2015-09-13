@@ -2,24 +2,8 @@
 
 (asdf:defsystem :abcl-asdf
   :author "Mark Evenson"
-<<<<<<< variant A
-<<<<<<< variant A
-  :version "1.4.2"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.3.2/contrib/abcl-asdf#1.4.2>"
->>>>>>> variant B
-  :version "1.4.2"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.4.2>"
-####### Ancestor
-  :version "1.4.1"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.4.1>"
-======= end
->>>>>>> variant B
-  :version "1.5.0"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.5.0>"
-####### Ancestor
-  :version "1.5.0"
-  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.4.2>"
-======= end
+  :version "1.5.1"
+  :description "<> asdf:defsystem <urn:abcl.org/release/1.4.0-dev/contrib/abcl-asdf#1.5.1>"
   :depends-on (jss)
   :components 
   ((:module packages :pathname "" 
