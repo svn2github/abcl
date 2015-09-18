@@ -20,9 +20,8 @@
   dc:identifier         <urn:abcl.org/1.4.0#dev> ;           
   doap:language        "Common Lisp" ;
   dc:created           "01-JAN-2004" ;
-  dc:modified          "15-MAR-2014" ;
-  dc:version           "abcl-1.4.0" ;
-  dc:release           "dev" ;
+  dc:modified          "18-SEP-2015" ;
+  dc:version           "abcl-1.3.0" ;
 <> 
   rdfs:seeAlso <file:README> ;
   rdfs:seeAlso <file:MANUAL> ;
@@ -45,7 +44,7 @@
 <> <urn:abcl.org:releng:implementation:language> [ 
    a rdf:Bag;
    rdf:_1 "Java";
-   rdf:_2  "Ant"; 
+   rdf:_2 "Ant"; 
    rdf:_3 "Bourne Shell Script"; 
    rdf:_4 "Windows Batch Script" 
 ] .
@@ -93,7 +92,9 @@ doap:Project rdfs:seeAlso [
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
      rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
      rdf:_4 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
-     rdf:_4 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> 
+     rdf:_4 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
+     rdf:_5 <http://abcl.org/releases/1.3.0/abcl-1.3.1.jar> ;
+     rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.2.jar> 
   ] ;
 ] .
 
