@@ -13,7 +13,7 @@
 
 <body>
  <div id="title" class="header">
-   <h1>Release Notes for ABCL 1.3.3</h1>
+   <h1>Release Notes for ABCL 1.3.3 (with errata)</h1>
  </div>
 
 <!--#include virtual="left-menu" -->
@@ -33,7 +33,7 @@ Enhancements
    Use a human readable name for character 160, #\No-break_space,
    following sbcl, ccl and clisp. This permits the Quicklisp system
    spinneret to load.  The #\No-break_space name is a valid
-   CHAR-NAME/NAME-CHAR pair, but is not emitted as a glyph under the
+   CHAR-NAME/NAME-CHAR pair, but is emitted as a glyph under the
    current output encoding under the CL:FORMAT "~:c" directive as
    these implementations do by default.
 
@@ -73,7 +73,19 @@ Fixes
 
 ** More complete attempt at re-initialization via
 
-        (ABCL-ASDF:INIT :force t)
+    (ABCL-ASDF:INIT :force t)
+
+* Errata
+
+Additions to the cryptographically signed release notes for 1.3.3
+
+** correct statement of #/No-break_space as emiting a glyph under
+format tilde c directive
+
+
+    
+
+
 </pre>
 
 <p>These changes may be viewed directly at <a href="http://abcl.org/svn/tags/1.3.2/CHANGES">CHANGES</a>.</p>
