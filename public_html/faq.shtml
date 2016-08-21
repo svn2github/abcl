@@ -66,8 +66,11 @@ is included in the <a href="#user-manual">User Manual</a>.</p>
 
 <p>
 With the release of version 1.1.0, ABCL now contains a complete
-implementation of <a
-href="http://www.lisp.org/mop/index.html">AMOP</a>.
+implementation of <a href="http://www.alu.org/mop/index.html">The
+Common Lisp Object System MetaObject Protocol</a>, and is now
+supported
+by <a href="https://github.com/pcostanza/closer-mop">CLOSER-MOP</a>.
+
 </p>
 </div>
 

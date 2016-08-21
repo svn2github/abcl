@@ -6,7 +6,7 @@
   <title><!--#include virtual="project-name" -->: Testimonials</title>
   <link rel="stylesheet" type="text/css" href="style.css"/>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-  <style>
+  <style type="text/css">
 dt { margin-top: 1cm;
      font-weight: bold;
      font-family: sans-serif;
@@ -27,7 +27,7 @@ dd { margin-top: 0.3cm;
 <div id="main">
 
 <h1>Testimonials</h1>
-
+<dl>
 <dt>Alessio Stalla - November, 2010
 </dt>
 <dd>With my Java background and my love for Lisp, I've found ABCL to be the ideal choice for my open source projects, in particular:
@@ -43,7 +43,6 @@ thanks to the JVM), and last but not least, the small but vibrant and
 helpful community.
 </dd>
 
-<dl>
 <dt>David Kirkman (Astronomer at University of California, San Diego)
   - June 7, 2010</dt>
 <dd>
@@ -88,7 +87,7 @@ is all coded using abcl.<br />
 <br />
 So to all of you who have contributed (and still contribute!) to
 the development of this terrific package, a big THANK YOU!!!"
-</dt>
+</dd>
 
 <dt>Hunter Monroe
 </dt>
@@ -97,16 +96,19 @@ runs fairly quickly on Windows XP and, after work by Robert Dodier, 86
 percent of the test suite is passed successfully, although some individual
 tests crash the suite. If you want to compile Maxima with ABCL lisp, check
 out the Maxima source code and following the instructions in INSTALL.lisp."
-</dd><p><em>Editor's note: the Maxima test suite runs without crashes and
-succesfully completes without failures as of 10-11-2010.</em></p>
+<em>Editor's note: the Maxima test suite runs without crashes and
+succesfully completes without failures as of 10-11-2010.</em>
+</dd>
 
 <dt>Ted Kosan
 </dt>
-<dd>I am in the process of integrating ABCL with <a href="http://mathrider.org">MathRider</a> in preparation for when Maxima is able to run on it.
+
+<dd>I am in the process of integrating ABCL with <a
+href="http://mathrider.org">MathRider</a> in preparation for when
+Maxima is able to run on it.
 </dd>
-
-
 </dl>
+
 </div>
 </body>
 </html>
