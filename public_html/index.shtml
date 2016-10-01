@@ -99,7 +99,7 @@
             </td>
             <td>
               <ul>
-                <li> <a href="http://news.gmane.org/gmane.lisp.armedbear.devel">Mailing list</a></li>
+                <li> <a href="https://mailman.common-lisp.net/pipermail/armedbear-devel/">Mailing list</a></li>
                 <li> <a href="faq.shtml#repository">Source repository</a> </li>
                 <li> <a href="http://abcl.org/trac/wiki/TitleIndex">Technical wiki</a> </li>
                 <li> <a href="http://abcl.org/trac/report/1">Bug tracker</a> </li>
