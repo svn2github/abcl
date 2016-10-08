@@ -26,31 +26,31 @@
               <tr>
                 <td style="font-weight: bold">Binary</td>
                 <td>
-                  <a href="releases/1.3.3/abcl-bin-1.3.3.tar.gz">abcl-bin-1.3.3.tar.gz</a>
-                  <a href="releases/1.3.3/abcl-bin-1.3.3.tar.gz.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-bin-1.4.0.tar.gz">abcl-bin-1.4.0.tar.gz</a>
+                  <a href="releases/1.4.0/abcl-bin-1.4.0.tar.gz.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.3.3/abcl-bin-1.3.3.zip">abcl-bin-1.3.3.zip</a>
-                  <a href="releases/1.3.3/abcl-bin-1.3.3.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-bin-1.4.0.zip">abcl-bin-1.4.0.zip</a>
+                  <a href="releases/1.4.0/abcl-bin-1.4.0.zip.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.3.3/abcl-contrib-1.3.3.jar">abcl-contrib-1.3.3.jar</a>
-                  <a href="releases/1.3.3/abcl-contrib-1.3.3.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-contrib-1.4.0.jar">abcl-contrib-1.4.0.jar</a>
+                  <a href="releases/1.4.0/abcl-contrib-1.4.0.zip.asc" class="asc">(pgp)</a>
                 </td>
               </tr>
               
               <tr>
                 <td style="font-weight: bold">Source</td>
                 <td>
-                  <a href="releases/1.3.3/abcl-src-1.3.3.tar.gz">abcl-src-1.3.3.tar.gz</a>
-                  <a href="releases/1.3.3/abcl-src-1.3.3.tar.gz.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-src-1.4.0.tar.gz">abcl-src-1.4.0.tar.gz</a>
+                  <a href="releases/1.4.0/abcl-src-1.4.0.tar.gz.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="releases/1.3.3/abcl-src-1.3.3.zip">abcl-src-1.3.3.zip</a>
-                  <a href="releases/1.3.3/abcl-src-1.3.3.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-src-1.4.0.zip">abcl-src-1.4.0.zip</a>
+                  <a href="releases/1.4.0/abcl-src-1.4.0.zip.asc" class="asc">(pgp)</a>
                 </td>
                 <td>
-                  <a href="http://abcl.org/svn/tags/1.3.3/contrib/">
+                  <a href="http://abcl.org/svn/tags/1.4.0/contrib/">
                     abcl-contrib source
                   </a>
                 </td>
