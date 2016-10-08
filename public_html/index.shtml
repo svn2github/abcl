@@ -35,7 +35,7 @@
                 </td>
                 <td>
                   <a href="releases/1.4.0/abcl-contrib-1.4.0.jar">abcl-contrib-1.4.0.jar</a>
-                  <a href="releases/1.4.0/abcl-contrib-1.4.0.zip.asc" class="asc">(pgp)</a>
+                  <a href="releases/1.4.0/abcl-contrib-1.4.0.jar.asc" class="asc">(pgp)</a>
                 </td>
               </tr>
               
