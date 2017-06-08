@@ -22,8 +22,9 @@
       <li> 
         <a href="http://armedbear-j.sourceforge.net">J - the editor</a>
       </li>
-      <li>
-          Source [ <a href="http://abcl.org/svn/">SVN</a> | <a href="https://gitlab.common-lisp.net/abcl/abcl/">Gitlab</a> | <a href="https://github.com/armedbear/abcl/">GitHub</a> ] 
+      <li><smaller>
+        [ <a href="http://abcl.org/svn/">SVN</a> | <a href="https://gitlab.common-lisp.net/abcl/abcl/">Gitlab</a> | <a href="https://github.com/armedbear/abcl/">GitHub</a> ]
+      </smaller>
       </li>
     </ul>
   </div>
