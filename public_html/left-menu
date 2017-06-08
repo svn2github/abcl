@@ -19,20 +19,13 @@
       <li>
         <a href="./commercial-support.shtml">Paid support</a>
       </li>
-
       <li> 
         <a href="http://armedbear-j.sourceforge.net">J - the editor</a>
+      </li>
+      <li>
+          Source [ <a href="http://abcl.org/svn/">SVN</a> | <a href="https://gitlab.common-lisp.net/abcl/abcl/">Gitlab</a> | <a href="https://github.com/armedbear/abcl/">GitHub</a> ] 
       </li>
     </ul>
   </div>
 
-  <div id="svn">
-    <a href="http://abcl.org/svn/">SVN</a>
-  </div>
-  <div id="gitlab">
-    <a href="https://gitlab.common-lisp.net/abcl/abcl/">Gitlab</a>
-  </div>
-  <div id="github">
-    <a href="https://github.com/armedbear/abcl/">GitHub</a>
-  </div>
 </div>
