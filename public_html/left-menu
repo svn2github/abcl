@@ -26,9 +26,13 @@
     </ul>
   </div>
 
-  <div id="oloh-button">
-    <script type="text/javascript"
-            src="http://www.ohloh.net/p/16553/widgets/project_users_logo.js">
-    </script>
+  <div id="svn">
+    <a href="http://abcl.org/svn/">SVN</a>
+  </div>
+  <div id="gitlab">
+    <a href="https://gitlab.common-lisp.net/abcl/abcl/">Gitlab</a>
+  </div>
+  <div id="github">
+    <a href="https://github.com/armedbear/abcl/">GitHub</a>
   </div>
 </div>

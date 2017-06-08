@@ -194,7 +194,10 @@ href="http://abcl.org/trac/browser/trunk/abcl/">http://abcl.org/trac/browser/tru
 <p>If you want to build the source, ABCL trunk,
 can be checked out via <a href="http://subversion.apache.org/">Subversion (aka "svn")</a> from
 the URI 
-<a href="http://abcl.org/svn/trunk/abcl/">http://abcl.org/svn/trunk/abcl/</a>.</p>
+  <a href="http://abcl.org/svn/trunk/abcl/">http://abcl.org/svn/trunk/abcl/</a>.</p>
+
+<p>Bridges to <a href="https://gitlab.common-lisp.net/abcl/abcl/">common-lisp.net Gitlab</a> and <a href="https://github.com/armedbear/abcl/">GitHub</a> are maintained for the convenience of forking and submitting patches.
+  </p>
 
 </div>
 
