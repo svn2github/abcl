@@ -164,10 +164,6 @@ div#left-menu {
     font-size: smaller;
 }
 
-div#oloh-button {
-    float: left;
-}
-
 ul.menu-list  {
     list-style: none;
 }
@@ -181,4 +177,5 @@ ul.menu-list a:link, ul.menu-list a:visited {
 ul.menu-list li {
     padding: .3em;
     margin-left: -30%;
+    font-size: smaller;
 }
