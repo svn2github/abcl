@@ -1,0 +1,7 @@
+#!/bin/sh
+exec @JAVA@ \
+  -cp  @ABCL_CLASSPATH@:"$CLASSPATH" \
+  @ABCL_JAVA_OPTIONS@ \
+  org.armedbear.lisp.Main \
+  "$@"
+

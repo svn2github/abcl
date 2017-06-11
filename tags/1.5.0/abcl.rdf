@@ -1,0 +1,174 @@
+# -*- Mode: n3 -*-
+
+@prefix abcl:            <https://abcl.org#> .
+<> 
+ abcl:is "W3C Turtle RDF serializations format" .
+
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
+@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+
+<> a doap:Project .
+
+<> rdfs:seeAlso         <urn:abcl.not.org> .
+<> rdfs:seeAlso         <urn:not.org> .
+
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+<> 
+  abcl:branch           <http://abcl.org/svn/trunk/abcl> ;
+  dc:identifier         <urn:abcl.org/1.5.0#dev> ;           
+  doap:language        "Common Lisp" ;
+  dc:created           "01-JAN-2004" ;
+  dc:modified          "11-JUN-2017" ;
+  dc:version           "abcl-1.5.0" ;
+#  dc:release           "dev" ;
+  abcl:git             <https://github.com/easye/abcl/> ; # Does this overwrite?  TODO Check RDF specs.
+  abcl:git             <https://gitlab.common-lisp.net/abcl/abcl/> ;
+  abcl:svn             <http://abcl.org/trac/changeset/15075> . # UPDATE
+ 
+<> 
+  rdfs:seeAlso <file:README> ;
+  rdfs:seeAlso <file:MANUAL> ;
+  rdfs:seeAlso <file:CHANGES> ;
+  rdfs:seeAlso <file:doc/manual/abcl.tex> .
+
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+
+<abcl:doap>
+  a                     doap:Project ;
+  doap:label            "Armed Bear Common Lisp" ;
+  doap:download         <http://abcl.org/> ;
+
+  dc:abstract      "An implementation of ANSI Common Lisp that runs on the JVM." ;
+  doap:shortname   "ABCL" ;
+  abcl:contributors """ehu easye v-ille astalla rudi peter""" .
+
+<abcl:doap>  doap:language  "Common Lisp" .
+
+<> <urn:abcl.org:releng:implementation:language> [ 
+   a rdf:Bag;
+   rdf:_0 "Common Lisp"; 
+   rdf:_1 "Java";
+   rdf:_2 "Ant"; 
+   rdf:_3 "Bourne Shell Script"; 
+   rdf:_4 "Windows Batch Script" 
+] .
+
+<abcl:doap> 
+  dc:contributor [ 
+    a rdf:Bag;
+    rdf:_1024 _:peter ;
+    rdf:_2048 _:piso ;
+    rdf:_1 _:ehu ;  
+    rdf:_2 _:easye ;
+    rdf:_3 _:ville ;
+    rdf:_4 _:astalla ;
+    rdf:_5 _:rudi ;
+    rdf:_11 _:ferada ;
+    rdf:_11 _:olof ;
+    rdf:_11 "Olof-Joachim Frahm" ;
+    rdf:_7 _:cyrus ; 
+    rdf:_8 _:dmiles ; 
+    rdf:_9 _:alanr ;
+    rdf:_9 "Alan Ruttenberg" ; 
+    rdf:_10 _:pipping ; 
+    rdf:_10 "Elias Pipping" ; 
+    rdf:_12 _:vibhu ;
+    rdf:_12 "Vibhu Mohindra" ;
+] .
+
+<abcl:doap>  
+  doap:language 
+  "Common Lisp", "Java", "Ant", "Bourne Shell Script", "Windows Batch Script"  .
+
+_:user dc:identifier <http://ville.not.org/#me>  ; 
+       rdf:label "V-ille"  .
+
+ <http://purl.org/dc/elements/1.1/>  
+  rdfs:seeAlso <http://dublincore.org/documents/2012/06/14/dcmi-terms/> .
+
+<> doap:license  [
+     dc:license <http://usefulinc.com/doap/licenses/gplv2> ;
+     dc:license <http://usefulinc.com/doap/licenses/gplv2-classpath-exception> ;
+     dc:licenseDocument 
+       <http://abcl.org/svn/tags/1.5.0/src/org/armedbear/COPYING> ;
+] .
+
+doap:Project rdfs:seeAlso [
+  a rdf:Bag;
+  rdf:_0 <http://abcl.org/releases/1.5.0/abcl-1.5.0.jar> ;
+  rdf:_1 <http://abcl.org/trac/timeline> ;
+  rdf:_2 <http://abcl.org/trac/wiki> ;
+  rdf:_4 <https://github.com/easye/abcl/> ;
+  rdf:_5 <https://gitlab.common-lisp.net/abcl/abcl/> ;
+  dc:source   abcl:tag ;
+  dc:Software [ 
+     a rdf:Bag;
+     rdf:_1 <urn:abcl:previousVersion> ;
+     rdf:_2 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.0.1.jar> ;
+     rdf:_3 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.0.2.jar> ;
+     rdf:_4 <https://code.google.com/p/abcl-dynamic-install/files/abcl-1.1.1.jar> ;
+     rdf:_5 <http://abcl.org/releases/1.2.1/abcl-1.2.1.jar> ;
+     rdf:_6 <http://abcl.org/releases/1.3.0/abcl-1.3.0.jar> ;
+    rdf:_14 <http://abcl.org/releases/1.3.2/abcl-1.3.1.jar> ;
+     rdf:_7 <http://abcl.org/releases/1.3.2/abcl-1.3.2.jar> ;
+     rdf:_8 <http://abcl.org/releases/1.3.3/abcl-1.3.3.jar> ;
+     rdf:_9 <http://abcl.org/releases/1.4.0/abcl-1.4.0.jar> ;
+  ] ;
+] .
+
+<> abcl:provides <release#abcl-contrib.jar> ;
+   rdfs:seeAlso <file:contrib/README.markdown>.
+
+<> dc:Standard  <urn:abcl.org/ansi/common-lisp#X3J13> ;
+   rdfs:seeAlso [ 
+     a rdf:Bag ;
+     rdf:_1  <urn:ansi.common-lisp> ; 
+     rdf:_2 "ANSI+INCITS+226-1994+(R2004).pdf" 
+   ] ;
+   dc:abstract  
+     "ANSI INCITS 226-1994 (R2004) American National Standard for Programming Language Common LISP (X3J13)" .
+
+<> rdfs:seeAlso <urn:abcl.org/ansi/common-lisp#X3J13> .
+
+doap:Project rdfs:seeAlso 
+  <http://abcl.org/trac/timeline> , 
+  <http://abcl.org/trac/wiki> ,
+  <http://github.com/armedbear/abcl/> ,
+  <http://gitlab.common-lisp.net/abcl/abcl/> ,
+  <http://code.google.com/p/abcl-dynamic-install/> ,
+  <http://abcl.org/svn/trunk/abcl/> .
+
+<> doap:packages  [ 
+    a rdf:Alt;
+    rdf:_1 abcl:abcl ;
+    rdf:_2 abcl:abcl-contrib ;
+    rdf:_4 abcl:jss ;
+    rdf:_5 abcl:jfli ;
+    rdf:_6 abcl:abcl-asdf ;
+    rdf:_7 abcl:jna ;
+    rdf:_8 abcl:asdf-jar ;
+    rdf:_9 abcl:quicklisp-abcl ;
+    rdf:_10 abcl:abcl-introspect ;
+] .
+
+abcl:jna
+        dc:version "4.2.2" .
+abcl:asdf
+        dc:version "3.2.1" .
+
+abcl:abcl-introspect  
+  rdfs:seeAlso <file:contrib/abcl-introspect/README.markdown> .                             
+
+abcl:abcl-contrib  
+  rdfs:seeAlso <file:contrib/README.markdown> .                             
+abcl:abcl-asdf
+  rdfs:seeAlso <file:contrib/asdf-asdf/README.markdown> .                             
+abcl:asdf-jar 
+  rdfs:seeAlso <file:contrib/asdf-jar/README.markdown> .                             
+abcl:jfli
+  rdfs:seeAlso <file:contrib/jfli/README> .                             
+abcl:jss
+  rdfs:seeAlso <file:contrib/jss/README.markdown> .                             
+
+
