@@ -20,134 +20,247 @@
 
 <div class="rn">
 
-  <pre>
-    Enhancements
-------------
+  <div class="rn-enhancements">
+<h2>Enhancements</h2>
 
-* [r14934] ABCL-INTROSPECT a contrib for accessing ABCL compiler
-  information (Alan).
 
-* [r14907] ABCL-AIO all-in-one jar target creates dist/abcl-aio.jar (Alan).
+<ul>
+  <li>
+ [r14934] ABCL-INTROSPECT a contrib for accessing ABCL compiler
+ information (Alan).
+  </li>
+  <li>
+    [r14907] ABCL-AIO all-in-one jar target creates dist/abcl-aio.jar (Alan).
+  </li>
 
-* [r15009] Rework ABCL-BUILD as a contrib which uses UIOP machinery to
-  invoke Ant on <file:build.xml>, unifying all build mechanisms to a single
-  prescriptive source artifact external to Common-Lisp.
+  <li>
+ [r15009] Rework ABCL-BUILD as a contrib which uses UIOP machinery to
+  invoke Ant on &lt;file:build.xml&gt;, unifying all build mechanisms to a single
+      prescriptive source artifact external to Common-Lisp.
+ </li>
 
-* [r14911] [r14955] [r14914]  Source recording on SYS:SOURCE plist 
+ <li>
+ [r14911] [r14955] [r14914]  Source recording on SYS:SOURCE plist 
   PRECOMPILER possibly beta reduce form with function
   position lambda, record arglist during Build
+ </li>
 
-* [r14912] [r14922] Re-write the ASDF descriptions using secondary systems
+ <li>
+ [r14912] [r14922] Re-write the ASDF descriptions using secondary systems
+ </li>
+ <li>
+ [r14917] build: 'abcl.clean.application.fasls' now cleans only ABCL fasls
+ </li>
 
-* [r14917] build: 'abcl.clean.application.fasls' now cleans only ABCL fasls
+ <li>
+ [r14923] Added Dockerfile to package ABCL in Docker
+ </li>
 
-* [r14923] Added Dockerfile to package ABCL in Docker
+ <li>
+ [r14927] Build add ability to download Maven from Ant
+ </li>
 
-* [r14927] Build add ability to download Maven from Ant
+ <li>
+   [r14931] Bless EXT:GET-PID as the offical way to get process id
+   </li>
 
-* [r14931] Bless EXT:GET-PID as the offical way to get process id
+ <li>
+   [r14947] JSS syntax for access Java fields (Alan)
+   </li>
 
-* [r14947] JSS syntax for access Java fields (Alan)
+ <li>
+ [r14962] JSS:J2LIST as a convenience method for turning "anything"
+ in Java to an appropriate Lisp list.
+ </li>
 
-* [r14962] JSS:J2LIST as a convenience method for turning "anything"
-  in Java to an appropriate Lisp list.
+ <li>
+ [r14967] (Provisional) ABCL-ASDF JDK-JAR ASDF class to describe JDK
+ path locations (Alan).
+ </li>
 
-* [r14967] (Provisional) ABCL-ASDF JDK-JAR ASDF class to describe JDK
-  path locations (Alan).
+ <li>
+   [r14969] Add QUICKLISP-ABCL:*QUICKLISP-PARENT-DIR* special (Alan).
+ </li>
 
-* [r14969] Add QUICKLISP-ABCL:*QUICKLISP-PARENT-DIR* special (Alan).
+ <li>
+   [r14978] Implement MAKE-LOAD-FORM for Java fields (Alan).
+ </li>
 
-* [r14978] Implement MAKE-LOAD-FORM for Java fields (Alan).
+ <li>
+   [r15013] Restore the ability SYSTEM:CHOOSE-ASSEMBLER to use Objectweb
+ </li>
+ <li>
+   [r15018] Enable use of MVN-MODULE in ASDF definitions (Alan).
+ </li>
 
-* [r15013] Restore the ability SYSTEM:CHOOSE-ASSEMBLER to use Objectweb
+ <li>
+   [r15019] Add NAMED-READTABLES from <​a
+   href="https://github.com/melisgl/named-readtables">https://github.com/melisgl/named-readtables</a>
 
-* [r15018] Enable use of MVN-MODULE in ASDF definitions (Alan).
+ </li>
 
-* [r15019] Add NAMED-READTABLES from <​https://github.com/melisgl/named-readtables
+ <li>
+ [r15062] ABCL-INTROSPECT 'javaparser.asd' definition adds a
+ SHARPSIGN-ONE-QUOTATION_MARK macro to evaulate arbitrary Java expressions
+ </li>
+</ul>
+</div>
 
+<div class="rn-fixes">
+<h2>Fixes</h2>
 
-Fixes
------
+<ul>
+  <li>
+    [r14902] Fix CL:OPEN for :DIRECTION :INPUT (pipping)
+  </li>
 
-* [r14902] Fix CL:OPEN for :DIRECTION :INPUT (pipping)
-
-* [r14903] JNEW-RUNTIME-CLASS (Olof)
+  <li>
+ [r14903] JNEW-RUNTIME-CLASS (Olof)
   Make static functions and :int parameters work.  Fix return
   conversion for null.  Ensure that the same classloader is used.
+  </li>
 
-* [r14905] ABCL-ASDF uses the value of the reported Maven home to look
-  for libraries, fixing loading CFFI under FreeBSD 11-RELEASE.
+  <li>
+ [r14905] ABCL-ASDF uses the value of the reported Maven home to look
+ for libraries, fixing loading CFFI under FreeBSD 11-RELEASE.
+  </li>
 
-* [r14906] JSS:LOOKUP-CLASSNAME would return allcaps class name if not
-  found (alan).
+  <li>
+ [r14906] JSS:LOOKUP-CLASSNAME would return allcaps class name if not
+ found (alan).
+  </li>
 
-* [r14909] QUICKLISP-ABCL simplify load/compile logic.
+  <li>
+    [r14909] QUICKLISP-ABCL simplify load/compile logic.
+  </li>
 
-* [r14918] JAVA Remove generic Throwable handler from JAVA:JFIELD innards
+  <li>
+    [r14918] JAVA Remove generic Throwable handler from JAVA:JFIELD innards
+  </li>
 
-* [r14919] ABCL-ASDF fix finding Maven on Fedora
+  <li>
+    [r14919] ABCL-ASDF fix finding Maven on Fedora
+  </li>
 
-* [r14926] ABCL-ASDF fix problems with test suite's reliance on PROVE
+  <li>
+    [r14926] ABCL-ASDF fix problems with test suite's reliance on PROVE
+  </li>
 
-* [r14921] CL:DIRECTORY no longer errors on files containing asterisk characters
+  <li>
+    [r14921] CL:DIRECTORY no longer errors on files containing asterisk characters
+  </li>
 
-* [r14950] Fix restart calculation for compiled closures (Alan)
+  <li>
+    [r14950] Fix restart calculation for compiled closures (Alan)
+  </li>
 
-* [r14952] Guard printing of large Java objects (Alan)
+  <li>
+    [r14952] Guard printing of large Java objects (Alan)
+  </li>
 
-* [r14953] Fix debugging frames which don't have a pathname (Alan)
+  <li>
+    [r14953] Fix debugging frames which don't have a pathname (Alan)
+  </li>
 
-* [r14956] Show function documentation in describe (Alan)
+  <li>
+    [r14956] Show function documentation in describe (Alan)
+  </li>
 
-* [r14966] JAVA:CHAIN returns last value of computation (Alan)
+  <li>
+    [r14966] JAVA:CHAIN returns last value of computation (Alan)
+  </li>
 
-* [r14973] ABCL-ASDF probes for "mvn" and "mvn.cmd" under Windows
+  <li>
+    [r14973] ABCL-ASDF probes for "mvn" and "mvn.cmd" under Windows
+  </li>
 
-* [r14974] Standardize the use of CL:*LOAD-VERBOSE* to control loading
-  verbosity.
+  <li>
+    [r14974] Standardize the use of CL:*LOAD-VERBOSE* to control loading
+    verbosity.
+  </li>
 
-* [r14976] Fix CL:GET-OUTPUT-STREAM-STRING to reset underlying buffer
+  <li>
+    [r14976] Fix CL:GET-OUTPUT-STREAM-STRING to reset underlying buffer
+  </li>
 
-* [r14979] Fix JavaObject.getParts() for Java arrays (Alan).
+  <li>
+    [r14979] Fix JavaObject.getParts() for Java arrays (Alan).
+  </li>
 
-* [r14980] Fix SETF for EXT:URL-PATHNAME-FRAGMENT
+  <li>
+    [r14980] Fix SETF for EXT:URL-PATHNAME-FRAGMENT
+  </li>
 
-* [r14987] Fix CL:MAKE-PATHNAME for explicitly nil HOST
+  <li>
+    [r14987] Fix CL:MAKE-PATHNAME for explicitly nil HOST
+  </li>
 
-* [r14996] Correctly implement 'time-of-the-time' daylight savings
-  semantics (Scott).
+  <li>
+    [r14996] Correctly implement 'time-of-the-time' daylight savings
+    semantics (Scott).
+  </li>
 
-* [r15001] Fix signalling simple error with #\~ in CL:FORMAT string
-  (Alan).
+  <li>
+ [r15001] Fix signalling simple error with #\~ in CL:FORMAT string
+ (Alan).
+  </li>
 
-* [r15002] Fix problems with SHARED-INITIALIZE (Olof).
+  <li>
+    [r15002] Fix problems with SHARED-INITIALIZE (Olof).
+  </li>
 
-* [r15003] Fix ENSURE-GENERIC-FUNCTION when removing definition (Olof).
+  <li>
+    [r15003] Fix ENSURE-GENERIC-FUNCTION when removing definition (Olof).
+  </li>
 
-* [r15004] Fix DESTRUCTURING-BIND with &rest arguments (Olof)
+  <li>
+    [r15004] Fix DESTRUCTURING-BIND with &amp;rest arguments (Olof)
+  </li>
 
-* [r15024] Optimise LOGCOUNT (Olof).
+  <li>
+    [r15024] Optimise LOGCOUNT (Olof).
+  </li>
 
-* [r15026] Support bignum argument for FILE-POSITION (Olof).
+  <li>
+    [r15026] Support bignum argument for FILE-POSITION (Olof).
+  </li>
 
-* [r15032] Better directory validation; handle :UNSPECIFIC (Olof).
+  <li>
+    [r15032] Better directory validation; handle :UNSPECIFIC (Olof).
+  </li>
 
-* [r15033] Fix LOOP code size estimation (Olof).
+  <li>
+    [r15033] Fix LOOP code size estimation (Olof).
+  </li>
 
-* [r15034] Fix NTH inlining type mismatch (Olof).
+  <li>
+    [r15034] Fix NTH inlining type mismatch (Olof).
+  </li>
 
-* [r15035] Fix byte code verification error in edge case (Olof).
+  <li>
+    [r15035] Fix byte code verification error in edge case (Olof).
+  </li>
 
-* [r15036] Fix PACKAGE-ERROR-PACKAGE behaviour (Olof).
+  <li>
+    [r15036] Fix PACKAGE-ERROR-PACKAGE behaviour (Olof).
+  </li>
 
-* [r15037] Fix MAX type derivation (Olof).
+  <li>
+    [r15037] Fix MAX type derivation (Olof).
+  </li>
 
-* [r15038] Fix NPE if directory can't be accessed (Olof).
+  <li>
+    [r15038] Fix NPE if directory can't be accessed (Olof).
+  </li>
 
-* [r15044] Documentation renders less/greater-than characters correctly (Olof).
-</pre>
+  <li>
+    [r15044] Documentation renders less/greater-than characters correctly (Olof).
+  </li>
+</ul>
 
-<p>These changes may be viewed directly at <a href="http://abcl.org/svn/tags/1.5.0/CHANGES">CHANGES</a>.</p>
+</div>
+<p>These changes may be viewed directly at <a
+href="http://abcl.org/svn/tags/1.5.0/CHANGES">CHANGES</a>.</p>
   
 
 <p><a href="release-notes.shtml">Release notes for older releases of ABCL</a>.</p>
