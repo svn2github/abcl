@@ -94,14 +94,13 @@
  </li>
 
  <li>
-   [r15019] Add NAMED-READTABLES from <​a
-   href="https://github.com/melisgl/named-readtables">https://github.com/melisgl/named-readtables</a>
+   [r15019] Add NAMED-READTABLES from <a href="https://github.com/melisgl/named-readtables">https://github.com/melisgl/named-readtables</a>
 
  </li>
 
  <li>
  [r15062] ABCL-INTROSPECT 'javaparser.asd' definition adds a
- SHARPSIGN-ONE-QUOTATION_MARK macro to evaulate arbitrary Java expressions
+ SHARPSIGN-ONE-QUOTATION_MARK macro to evaluate arbitrary Java expressions
  </li>
 </ul>
 </div>
